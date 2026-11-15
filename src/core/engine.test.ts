@@ -1,0 +1,156 @@
+import fc from "fast-check";
+import { describe, expect, it } from "vitest";
+import { kb } from "../data/kb";
+import {
+  answerDistribution,
+  chooseNextQuestion,
+  expectedInformationGain,
+  priorFromStated,
+  rankSolutions,
+  shouldStop,
+  statedGap,
+  updateBelief,
+} from "./engine";
+import { entropy, normalize, sum, uniform } from "./math";
+import { ANSWERS, DEFAULT_PARAMS, type Answer } from "./types";
+
+const N = kb.needs.length;
+const belief = () =>
+  fc
+    .array(fc.double({ min: 0.001, max: 1, noNaN: true }), { minLength: N, maxLength: N })
+    .map((xs) => normalize(xs));
+const answer = () => fc.constantFrom<Answer>(...ANSWERS);
+const question = () => fc.constantFrom(...kb.questions);
+
+describe("answerDistribution", () => {
+  it("is a probability distribution for any attribute strength", () => {
+    fc.assert(
+      fc.property(fc.double({ min: 0, max: 1, noNaN: true }), (v) => {
+        const d = answerDistribution(v);
+        expect(sum(d)).toBeCloseTo(1, 10);
+        expect(d.every((x) => x >= 0)).toBe(true);
+      }),
+    );
+  });
+
+  it("gives \"unknown\" the same probability whatever the truth is", () => {
+    const u = ANSWERS.indexOf("unknown");
+    expect(answerDistribution(0)[u]).toBeCloseTo(DEFAULT_PARAMS.unknown, 12);
+    expect(answerDistribution(1)[u]).toBeCloseTo(DEFAULT_PARAMS.unknown, 12);
+  });
+});
+
+describe("updateBelief", () => {
+  it("returns a distribution", () => {
+    fc.assert(
+      fc.property(belief(), question(), answer(), (b, q, a) => {
+        const next = updateBelief(b, kb, q, a);
+        expect(sum(next)).toBeCloseTo(1, 10);
+        expect(next.every((x) => x >= 0)).toBe(true);
+      }),
+    );
+  });
+
+  it("leaves the belief unchanged when the user does not know", () => {
+    fc.assert(
+      fc.property(belief(), question(), (b, q) => {
+        const next = updateBelief(b, kb, q, "unknown");
+        next.forEach((x, i) => expect(x).toBeCloseTo(b[i], 10));
+      }),
+    );
+  });
+});
+
+describe("expectedInformationGain", () => {
+  it("is non-negative and at most ln(5)", () => {
+    fc.assert(
+      fc.property(belief(), question(), (b, q) => {
+        const g = expectedInformationGain(b, kb, q);
+        expect(g).toBeGreaterThanOrEqual(0);
+        expect(g).toBeLessThanOrEqual(Math.log(ANSWERS.length) + 1e-9);
+      }),
+    );
+  });
+
+  it("equals the prior entropy minus the expected posterior entropy", () => {
+    fc.assert(
+      fc.property(belief(), question(), (b, q) => {
+        let expectedPosteriorH = 0;
+        ANSWERS.forEach((a, ai) => {
+          const pa = kb.needs.reduce(
+            (acc, need, i) => acc + b[i] * answerDistribution(q.yes[need.id] ?? q.base)[ai],
+            0,
+          );
+          if (pa > 0) expectedPosteriorH += pa * entropy(updateBelief(b, kb, q, a));
+        });
+        expect(expectedInformationGain(b, kb, q)).toBeCloseTo(entropy(b) - expectedPosteriorH, 8);
+      }),
+    );
+  });
+
+  it("is zero for a question that treats every need the same", () => {
+    const flat = { ...kb.questions[0], yes: {}, base: 0.5 };
+    expect(expectedInformationGain(uniform(N), kb, flat)).toBeCloseTo(0, 12);
+  });
+});
+
+describe("chooseNextQuestion", () => {
+  it("never repeats an asked question and returns null when none are left", () => {
+    const all = kb.questions.map((q) => q.id);
+    expect(chooseNextQuestion(uniform(N), kb, all)).toBeNull();
+    const next = chooseNextQuestion(uniform(N), kb, all.slice(1));
+    expect(next?.question.id).toBe(all[0]);
+  });
+});
+
+describe("priorFromStated", () => {
+  it("is uniform without a stated solution and shifts toward the needs it fits", () => {
+    expect(priorFromStated(kb, null)).toEqual(uniform(N));
+    const p = priorFromStated(kb, "add-cache");
+    const idx = kb.needs.findIndex((n) => n.id === "slow-unknown");
+    expect(p[idx]).toBe(Math.max(...p));
+    expect(sum(p)).toBeCloseTo(1, 10);
+  });
+});
+
+describe("end to end with a noiseless user", () => {
+  /** The answer a user would give if their need were `needId`, with no noise. */
+  function idealAnswer(needId: string, qid: string): Answer {
+    const q = kb.questions.find((x) => x.id === qid)!;
+    const v = q.yes[needId] ?? q.base;
+    if (v >= 0.875) return "yes";
+    if (v >= 0.5) return "probably";
+    if (v >= 0.125) return "probablyNot";
+    return "no";
+  }
+
+  for (const need of kb.needs) {
+    it(`finds the need "${need.id}" within the question budget`, () => {
+      let b = uniform(N);
+      const asked: string[] = [];
+      while (shouldStop(b, kb, asked) === null) {
+        const next = chooseNextQuestion(b, kb, asked)!;
+        b = updateBelief(b, kb, next.question, idealAnswer(need.id, next.question.id));
+        asked.push(next.question.id);
+      }
+      const top = b.indexOf(Math.max(...b));
+      expect(kb.needs[top].id).toBe(need.id);
+      expect(asked.length).toBeLessThanOrEqual(8);
+    });
+  }
+});
+
+describe("solution fixation (the XY problem)", () => {
+  it("shows a large gap when the stated solution does not fit the inferred need", () => {
+    // User says "add a cache" but every answer points to a team-alignment need.
+    const prior = priorFromStated(kb, "add-cache");
+    let b = prior;
+    for (const qid of ["q-misread", "q-many-people", "q-measured"]) {
+      const q = kb.questions.find((x) => x.id === qid)!;
+      b = updateBelief(b, kb, q, qid === "q-measured" ? "probablyNot" : "yes");
+    }
+    const gap = statedGap(kb, "add-cache", b)!;
+    expect(gap).toBeGreaterThan(0.8);
+    expect(rankSolutions(b, kb)[0].solution.id).toBe("shared-spec");
+  });
+});
