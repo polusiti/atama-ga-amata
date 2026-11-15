@@ -1,4 +1,4 @@
-/* Desktop, wizard layout and taskbar. Widgets come from 98.css (MIT). */
+/* Desktop, browser chrome and a 1999-style shop page. Widgets come from 98.css (MIT). */
 
 html,
 body {
@@ -30,113 +30,358 @@ body {
 }
 
 .desk {
-  padding: 24px 8px;
+  padding: 16px 8px;
 }
 
 .win {
-  width: min(780px, 100%);
+  width: min(1100px, 100%);
   margin: 0 auto;
 }
 
-.wizard {
-  display: flex;
-  gap: 0;
-  min-height: 420px;
+/* ---- browser chrome ---- */
+.browser {
+  margin: 4px 2px 6px;
 }
 
-.side {
-  flex: 0 0 150px;
-  background: linear-gradient(180deg, #000080 0%, #1084d0 100%);
-  color: #fff;
-  padding: 14px 10px;
+.menubar {
   display: flex;
-  flex-direction: column;
+  gap: 16px;
+  padding: 2px 6px;
+  border-bottom: 1px solid #808080;
+}
+
+.toolbar {
+  display: flex;
+  gap: 2px;
+  padding: 4px 2px;
+  border-bottom: 1px solid #808080;
+}
+
+.toolbar button {
+  min-width: 60px;
+  min-height: 24px;
+  padding: 0 8px;
+}
+
+.addressbar {
+  display: flex;
   align-items: center;
-  gap: 10px;
-  text-align: center;
+  gap: 6px;
+  padding: 3px 4px;
 }
 
-.side .brand {
-  font-weight: 700;
-  line-height: 1.4;
-  letter-spacing: 0.04em;
-}
-
-.side .sub {
-  margin-top: auto;
-  font-size: 11px;
-  opacity: 0.85;
-}
-
-.pumpkin {
-  image-rendering: pixelated;
-  width: 96px;
-  height: 96px;
-}
-
-.main {
+.addressbar input {
   flex: 1;
-  padding: 12px 16px;
   min-width: 0;
 }
 
-.main h2 {
-  font-size: 16px;
-  font-weight: 700;
-  margin: 0 0 10px;
+.page {
+  background: #fff;
+  height: min(660px, calc(100vh - 250px));
+  min-height: 360px;
 }
 
-.main p {
-  margin: 0 0 10px;
-  line-height: 1.6;
+/* ---- 1999 page ---- */
+.page,
+.page * {
+  font-family: Verdana, "MS PGothic", "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
+  font-size: 13px;
+  line-height: 1.55;
 }
 
-.q {
-  font-size: 15px;
-  line-height: 1.6;
-  margin: 0 0 14px;
-}
-
-.etched {
-  height: 2px;
-  margin: 10px 0;
-  border: none;
-  border-top: 1px solid #808080;
-  border-bottom: 1px solid #fff;
-}
-
-.buttons {
+.store-head {
   display: flex;
-  justify-content: flex-end;
-  gap: 8px;
-  padding: 0 8px 8px;
+  align-items: center;
+  gap: 14px;
+  padding: 10px 14px;
+  background: #1b1020;
+  border-bottom: 4px solid #ff8a1f;
 }
 
-.buttons button {
-  min-width: 84px;
+.logo {
+  margin: 0;
+  font-family: Georgia, "Times New Roman", "MS PMincho", serif !important;
+  font-style: italic;
+  font-size: 28px !important;
+  color: #ff8a1f;
+  letter-spacing: 0.02em;
 }
 
-.stack > * + * {
-  margin-top: 8px;
+.tagline {
+  margin: 2px 0 0;
+  color: #e6dcf0;
+  font-size: 12px !important;
 }
 
-.sunken {
-  padding: 6px;
-  max-height: 190px;
-  overflow: auto;
+.tabs {
+  display: flex;
+  gap: 2px;
+  padding: 8px 10px 0;
+  background: #1b1020;
+}
+
+.page .tab {
+  min-width: 0;
+  min-height: 0;
+  padding: 3px 14px;
+  border: 1px solid #555;
+  border-bottom: none;
+  border-radius: 7px 7px 0 0;
+  box-shadow: none;
+  color: #000;
+  text-shadow: none;
+  cursor: pointer;
+  opacity: 0.8;
+  transform: translateY(2px);
+}
+
+.page .tab.on {
+  opacity: 1;
+  font-weight: 700;
+  padding-bottom: 5px;
+}
+
+.page .tab:not(:disabled):active {
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.content {
+  background: #fffdf2;
+  padding: 12px 14px 20px;
+  min-height: 300px;
+}
+
+.content h2 {
+  margin: 0 0 8px;
+  font-size: 17px !important;
+  color: #4a2a6a;
+  border-bottom: 2px solid #ff8a1f;
+  padding-bottom: 2px;
+}
+
+.content p {
+  margin: 0 0 8px;
+}
+
+.small {
+  font-size: 12px !important;
+  color: #444;
+}
+
+.news {
+  margin: 14px 0 0;
+  padding-left: 18px;
+}
+
+.blink {
+  color: #cc0000;
+  font-weight: 700;
+  animation: blink 1.6s steps(2, start) infinite;
+}
+
+@keyframes blink {
+  to {
+    visibility: hidden;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .blink {
+    animation: none;
+  }
+}
+
+/* link-looking buttons */
+.page .linkbtn {
+  min-width: 0;
+  min-height: 0;
+  padding: 0;
+  border: none;
+  background: none;
+  box-shadow: none;
+  color: #0000cc;
+  text-shadow: none;
+  text-decoration: underline;
+  cursor: pointer;
+  text-align: left;
+}
+
+.page .linkbtn:hover {
+  color: #cc0000;
+}
+
+.page .linkbtn:not(:disabled):active {
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.page .linkbtn:focus-visible {
+  outline: 1px dotted #000;
+  outline-offset: 2px;
+}
+
+/* ---- shop columns ---- */
+.cols {
+  display: grid;
+  grid-template-columns: 220px minmax(0, 1fr) 240px;
+  gap: 12px;
+  align-items: start;
+}
+
+.box {
+  border: 1px solid #999;
+  background: #fff;
+  margin-bottom: 10px;
+}
+
+.box h3 {
+  margin: 0;
+  padding: 2px 8px;
+  background: #e4d6f4;
+  border-bottom: 1px solid #999;
+  font-size: 12px !important;
+}
+
+.box > *:not(h3) {
+  margin-left: 8px;
+  margin-right: 8px;
+}
+
+.box > h3 + * {
+  margin-top: 6px;
+}
+
+.box > *:last-child {
+  margin-bottom: 8px;
+}
+
+.qn {
+  color: #666;
+  font-size: 12px !important;
+  margin-bottom: 0 !important;
+}
+
+.qtext {
+  font-weight: 700;
+}
+
+.answers {
+  list-style: square;
+  padding-left: 18px;
+}
+
+.answers li {
+  margin: 3px 0;
+}
+
+.history {
+  padding-left: 22px;
+}
+
+.history li {
+  margin: 6px 0;
+}
+
+.coffin {
+  border: 2px dashed #ff8a1f;
+  background: #1b1020;
+  color: #f2e9fb;
+}
+
+.coffin h3 {
+  background: #ff8a1f;
+  color: #1b1020;
+  border-bottom: none;
+}
+
+.coffin .small {
+  color: #d8c9ea;
+}
+
+.page .coffin button {
+  color: #000;
+}
+
+.results-head {
+  margin-top: 0;
+}
+
+.dimnote {
+  background: #fff3cd;
+  border: 1px solid #d6b656;
+  padding: 4px 8px;
+}
+
+.items {
+  list-style: decimal;
+  padding-left: 22px;
+  margin: 0;
+}
+
+.item {
+  display: flex;
+  gap: 10px;
+  align-items: flex-start;
+  padding: 8px 0;
+  border-bottom: 1px dotted #999;
+}
+
+.itembody {
+  flex: 1;
+  min-width: 0;
+}
+
+.itembody p {
+  margin: 2px 0;
+}
+
+.title {
+  font-weight: 700;
+  font-size: 14px !important;
+  color: #003399;
+}
+
+.center.dim .items {
+  opacity: 0.45;
+  filter: grayscale(0.7);
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 8px;
+  padding: 0 5px;
+  background: #4a2a6a;
+  color: #fff;
+  font-size: 11px !important;
+  vertical-align: middle;
+}
+
+.tag.named {
+  background: #990000;
+}
+
+.fit {
+  display: grid;
+  grid-template-columns: 48px 1fr 40px;
+  gap: 6px;
+  align-items: center;
+  max-width: 320px;
+}
+
+.fit .progress-indicator,
+.need-row .progress-indicator {
+  height: 14px;
+  padding: 2px;
 }
 
 .need-row {
   display: grid;
-  grid-template-columns: minmax(0, 1fr) 120px 40px;
-  gap: 8px;
+  grid-template-columns: minmax(0, 1fr) 70px 38px;
+  gap: 6px;
   align-items: center;
-  margin: 3px 0;
-}
-
-.need-row .progress-indicator {
-  height: 16px;
-  padding: 2px;
+  margin-top: 4px;
+  margin-bottom: 4px;
 }
 
 .pct {
@@ -145,9 +390,10 @@ body {
 
 .msgbox {
   display: flex;
-  gap: 12px;
+  gap: 10px;
   align-items: flex-start;
-  padding: 10px;
+  padding: 8px;
+  margin-top: 8px;
   background: #c0c0c0;
   box-shadow:
     inset -1px -1px #0a0a0a,
@@ -158,53 +404,35 @@ body {
 
 .msgbox .icon {
   flex: 0 0 auto;
-  width: 28px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   background: #ffe000;
   clip-path: polygon(50% 0, 100% 100%, 0 100%);
   display: flex;
   align-items: flex-end;
   justify-content: center;
   font-weight: 700;
-  font-size: 14px;
-  padding-bottom: 1px;
-}
-
-.pick {
-  padding: 6px 8px;
-}
-
-.pick + .pick {
-  border-top: 1px dotted #808080;
-}
-
-.pick .meta {
-  margin-left: 18px;
-  color: #404040;
-  font-size: 12px;
-}
-
-.tag {
-  display: inline-block;
-  margin-left: 6px;
-  padding: 0 4px;
-  background: #000080;
-  color: #fff;
-  font-size: 11px;
-}
-
-.tag.named {
-  background: #800000;
 }
 
 .specbox {
   white-space: pre-wrap;
   font-family: "Courier New", monospace !important;
   font-size: 12px !important;
-  max-height: 220px;
+  max-height: 260px;
   overflow: auto;
 }
 
+details {
+  margin-top: 8px;
+}
+
+details code {
+  font-family: "Courier New", monospace !important;
+  font-size: 11px !important;
+  word-break: break-all;
+}
+
+/* ---- taskbar ---- */
 .taskbar {
   position: fixed;
   left: 0;
@@ -243,11 +471,14 @@ body {
   padding: 0 6px;
 }
 
-@media (max-width: 620px) {
-  .side {
+@media (max-width: 880px) {
+  .cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .menubar {
     display: none;
   }
-  .need-row {
-    grid-template-columns: minmax(0, 1fr) 70px 36px;
+  .page {
+    height: calc(100vh - 210px);
   }
 }

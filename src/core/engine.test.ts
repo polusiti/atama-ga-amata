@@ -7,6 +7,7 @@ import {
   expectedInformationGain,
   priorFromStated,
   rankSolutions,
+  replayBelief,
   shouldStop,
   statedGap,
   updateBelief,
@@ -138,6 +139,38 @@ describe("end to end with a noiseless user", () => {
       expect(asked.length).toBeLessThanOrEqual(8);
     });
   }
+});
+
+describe("replayBelief", () => {
+  const entryArb = fc.record({
+    qid: fc.constantFrom(...kb.questions.map((q) => q.id)),
+    answer: answer(),
+  });
+
+  it("equals sequential updates, and any prefix gives the earlier belief (exact undo)", () => {
+    fc.assert(
+      fc.property(
+        fc.array(entryArb, { maxLength: 8 }),
+        fc.option(fc.constantFrom(...kb.solutions.map((s) => s.id)), { nil: null }),
+        (entries, stated) => {
+          let sequential = priorFromStated(kb, stated);
+          const beliefs = [sequential];
+          for (const e of entries) {
+            const q = kb.questions.find((x) => x.id === e.qid)!;
+            sequential = updateBelief(sequential, kb, q, e.answer);
+            beliefs.push(sequential);
+          }
+          entries.forEach((_, k) => {
+            const prefix = replayBelief(kb, stated, entries.slice(0, k));
+            prefix.forEach((x, i) => expect(x).toBeCloseTo(beliefs[k][i], 12));
+          });
+          const full = replayBelief(kb, stated, entries);
+          full.forEach((x, i) => expect(x).toBeCloseTo(sequential[i], 12));
+          expect(sum(full)).toBeCloseTo(1, 10);
+        },
+      ),
+    );
+  });
 });
 
 describe("solution fixation (the XY problem)", () => {

@@ -76,6 +76,29 @@ export function updateBelief(
   return normalize(weights);
 }
 
+export interface AnswerEntry {
+  qid: string;
+  answer: Answer;
+}
+
+/**
+ * Belief after a list of answers, always rebuilt from the prior.
+ * Deriving the belief this way makes undo exact: dropping entries gives the earlier belief.
+ */
+export function replayBelief(
+  kb: KnowledgeBase,
+  statedSolutionId: string | null,
+  entries: readonly AnswerEntry[],
+  params: ModelParams = DEFAULT_PARAMS,
+): number[] {
+  let belief = priorFromStated(kb, statedSolutionId, params);
+  for (const entry of entries) {
+    const question = kb.questions.find((q) => q.id === entry.qid);
+    if (question) belief = updateBelief(belief, kb, question, entry.answer, params);
+  }
+  return belief;
+}
+
 /** Mutual information (nats) between the hidden need and the answer to `question`. Exact. */
 export function expectedInformationGain(
   belief: readonly number[],

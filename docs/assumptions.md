@@ -10,3 +10,5 @@ These are choices made by the author, not measured facts. They are listed so jud
 6. **The gap bands** ("close", "some gap", "large gap") use thresholds 0.35 and 0.9 radians. They are UI choices, not statistical tests.
 7. **Fisher-Rao distances are only comparable on the same set of needs.** All parties share the one shelf.
 8. **Simulated users share the engine's assumptions**, so a benchmark on them is optimistic. Misspecified-noise runs and a small check with real people are required before claiming effectiveness.
+
+9. **The shelf can show 100%.** The authored numbers in the knowledge base are sharp, so noiseless answers push one need to nearly 1. That is the model's output, not certainty about the person.
