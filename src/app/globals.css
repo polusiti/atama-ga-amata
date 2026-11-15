@@ -1,256 +1,253 @@
-:root {
-  --bg: #0e0b14;
-  --panel: #19142a;
-  --line: #2e2547;
-  --text: #ece8f5;
-  --muted: #9b92b5;
-  --accent: #ff8a1f;
-  --accent-dim: #b85f0f;
-}
+/* Desktop, wizard layout and taskbar. Widgets come from 98.css (MIT). */
 
-* {
-  box-sizing: border-box;
+html,
+body {
+  margin: 0;
+  min-height: 100%;
 }
 
 body {
-  margin: 0;
-  background: radial-gradient(1200px 600px at 50% -10%, #231a3d 0%, var(--bg) 60%);
-  color: var(--text);
-  font-family: system-ui, -apple-system, "Segoe UI", "Hiragino Sans", "Yu Gothic UI", sans-serif;
-  line-height: 1.6;
-  min-height: 100vh;
+  background-color: #008080;
+  background-image: repeating-linear-gradient(
+    0deg,
+    transparent,
+    transparent 2px,
+    rgba(255, 255, 255, 0.03) 2px,
+    rgba(255, 255, 255, 0.03) 4px
+  );
+  color: #000;
+  padding-bottom: 36px;
 }
 
-.wrap {
-  max-width: 760px;
+/* Japanese glyphs are not in the pixel font, so fall back per character. */
+.window,
+.window *,
+.taskbar,
+.taskbar * {
+  font-family: "Pixelated MS Sans Serif", "MS PGothic", "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
+  font-size: 13px;
+  -webkit-font-smoothing: auto;
+}
+
+.desk {
+  padding: 24px 8px;
+}
+
+.win {
+  width: min(780px, 100%);
   margin: 0 auto;
-  padding: 24px 16px 64px;
 }
 
-.head {
+.wizard {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 16px;
-  margin-bottom: 16px;
+  gap: 0;
+  min-height: 420px;
 }
 
-h1 {
-  margin: 0;
-  font-size: 1.6rem;
+.side {
+  flex: 0 0 150px;
+  background: linear-gradient(180deg, #000080 0%, #1084d0 100%);
+  color: #fff;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+  text-align: center;
+}
+
+.side .brand {
+  font-weight: 700;
+  line-height: 1.4;
   letter-spacing: 0.04em;
-  color: var(--accent);
 }
 
-h2 {
-  margin: 0 0 12px;
-  font-size: 1.15rem;
+.side .sub {
+  margin-top: auto;
+  font-size: 11px;
+  opacity: 0.85;
 }
 
-h3 {
-  margin: 0 0 8px;
-  font-size: 0.95rem;
-  color: var(--muted);
+.pumpkin {
+  image-rendering: pixelated;
+  width: 96px;
+  height: 96px;
 }
 
-.tag {
-  margin: 4px 0 0;
-  color: var(--muted);
+.main {
+  flex: 1;
+  padding: 12px 16px;
+  min-width: 0;
 }
 
-.card {
-  background: var(--panel);
-  border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 18px;
-  margin-bottom: 14px;
+.main h2 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 10px;
 }
 
-.meta {
-  color: var(--muted);
-  font-size: 0.85rem;
-  margin: 0 0 6px;
+.main p {
+  margin: 0 0 10px;
+  line-height: 1.6;
 }
 
 .q {
-  font-size: 1.25rem;
+  font-size: 15px;
+  line-height: 1.6;
+  margin: 0 0 14px;
 }
 
-button {
-  font: inherit;
-  cursor: pointer;
-  border-radius: 10px;
-  border: 1px solid var(--line);
-  background: transparent;
-  color: var(--text);
-  padding: 10px 14px;
+.etched {
+  height: 2px;
+  margin: 10px 0;
+  border: none;
+  border-top: 1px solid #808080;
+  border-bottom: 1px solid #fff;
 }
 
-button:focus-visible,
-summary:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
-}
-
-button.primary {
-  background: var(--accent);
-  border-color: var(--accent);
-  color: #1b1100;
-  font-weight: 700;
-}
-
-button.primary:hover {
-  background: #ffa04a;
-}
-
-button.small {
-  padding: 6px 12px;
-  font-size: 0.9rem;
-}
-
-button.ghost:hover,
-.pick:hover,
-.ans:hover {
-  border-color: var(--accent);
-}
-
-.choices {
+.buttons {
   display: flex;
-  flex-wrap: wrap;
+  justify-content: flex-end;
   gap: 8px;
-  margin-bottom: 16px;
+  padding: 0 8px 8px;
 }
 
-.pick.on {
-  border-color: var(--accent);
-  background: rgba(255, 138, 31, 0.12);
+.buttons button {
+  min-width: 84px;
 }
 
-.answers {
+.stack > * + * {
+  margin-top: 8px;
+}
+
+.sunken {
+  padding: 6px;
+  max-height: 190px;
+  overflow: auto;
+}
+
+.need-row {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  grid-template-columns: minmax(0, 1fr) 120px 40px;
   gap: 8px;
-}
-
-.ans.soft {
-  color: var(--muted);
-}
-
-@media (max-width: 560px) {
-  .answers {
-    grid-template-columns: 1fr 1fr;
-  }
-}
-
-.bars {
-  list-style: none;
-  margin: 0 0 8px;
-  padding: 0;
-}
-
-.bars li {
-  display: grid;
-  grid-template-columns: 1fr 120px 44px;
   align-items: center;
-  gap: 10px;
-  margin: 6px 0;
-  font-size: 0.92rem;
+  margin: 3px 0;
 }
 
-.bar {
-  background: #120e1f;
-  border-radius: 6px;
-  height: 10px;
-  overflow: hidden;
-}
-
-.bar span {
-  display: block;
-  height: 100%;
-  background: linear-gradient(90deg, var(--accent-dim), var(--accent));
-  transition: width 0.35s ease;
+.need-row .progress-indicator {
+  height: 16px;
+  padding: 2px;
 }
 
 .pct {
   text-align: right;
-  color: var(--muted);
 }
 
-.gap {
-  margin: 8px 0 0;
-}
-
-details {
-  margin-top: 8px;
-  color: var(--muted);
-}
-
-.mono {
-  font-family: ui-monospace, "Cascadia Mono", Consolas, monospace;
-  font-size: 0.82rem;
-}
-
-.shelf {
-  list-style: none;
-  margin: 0;
-  padding: 0;
-  display: grid;
-  gap: 10px;
-}
-
-.item {
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  padding: 12px 14px;
-}
-
-.item.on {
-  border-color: var(--accent);
-}
-
-.item p {
-  margin: 4px 0;
-}
-
-.row {
+.msgbox {
   display: flex;
-  justify-content: space-between;
-  gap: 8px;
-  align-items: center;
+  gap: 12px;
+  align-items: flex-start;
+  padding: 10px;
+  background: #c0c0c0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #fff;
 }
 
-.badge {
-  font-size: 0.75rem;
-  border: 1px solid var(--line);
-  border-radius: 999px;
-  padding: 2px 10px;
-  color: var(--muted);
-  white-space: nowrap;
+.msgbox .icon {
+  flex: 0 0 auto;
+  width: 28px;
+  height: 28px;
+  background: #ffe000;
+  clip-path: polygon(50% 0, 100% 100%, 0 100%);
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 14px;
+  padding-bottom: 1px;
 }
 
-.badge.named {
-  color: var(--accent);
-  border-color: var(--accent-dim);
+.pick {
+  padding: 6px 8px;
 }
 
-.cost {
-  color: var(--muted);
-  font-size: 0.85rem;
+.pick + .pick {
+  border-top: 1px dotted #808080;
 }
 
-.spec {
-  background: #120e1f;
-  border: 1px solid var(--line);
-  border-radius: 10px;
-  padding: 12px;
+.pick .meta {
+  margin-left: 18px;
+  color: #404040;
+  font-size: 12px;
+}
+
+.tag {
+  display: inline-block;
+  margin-left: 6px;
+  padding: 0 4px;
+  background: #000080;
+  color: #fff;
+  font-size: 11px;
+}
+
+.tag.named {
+  background: #800000;
+}
+
+.specbox {
   white-space: pre-wrap;
-  font-size: 0.88rem;
-  overflow-x: auto;
+  font-family: "Courier New", monospace !important;
+  font-size: 12px !important;
+  max-height: 220px;
+  overflow: auto;
 }
 
-.foot {
-  margin-top: 24px;
-  color: var(--muted);
-  font-size: 0.8rem;
-  text-align: center;
+.taskbar {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 32px;
+  background: #c0c0c0;
+  box-shadow: inset 0 1px #fff;
+  border-top: 1px solid #dfdfdf;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 3px;
+  z-index: 10;
+}
+
+.taskbar .start {
+  font-weight: 700;
+  min-width: 64px;
+  min-height: 24px;
+}
+
+.tray {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px;
+  box-shadow:
+    inset 1px 1px #808080,
+    inset -1px -1px #fff;
+}
+
+.tray button {
+  min-width: 0;
+  min-height: 20px;
+  padding: 0 6px;
+}
+
+@media (max-width: 620px) {
+  .side {
+    display: none;
+  }
+  .need-row {
+    grid-template-columns: minmax(0, 1fr) 70px 36px;
+  }
 }

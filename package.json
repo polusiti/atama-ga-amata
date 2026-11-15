@@ -11,6 +11,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
+    "98.css": "^0.1.21",
     "next": "^15.5.0",
     "react": "^19.1.0",
     "react-dom": "^19.1.0"
