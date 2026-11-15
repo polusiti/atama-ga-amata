@@ -182,6 +182,29 @@ export function rankSolutions(belief: readonly number[], kb: KnowledgeBase): Ran
     .sort((a, b) => b.score - a.score);
 }
 
+export interface FitChange {
+  solution: Solution;
+  before: number;
+  after: number;
+  /** after - before, in [-1, 1]. */
+  delta: number;
+}
+
+/** Solutions whose expected fit moved the most between two beliefs, largest absolute change first. */
+export function fitChanges(
+  kb: KnowledgeBase,
+  before: readonly number[],
+  after: readonly number[],
+): FitChange[] {
+  const b = new Map(rankSolutions(before, kb).map((r) => [r.solution.id, r.score]));
+  return rankSolutions(after, kb)
+    .map(({ solution, score }) => {
+      const prev = b.get(solution.id) ?? 0;
+      return { solution, before: prev, after: score, delta: score - prev };
+    })
+    .sort((x, y) => Math.abs(y.delta) - Math.abs(x.delta));
+}
+
 /**
  * How far the need implied by the user's own stated solution is from the need we now infer,
  * on the Fisher-Rao scale [0, pi]. Large = the stated solution probably misses the real need.

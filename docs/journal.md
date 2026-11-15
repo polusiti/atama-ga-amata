@@ -18,3 +18,7 @@ Kept for the Kiro write-up. Dates are JST.
 - User: the UI looked AI-made. Studied their sites (Windows 98 desktop in labo, 2000s textbook pages in lyceum). Rebuilt as a Win98 wizard, then as a 1999 shop in a browser window after researching early Amazon design (tabs, sidebars, Gold Box).
 - User: explanatory microcopy (e.g. a status-bar note about LLMs) read as AI. Moved disclaimers to the About tab and rewrote UI text in a shopkeeper voice.
 - Wrote .kiro/specs/shop-ui (requirements, design, tasks) before implementing; added replayBelief with a property test (exact undo).
+
+- Inspected archived storefronts from 2000 and 2002 with a headless browser. Rebuilt the skin: white page, blue header bars, yellow question box, pale tabs with a blue selected tab, blue sub-nav, brown-orange headings. Kept Halloween to the pumpkin, the stitched wordmark and the Coffin Box.
+- Renamed the product to atamagazon (pun on atama-ga-amata). Wordmark is original; no real logo or trade dress.
+- Added Movers & Shakers (fitChanges, property-tested), BROWSE as a view filter, expandable items.

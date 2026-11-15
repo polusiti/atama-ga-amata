@@ -3,7 +3,9 @@
 Replace the setup wizard with a 1999-style shopping site shown inside a Windows 98 browser window.
 Why: results should appear from the first answer and improve with each one (earlier value), and the shelf metaphor shows people what they could ask for.
 
-Background: early Amazon used tabs, a left sidebar, a right sidebar and daily deals (Version Museum, LukeW). We borrow the era and the layout idea only. No logos, names or colors of any real company.
+Background: early Amazon used tabs, a left sidebar, a right sidebar and daily deals (Version Museum, LukeW). Archived snapshots from 2000 and 2002 were inspected directly. We borrow the era and the layout idea only. No logos, marks or trade dress of any real company.
+
+Name: **atamagazon**, a pun on the repository name atama-ga-amata ("many heads"). Its wordmark is original (stitched seam, pumpkin) and does not imitate any real logo.
 
 ## Requirements (EARS)
 
@@ -21,5 +23,13 @@ Background: early Amazon used tabs, a left sidebar, a right sidebar and daily de
 12. THE SYSTEM SHALL be usable by keyboard and available in Japanese and English.
 13. THE SYSTEM SHALL not use any third-party logo or trademark.
 
+### Era skin (v2)
+
+14. THE SYSTEM SHALL use a white page, blue section header bars with white capitals, a yellow question box, brown-orange headings and blue underlined links, as in archived 2000 and 2002 storefronts.
+15. WHEN the user picks a trouble in the BROWSE list, THE SYSTEM SHALL show the shelf ranked by fit to that trouble, say so in a banner, and offer to clear it. This is a view filter and SHALL NOT change the belief.
+16. WHEN the user has answered at least one question, THE SYSTEM SHALL show "Movers & Shakers": the solutions whose fit changed most after the latest answer, with signed point changes. The changes SHALL be computed from the belief before and after that answer.
+17. WHEN the user selects a shelf item title, THE SYSTEM SHALL expand or collapse its requirements preview.
+18. THE SYSTEM SHALL show a pale-yellow greeting strip under the navigation.
+
 ## Out of scope
-Multi-party mode, real data sources, accounts, saving sessions.
+Multi-party mode, real data sources, accounts, saving sessions, decorative tabs that do nothing.

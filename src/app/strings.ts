@@ -5,7 +5,7 @@ export type L = { ja: string; en: string };
 export const t = (x: L, lang: Lang) => x[lang];
 
 export const ui = {
-  window: { ja: "真夜中の百貨店 - ウェブブラウザ", en: "Midnight Department Store - Web Browser" },
+  window: { ja: "atamagazon - ウェブブラウザ", en: "atamagazon - Web Browser" },
   menu: {
     ja: ["ファイル(F)", "編集(E)", "表示(V)", "お気に入り(A)", "ツール(T)", "ヘルプ(H)"],
     en: ["File", "Edit", "View", "Favorites", "Tools", "Help"],
@@ -19,22 +19,35 @@ export const ui = {
   },
   address: { ja: "アドレス", en: "Address" },
   statusDone: { ja: "ページが表示されました", en: "Done" },
-  statusZone: { ja: "インターネット", en: "Internet" },
   statusHours: { ja: "営業時間 0:00 - 4:00", en: "Open 0:00 - 4:00" },
+  statusZone: { ja: "インターネット", en: "Internet" },
 
-  storeName: { ja: "真夜中の百貨店", en: "Midnight Dept. Store" },
-  tagline: {
-    ja: "夜中でいちばん品ぞろえの多い百貨店。困りごと8種、解決策10種、朝まで営業。",
-    en: "The biggest department store after midnight. 8 troubles, 10 solutions, open till dawn.",
+  storeName: "atamagazon",
+  tagline: { ja: "夜中でいちばんの品ぞろえ", en: "Midnight's Biggest Selection" },
+  topLinks: {
+    cart: { ja: "カートを見る", en: "VIEW CART" },
+    help: { ja: "ヘルプ", en: "HELP" },
   },
   tabs: {
-    home: { ja: "ホーム", en: "Home" },
-    shop: { ja: "お店", en: "Shop" },
-    cart: { ja: "カート", en: "Cart" },
-    about: { ja: "このサイトについて", en: "About" },
+    home: { ja: "ようこそ", en: "WELCOME" },
+    shop: { ja: "お店", en: "SHOP" },
+    cart: { ja: "カート", en: "CART" },
+    about: { ja: "このサイトについて", en: "ABOUT" },
+  },
+  subnav: {
+    ja: ["ご利用案内", "売れ筋", "今夜の棺", "カートを見る"],
+    en: ["HOW IT WORKS", "TOP SELLERS", "COFFIN BOX", "VIEW CART"],
+  },
+  hello: {
+    ja: (n: number) =>
+      n === 0
+        ? "いらっしゃいませ。お困りごとをお聞かせください。"
+        : `いらっしゃいませ。${n}件のご回答をいただいています。`,
+    en: (n: number) =>
+      n === 0 ? "Welcome. Tell me what troubles you." : `Welcome. ${n} answer${n === 1 ? "" : "s"} so far.`,
   },
 
-  homeHead: { ja: "いらっしゃいませ。何にお困りですか？", en: "Welcome. What is troubling you?" },
+  homeHead: { ja: "何にお困りですか？", en: "What is troubling you?" },
   homeBody: {
     ja: "何を作るかではなく、何にお困りかをお聞かせください。お答えのたびに、棚の並びが変わります。",
     en: "Tell me what troubles you, not what to build. Every answer rearranges the shelves.",
@@ -51,7 +64,7 @@ export const ui = {
     en: ["Tonight's Coffin Box is now open", "8 new troubles in stock"],
   },
 
-  sidebarQuestion: { ja: "絞り込み", en: "Narrow your search" },
+  questionBox: { ja: "質問", en: "QUESTION" },
   questionN: { ja: "質問", en: "Question" },
   answers: {
     yes: { ja: "はい", en: "Yes" },
@@ -60,7 +73,8 @@ export const ui = {
     probablyNot: { ja: "たぶん違う", en: "Probably not" },
     no: { ja: "いいえ", en: "No" },
   } satisfies Record<Answer, L>,
-  historyHead: { ja: "あなたの答え", en: "Your answers" },
+  browseBox: { ja: "困りごとから探す", en: "BROWSE" },
+  historyHead: { ja: "あなたの答え", en: "YOUR ANSWERS" },
   historyEmpty: { ja: "まだありません", en: "None yet" },
   undo: { ja: "取り消す", en: "undo" },
   stopReason: {
@@ -71,24 +85,27 @@ export const ui = {
   } satisfies Record<StopReason, L>,
   stopNote: { ja: "どうぞ棚をご覧ください。", en: "Please, have a look at the shelves." },
 
-  resultsHead: { ja: "検索結果（適合度順）", en: "Results (by fit)" },
-  dimNote: {
-    ja: "店内は消灯中です。左の質問にお答えください。",
-    en: "The lights are off. Please answer the question on the left.",
+  resultsHead: { ja: "おすすめの品（適合度順）", en: "Recommended (by fit)" },
+  browseBanner: {
+    ja: (name: string) => `「${name}」のお困りごと向けの棚を表示しています。`,
+    en: (name: string) => `Showing the shelf for "${name}" troubles.`,
   },
+  browseClear: { ja: "[解除]", en: "[clear]" },
+  dimNote: { ja: "店内は消灯中です。左の質問にお答えください。", en: "The lights are off. Please answer the question on the left." },
   named: { ja: "あなたが挙げたもの", en: "you named this" },
   suggested: { ja: "店主の提案", en: "suggested" },
   costLabel: { ja: "代償", en: "Cost" },
   fitLabel: { ja: "適合度", en: "Fit" },
   addToCart: { ja: "カートに入れる", en: "Add to cart" },
   inCart: { ja: "カートに入っています", en: "In your cart" },
+  reqHead: { ja: "この品の要件", en: "Requirements" },
+  readMore: { ja: "詳しく見る", en: "details" },
 
   coffinHead: { ja: "今夜の棺（Coffin Box）", en: "Tonight's Coffin Box" },
-  coffinNote: {
-    ja: "お客様が挙げなかった品から、店主のおすすめです。",
-    en: "The shopkeeper's pick from what you did not name.",
-  },
-  beliefHead: { ja: "いま推定している困りごと", en: "What I think really hurts" },
+  coffinNote: { ja: "お客様が挙げなかった品から、店主のおすすめです。", en: "The shopkeeper's pick from what you did not name." },
+  moversHead: { ja: "動きのあった品", en: "Movers & Shakers" },
+  moversEmpty: { ja: "まだ動きはありません。", en: "No movement yet." },
+  beliefHead: { ja: "いま推定している困りごと", en: "WHAT HURTS" },
   gapWarnHead: { ja: "警告", en: "Warning" },
   gapWords: {
     close: { ja: "お挙げの品は、お困りごとにほぼ合っています。", en: "What you named fits your trouble well." },
@@ -120,22 +137,23 @@ export const ui = {
   aboutHead: { ja: "このサイトについて", en: "About this site" },
   aboutBody: {
     ja: [
+      "atamagazon は、リポジトリ名の atama-ga-amata（頭が数多）をもじった名前です。人も AI も、同じ目標に別々の絵を描いています。この店は、その絵のずれを小さくするためにあります。",
       "人は、解決策を頼みますが、本当に持っているのは困りごとです。200年前のおばあさんは、洗濯機がほしいとは言わず、冬の水仕事で手が痛いと言いました。",
       "この店は、あなたが挙げた解決策を、必要を示す証拠の一つとして扱います。答えから必要を推定し、挙げなかった選択肢も見せます。",
       "実行時にLLMは使いません。質問は、期待情報利得をコストで割った値で選びます。ずれは、フィッシャー・ラオ距離で測ります。",
       "数値は、作者が設定した判断です。実測ではありません。詳しくは docs/assumptions.md を見てください。",
-      "見た目は、1990年代末のオンライン書店の雰囲気への敬意です。実在の企業のロゴや名称は使っていません。",
+      "見た目は、2000年前後のオンライン書店への敬意です。実在の企業のロゴや商標は使っていません。",
     ],
     en: [
+      "atamagazon is a pun on the repository name atama-ga-amata (\"many heads\"). People and AIs paint different pictures of the same goal. This store exists to shrink that gap.",
       "People ask for solutions but what they have is a trouble. A woman two centuries ago would not ask for a washing machine; she would say her hands ache in winter water.",
       "This store treats the solution you name as one piece of evidence about the need. It infers the need from your answers and shows options you did not name.",
       "No LLM runs at runtime. Questions are chosen by expected information gain per unit cost. The gap is measured with the Fisher-Rao distance.",
       "The numbers are the author's judgment, not measurements. See docs/assumptions.md.",
-      "The look is a nod to late-1990s online bookstores. No real company's logo or name is used.",
+      "The look is a nod to online bookstores around 2000. No real company's logo or trademark is used.",
     ],
   },
   source: { ja: "ソースコード", en: "Source code" },
 
   start: { ja: "スタート", en: "Start" },
 } as const;
-

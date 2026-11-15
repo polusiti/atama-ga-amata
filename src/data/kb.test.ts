@@ -32,7 +32,7 @@ describe("knowledge base integrity", () => {
 
   it("has Japanese and English text everywhere", () => {
     const texts = [
-      ...kb.needs.flatMap((n) => [n.title, n.gloss]),
+      ...kb.needs.flatMap((n) => [n.short, n.title, n.gloss]),
       ...kb.questions.map((q) => q.text),
       ...kb.solutions.flatMap((s) => [s.title, s.pitch, s.cost, ...s.requirements]),
     ];
@@ -49,3 +49,4 @@ describe("knowledge base integrity", () => {
     }
   });
 });
+

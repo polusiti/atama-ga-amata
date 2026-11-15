@@ -1,4 +1,4 @@
-/* Desktop, browser chrome and a 1999-style shop page. Widgets come from 98.css (MIT). */
+/* Desktop, browser chrome and an early-2000s storefront skin. Widgets come from 98.css (MIT). */
 
 html,
 body {
@@ -77,68 +77,92 @@ body {
 
 .page {
   background: #fff;
-  height: min(660px, calc(100vh - 250px));
+  height: min(680px, calc(100vh - 250px));
   min-height: 360px;
 }
 
-/* ---- 1999 page ---- */
+/* ---- storefront ---- */
 .page,
 .page * {
-  font-family: Verdana, "MS PGothic", "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
+  font-family: Verdana, Arial, "MS PGothic", "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
   font-size: 13px;
-  line-height: 1.55;
+  line-height: 1.5;
 }
 
-.store-head {
+.page {
+  --blue: #006699;
+  --link: #003399;
+  --orange: #cc6600;
+  --yellow: #ffcc66;
+  --pumpkin: #ff8a1f;
+}
+
+.masthead {
   display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 10px 14px;
-  background: #1b1020;
-  border-bottom: 4px solid #ff8a1f;
+  justify-content: space-between;
+  align-items: flex-end;
+  padding: 10px 14px 4px;
 }
 
-.logo {
+.brand {
+  display: flex;
+  align-items: flex-end;
+  gap: 8px;
+}
+
+/* Original wordmark: a stitched seam instead of any real company's swoosh. */
+.wordmark {
   margin: 0;
-  font-family: Georgia, "Times New Roman", "MS PMincho", serif !important;
-  font-style: italic;
-  font-size: 28px !important;
-  color: #ff8a1f;
-  letter-spacing: 0.02em;
+  font-family: Arial, Helvetica, sans-serif !important;
+  font-weight: 700;
+  font-size: 34px !important;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  color: #111;
+  padding-bottom: 5px;
+  border-bottom: 3px dashed var(--pumpkin);
 }
 
-.tagline {
-  margin: 2px 0 0;
-  color: #e6dcf0;
+.brand .tagline {
   font-size: 12px !important;
+  color: #555;
+  padding-bottom: 6px;
+}
+
+.toplinks {
+  font-size: 11px !important;
+  padding-bottom: 6px;
 }
 
 .tabs {
   display: flex;
   gap: 2px;
-  padding: 8px 10px 0;
-  background: #1b1020;
+  padding: 6px 10px 0;
+  background: #fff;
 }
 
 .page .tab {
   min-width: 0;
   min-height: 0;
-  padding: 3px 14px;
-  border: 1px solid #555;
+  padding: 3px 14px 2px;
+  border: 1px solid #8a6d3b;
   border-bottom: none;
-  border-radius: 7px 7px 0 0;
+  border-radius: 6px 6px 0 0;
   box-shadow: none;
-  color: #000;
+  background: #f6e7a8;
+  color: #3a2a10;
   text-shadow: none;
+  font-size: 11px !important;
+  font-weight: 700;
+  text-transform: uppercase;
   cursor: pointer;
-  opacity: 0.8;
-  transform: translateY(2px);
 }
 
 .page .tab.on {
-  opacity: 1;
-  font-weight: 700;
-  padding-bottom: 5px;
+  background: #0b6fa4;
+  border-color: #064a70;
+  color: #fff;
+  padding-bottom: 3px;
 }
 
 .page .tab:not(:disabled):active {
@@ -146,18 +170,55 @@ body {
   text-shadow: none;
 }
 
+.subnav {
+  display: flex;
+  background: var(--blue);
+  padding: 0 10px;
+}
+
+.page .subnav button {
+  min-width: 0;
+  min-height: 0;
+  padding: 3px 16px;
+  border: none;
+  border-right: 1px solid #3f8bb3;
+  border-radius: 0;
+  box-shadow: none;
+  background: transparent;
+  color: #fff;
+  text-shadow: none;
+  font-size: 11px !important;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+
+.page .subnav button:hover {
+  background: #0b7fb8;
+}
+
+.page .subnav button:not(:disabled):active {
+  box-shadow: none;
+  text-shadow: none;
+}
+
+.hello {
+  background: #fffbe0;
+  border-bottom: 1px solid #e6d98a;
+  padding: 3px 14px;
+  color: var(--orange);
+}
+
 .content {
-  background: #fffdf2;
-  padding: 12px 14px 20px;
+  background: #fff;
+  padding: 12px 14px 24px;
   min-height: 300px;
 }
 
 .content h2 {
   margin: 0 0 8px;
   font-size: 17px !important;
-  color: #4a2a6a;
-  border-bottom: 2px solid #ff8a1f;
-  padding-bottom: 2px;
+  color: var(--orange);
 }
 
 .content p {
@@ -200,7 +261,7 @@ body {
   border: none;
   background: none;
   box-shadow: none;
-  color: #0000cc;
+  color: var(--link);
   text-shadow: none;
   text-decoration: underline;
   cursor: pointer;
@@ -209,6 +270,11 @@ body {
 
 .page .linkbtn:hover {
   color: #cc0000;
+}
+
+.page .linkbtn.on {
+  font-weight: 700;
+  color: var(--orange);
 }
 
 .page .linkbtn:not(:disabled):active {
@@ -224,40 +290,41 @@ body {
 /* ---- shop columns ---- */
 .cols {
   display: grid;
-  grid-template-columns: 220px minmax(0, 1fr) 240px;
-  gap: 12px;
+  grid-template-columns: 200px minmax(0, 1fr) 230px;
+  gap: 14px;
   align-items: start;
 }
 
-.box {
-  border: 1px solid #999;
-  background: #fff;
+.sbox {
   margin-bottom: 10px;
+  border: 1px solid var(--blue);
 }
 
-.box h3 {
+.sbox h3 {
   margin: 0;
   padding: 2px 8px;
-  background: #e4d6f4;
-  border-bottom: 1px solid #999;
-  font-size: 12px !important;
+  background: var(--blue);
+  color: #fff;
+  font-size: 11px !important;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
 }
 
-.box > *:not(h3) {
-  margin-left: 8px;
-  margin-right: 8px;
+.sbody {
+  padding: 6px 8px 8px;
+  background: #fff;
 }
 
-.box > h3 + * {
-  margin-top: 6px;
+.sbody.yellow {
+  background: var(--yellow);
 }
 
-.box > *:last-child {
-  margin-bottom: 8px;
+.sbody p {
+  margin: 0 0 6px;
 }
 
 .qn {
-  color: #666;
+  color: #6b4a00;
   font-size: 12px !important;
   margin-bottom: 0 !important;
 }
@@ -267,16 +334,32 @@ body {
 }
 
 .answers {
-  list-style: square;
-  padding-left: 18px;
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0;
 }
 
 .answers li {
-  margin: 3px 0;
+  margin: 4px 0;
+}
+
+.answers .linkbtn {
+  font-weight: 700;
+}
+
+.browse {
+  list-style: square;
+  margin: 0;
+  padding: 6px 8px 8px 26px;
+}
+
+.browse .linkbtn {
+  font-weight: 700;
 }
 
 .history {
-  padding-left: 22px;
+  padding-left: 18px;
+  margin: 0;
 }
 
 .history li {
@@ -284,15 +367,18 @@ body {
 }
 
 .coffin {
-  border: 2px dashed #ff8a1f;
+  border: 2px dashed var(--pumpkin);
   background: #1b1020;
-  color: #f2e9fb;
 }
 
 .coffin h3 {
-  background: #ff8a1f;
+  background: var(--pumpkin);
   color: #1b1020;
-  border-bottom: none;
+}
+
+.coffin .sbody {
+  background: #1b1020;
+  color: #f2e9fb;
 }
 
 .coffin .small {
@@ -307,10 +393,16 @@ body {
   margin-top: 0;
 }
 
+.banner {
+  background: #e8f2f8;
+  border: 1px solid var(--blue);
+  padding: 3px 8px;
+}
+
 .dimnote {
-  background: #fff3cd;
-  border: 1px solid #d6b656;
-  padding: 4px 8px;
+  background: #fffbe0;
+  border: 1px solid #e6d98a;
+  padding: 3px 8px;
 }
 
 .items {
@@ -324,7 +416,7 @@ body {
   gap: 10px;
   align-items: flex-start;
   padding: 8px 0;
-  border-bottom: 1px dotted #999;
+  border-bottom: 1px solid #ddd;
 }
 
 .itembody {
@@ -336,10 +428,21 @@ body {
   margin: 2px 0;
 }
 
-.title {
+.page .title {
   font-weight: 700;
   font-size: 14px !important;
-  color: #003399;
+}
+
+.reqs {
+  margin: 4px 0;
+  padding: 4px 8px;
+  background: #f4f8fb;
+  border-left: 3px solid var(--blue);
+}
+
+.reqs ol {
+  margin: 2px 0 0;
+  padding-left: 18px;
 }
 
 .center.dim .items {
@@ -351,7 +454,7 @@ body {
   display: inline-block;
   margin-left: 8px;
   padding: 0 5px;
-  background: #4a2a6a;
+  background: var(--blue);
   color: #fff;
   font-size: 11px !important;
   vertical-align: middle;
@@ -375,13 +478,32 @@ body {
   padding: 2px;
 }
 
+.movers {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.movers li {
+  margin: 4px 0;
+}
+
+.up {
+  color: #138a13;
+  font-weight: 700;
+}
+
+.down {
+  color: #c00000;
+  font-weight: 700;
+}
+
 .need-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 70px 38px;
   gap: 6px;
   align-items: center;
-  margin-top: 4px;
-  margin-bottom: 4px;
+  margin: 4px 0;
 }
 
 .pct {
@@ -480,5 +602,9 @@ details code {
   }
   .page {
     height: calc(100vh - 210px);
+  }
+  .masthead {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }

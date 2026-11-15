@@ -8,6 +8,7 @@ export interface L10n {
 /** An underlying need (the situation that actually hurts), not a solution. */
 export interface Need {
   id: string;
+  short: L10n;
   title: L10n;
   gloss: L10n;
 }
@@ -59,3 +60,4 @@ export const DEFAULT_PARAMS: ModelParams = {
   unknown: 0.1,
   mention: 0.3,
 };
+

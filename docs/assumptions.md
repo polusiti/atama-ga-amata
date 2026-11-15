@@ -12,3 +12,6 @@ These are choices made by the author, not measured facts. They are listed so jud
 8. **Simulated users share the engine's assumptions**, so a benchmark on them is optimistic. Misspecified-noise runs and a small check with real people are required before claiming effectiveness.
 
 9. **The shelf can show 100%.** The authored numbers in the knowledge base are sharp, so noiseless answers push one need to nearly 1. That is the model's output, not certainty about the person.
+
+10. **Browsing by trouble is a view filter.** Picking a trouble in the BROWSE list re-ranks the shelf by fit to that trouble but does not change the belief or the question flow.
+11. **Movers & Shakers** shows the change in expected fit (percentage points) caused by the latest answer. It is computed from the belief before and after, not from any external data.

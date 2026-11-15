@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import {
   chooseNextQuestion,
+  fitChanges,
   rankSolutions,
   replayBelief,
   shouldStop,
@@ -57,6 +58,8 @@ export default function Shop() {
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [cartId, setCartId] = useState<string | null>(null);
+  const [browseNeed, setBrowseNeed] = useState<string | null>(null);
+  const [openId, setOpenId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [clock, setClock] = useState("");
 
@@ -71,19 +74,39 @@ export default function Shop() {
   }, []);
 
   const belief = useMemo(() => replayBelief(kb, stated, entries), [stated, entries]);
+  const beforeLast = useMemo(
+    () => (entries.length > 0 ? replayBelief(kb, stated, entries.slice(0, -1)) : null),
+    [stated, entries],
+  );
   const askedIds = useMemo(() => entries.map((e) => e.qid), [entries]);
   const next = useMemo(() => chooseNextQuestion(belief, kb, askedIds), [belief, askedIds]);
   const stop = useMemo(() => shouldStop(belief, kb, askedIds), [belief, askedIds]);
   const gap = statedGap(kb, stated, belief);
   const ranked = useMemo(() => rankSolutions(belief, kb), [belief]);
   const topIdx = belief.indexOf(Math.max(...belief));
-  const dim = entries.length === 0 && stated === null;
+  const dim = entries.length === 0 && stated === null && browseNeed === null;
+
+  const movers = useMemo(
+    () =>
+      beforeLast
+        ? fitChanges(kb, beforeLast, belief)
+            .filter((c) => Math.abs(c.delta) >= 0.005)
+            .slice(0, 4)
+        : [],
+    [beforeLast, belief],
+  );
 
   const shelf = useMemo(() => {
+    if (browseNeed) {
+      return kb.solutions
+        .map((solution) => ({ solution, score: solution.fit[browseNeed] ?? 0 }))
+        .sort((a, b) => b.score - a.score)
+        .slice(0, MAX_SHELF);
+    }
     const top = ranked.slice(0, MAX_SHELF);
     const named = stated ? ranked.find((r) => r.solution.id === stated) : undefined;
     return named && !top.some((r) => r.solution.id === stated) ? [...top, named] : top;
-  }, [ranked, stated]);
+  }, [ranked, stated, browseNeed]);
   const coffin = useMemo(() => ranked.find((r) => r.solution.id !== stated), [ranked, stated]);
 
   const cartSolution = cartId ? kb.solutions.find((s) => s.id === cartId) : undefined;
@@ -91,6 +114,7 @@ export default function Shop() {
   const specText = cartSolution
     ? buildSpec(cartSolution, kb.needs[topIdx].title[lang], belief[topIdx], statedTitle, lang)
     : "";
+  const browseName = browseNeed ? kb.needs.find((n) => n.id === browseNeed)?.short[lang] : undefined;
 
   function answer(a: Answer) {
     if (next) setEntries([...entries, { qid: next.question.id, answer: a }]);
@@ -101,18 +125,21 @@ export default function Shop() {
     setStated(null);
     setEntries([]);
     setCartId(null);
+    setBrowseNeed(null);
+    setOpenId(null);
   }
 
-  const address = `http://www.midnight-store.example/exec/${tab}/${
+  const address = `http://www.atamagazon.example/exec/${tab}/${
     entries.length > 0 ? `need=${kb.needs[topIdx].id}/q=${entries.length}` : ""
   }`;
 
-  const tabDefs: { id: Tab; color: string; label: string }[] = [
-    { id: "home", color: "#ffb347", label: t(ui.tabs.home, lang) },
-    { id: "shop", color: "#b48ad9", label: t(ui.tabs.shop, lang) },
-    { id: "cart", color: "#8fd18f", label: `${t(ui.tabs.cart, lang)} (${cartId ? 1 : 0})` },
-    { id: "about", color: "#c8c8c8", label: t(ui.tabs.about, lang) },
+  const tabDefs: { id: Tab; label: string }[] = [
+    { id: "home", label: t(ui.tabs.home, lang) },
+    { id: "shop", label: t(ui.tabs.shop, lang) },
+    { id: "cart", label: `${t(ui.tabs.cart, lang)} (${cartId ? 1 : 0})` },
+    { id: "about", label: t(ui.tabs.about, lang) },
   ];
+  const subnavTargets: Tab[] = ["about", "shop", "shop", "cart"];
 
   return (
     <>
@@ -138,11 +165,20 @@ export default function Shop() {
           statusMid={t(ui.statusHours, lang)}
           statusRight={t(ui.statusZone, lang)}
         >
-          <header className="store-head">
-            <Pumpkin size={54} />
-            <div>
-              <h1 className="logo">{t(ui.storeName, lang)}</h1>
-              <p className="tagline">{t(ui.tagline, lang)}</p>
+          <header className="masthead">
+            <div className="brand">
+              <h1 className="wordmark">{ui.storeName}</h1>
+              <Pumpkin size={30} />
+              <span className="tagline">{t(ui.tagline, lang)}</span>
+            </div>
+            <div className="toplinks">
+              <button className="linkbtn" onClick={() => setTab("cart")}>
+                {t(ui.topLinks.cart, lang)} ({cartId ? 1 : 0})
+              </button>
+              <span aria-hidden="true"> | </span>
+              <button className="linkbtn" onClick={() => setTab("about")}>
+                {t(ui.topLinks.help, lang)}
+              </button>
             </div>
           </header>
 
@@ -153,12 +189,21 @@ export default function Shop() {
                 role="tab"
                 aria-selected={tab === d.id}
                 className={tab === d.id ? "tab on" : "tab"}
-                style={{ background: d.color }}
                 onClick={() => setTab(d.id)}
               >
                 {d.label}
               </button>
             ))}
+          </div>
+          <nav className="subnav" aria-label="site">
+            {ui.subnav[lang].map((label, i) => (
+              <button key={label} onClick={() => setTab(subnavTargets[i])}>
+                {label}
+              </button>
+            ))}
+          </nav>
+          <div className="hello">
+            <b>{ui.hello[lang](entries.length)}</b>
           </div>
 
           <div className="content">
@@ -200,62 +245,97 @@ export default function Shop() {
             {tab === "shop" && (
               <div className="cols">
                 <aside className="left">
-                  <div className="box">
-                    <h3>{t(ui.sidebarQuestion, lang)}</h3>
-                    {stop === null && next ? (
-                      <>
-                        <p className="qn">
-                          {t(ui.questionN, lang)} {entries.length + 1}
+                  <div className="sbox">
+                    <h3>{t(ui.questionBox, lang)}</h3>
+                    <div className="sbody yellow">
+                      {stop === null && next ? (
+                        <>
+                          <p className="qn">
+                            {t(ui.questionN, lang)} {entries.length + 1}
+                          </p>
+                          <p className="qtext">{next.question.text[lang]}</p>
+                          <ul className="answers">
+                            {ANSWERS.map((a) => (
+                              <li key={a}>
+                                <button className="linkbtn" onClick={() => answer(a)}>
+                                  {ui.answers[a][lang]}
+                                </button>
+                              </li>
+                            ))}
+                          </ul>
+                        </>
+                      ) : (
+                        <p className="qtext">
+                          {stop ? t(ui.stopReason[stop], lang) : ""} {t(ui.stopNote, lang)}
                         </p>
-                        <p className="qtext">{next.question.text[lang]}</p>
-                        <ul className="answers">
-                          {ANSWERS.map((a) => (
-                            <li key={a}>
-                              <button className="linkbtn" onClick={() => answer(a)}>
-                                {ui.answers[a][lang]}
-                              </button>
-                            </li>
-                          ))}
-                        </ul>
-                      </>
-                    ) : (
-                      <p className="qtext">
-                        {stop ? t(ui.stopReason[stop], lang) : ""} {t(ui.stopNote, lang)}
-                      </p>
-                    )}
+                      )}
+                    </div>
                   </div>
-                  <div className="box">
+
+                  <div className="sbox">
+                    <h3>{t(ui.browseBox, lang)}</h3>
+                    <ul className="browse">
+                      {kb.needs.map((n) => (
+                        <li key={n.id}>
+                          <button
+                            className={browseNeed === n.id ? "linkbtn on" : "linkbtn"}
+                            onClick={() => setBrowseNeed(browseNeed === n.id ? null : n.id)}
+                          >
+                            {n.short[lang]}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+
+                  <div className="sbox">
                     <h3>{t(ui.historyHead, lang)}</h3>
-                    {entries.length === 0 ? (
-                      <p className="small">{t(ui.historyEmpty, lang)}</p>
-                    ) : (
-                      <ol className="history">
-                        {entries.map((e, i) => {
-                          const q = kb.questions.find((x) => x.id === e.qid)!;
-                          return (
-                            <li key={e.qid}>
-                              <span className="small">{q.text[lang]}</span>
-                              <br />
-                              <strong>{ui.answers[e.answer][lang]}</strong>{" "}
-                              <button className="linkbtn small" onClick={() => setEntries(entries.slice(0, i))}>
-                                [{t(ui.undo, lang)}]
-                              </button>
-                            </li>
-                          );
-                        })}
-                      </ol>
-                    )}
+                    <div className="sbody">
+                      {entries.length === 0 ? (
+                        <p className="small">{t(ui.historyEmpty, lang)}</p>
+                      ) : (
+                        <ol className="history">
+                          {entries.map((e, i) => {
+                            const q = kb.questions.find((x) => x.id === e.qid)!;
+                            return (
+                              <li key={e.qid}>
+                                <span className="small">{q.text[lang]}</span>
+                                <br />
+                                <strong>{ui.answers[e.answer][lang]}</strong>{" "}
+                                <button className="linkbtn small" onClick={() => setEntries(entries.slice(0, i))}>
+                                  [{t(ui.undo, lang)}]
+                                </button>
+                              </li>
+                            );
+                          })}
+                        </ol>
+                      )}
+                    </div>
                   </div>
                 </aside>
 
                 <main className={dim ? "center dim" : "center"}>
                   <h2 className="results-head">{t(ui.resultsHead, lang)}</h2>
+                  {browseNeed && browseName && (
+                    <p className="banner">
+                      {ui.browseBanner[lang](browseName)}{" "}
+                      <button className="linkbtn" onClick={() => setBrowseNeed(null)}>
+                        {t(ui.browseClear, lang)}
+                      </button>
+                    </p>
+                  )}
                   {dim && <p className="dimnote">{t(ui.dimNote, lang)}</p>}
                   <ol className="items">
                     {shelf.map(({ solution, score }) => (
                       <li key={solution.id} className="item">
                         <div className="itembody">
-                          <span className="title">{solution.title[lang]}</span>
+                          <button
+                            className="linkbtn title"
+                            aria-expanded={openId === solution.id}
+                            onClick={() => setOpenId(openId === solution.id ? null : solution.id)}
+                          >
+                            {solution.title[lang]}
+                          </button>
                           <span className={solution.id === stated ? "tag named" : "tag"}>
                             {solution.id === stated ? t(ui.named, lang) : t(ui.suggested, lang)}
                           </span>
@@ -263,6 +343,16 @@ export default function Shop() {
                           <p className="small">
                             {t(ui.costLabel, lang)}: {solution.cost[lang]}
                           </p>
+                          {openId === solution.id && (
+                            <div className="reqs">
+                              <b>{t(ui.reqHead, lang)}</b>
+                              <ol>
+                                {solution.requirements.map((r) => (
+                                  <li key={r.en}>{r[lang]}</li>
+                                ))}
+                              </ol>
+                            </div>
+                          )}
                           <div className="fit" aria-label={`${t(ui.fitLabel, lang)} ${Math.round(score * 100)}%`}>
                             <span>{t(ui.fitLabel, lang)}</span>
                             <div className="progress-indicator segmented">
@@ -288,54 +378,86 @@ export default function Shop() {
 
                 <aside className="right">
                   {coffin && (
-                    <div className="box coffin">
+                    <div className="sbox coffin">
                       <h3>{t(ui.coffinHead, lang)}</h3>
-                      <p className="small">{t(ui.coffinNote, lang)}</p>
-                      <p>
-                        <strong>{coffin.solution.title[lang]}</strong>
-                        <br />
-                        <span className="small">{coffin.solution.pitch[lang]}</span>
-                      </p>
-                      <button onClick={() => setCartId(coffin.solution.id)} disabled={cartId === coffin.solution.id}>
-                        {cartId === coffin.solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
-                      </button>
+                      <div className="sbody">
+                        <p className="small">{t(ui.coffinNote, lang)}</p>
+                        <p>
+                          <strong>{coffin.solution.title[lang]}</strong>
+                          <br />
+                          <span className="small">{coffin.solution.pitch[lang]}</span>
+                        </p>
+                        <button
+                          onClick={() => setCartId(coffin.solution.id)}
+                          disabled={cartId === coffin.solution.id}
+                        >
+                          {cartId === coffin.solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
+                        </button>
+                      </div>
                     </div>
                   )}
-                  <div className="box">
+
+                  <div className="sbox">
+                    <h3>{t(ui.moversHead, lang)}</h3>
+                    <div className="sbody">
+                      {movers.length === 0 ? (
+                        <p className="small">{t(ui.moversEmpty, lang)}</p>
+                      ) : (
+                        <ul className="movers">
+                          {movers.map((c) => {
+                            const pts = Math.round(c.delta * 100);
+                            return (
+                              <li key={c.solution.id}>
+                                <span className={c.delta >= 0 ? "up" : "down"}>
+                                  {c.delta >= 0 ? "\u25B2" : "\u25BC"} {c.delta >= 0 ? "+" : ""}
+                                  {pts}
+                                </span>{" "}
+                                {c.solution.title[lang]}
+                              </li>
+                            );
+                          })}
+                        </ul>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="sbox">
                     <h3>{t(ui.beliefHead, lang)}</h3>
-                    {kb.needs
-                      .map((n, i) => ({ n, p: belief[i] }))
-                      .sort((a, b) => b.p - a.p)
-                      .slice(0, 3)
-                      .map(({ n, p }) => (
-                        <div className="need-row" key={n.id}>
-                          <span>{n.title[lang]}</span>
-                          <div className="progress-indicator segmented">
-                            <span className="progress-indicator-bar" style={{ width: `${Math.round(p * 100)}%` }} />
+                    <div className="sbody">
+                      {kb.needs
+                        .map((n, i) => ({ n, p: belief[i] }))
+                        .sort((a, b) => b.p - a.p)
+                        .slice(0, 3)
+                        .map(({ n, p }) => (
+                          <div className="need-row" key={n.id}>
+                            <span>{n.title[lang]}</span>
+                            <div className="progress-indicator segmented">
+                              <span className="progress-indicator-bar" style={{ width: `${Math.round(p * 100)}%` }} />
+                            </div>
+                            <span className="pct">{Math.round(p * 100)}%</span>
                           </div>
-                          <span className="pct">{Math.round(p * 100)}%</span>
+                        ))}
+                      {gap !== null && gapBand(gap) === "far" ? (
+                        <div className="msgbox" role="alert">
+                          <div className="icon">!</div>
+                          <div>
+                            <strong>{t(ui.gapWarnHead, lang)}</strong>
+                            <br />
+                            {t(ui.gapWords.far, lang)}
+                          </div>
                         </div>
-                      ))}
-                    {gap !== null && gapBand(gap) === "far" ? (
-                      <div className="msgbox" role="alert">
-                        <div className="icon">!</div>
-                        <div>
-                          <strong>{t(ui.gapWarnHead, lang)}</strong>
-                          <br />
-                          {t(ui.gapWords.far, lang)}
-                        </div>
-                      </div>
-                    ) : gap !== null ? (
-                      <p className="small">{t(ui.gapWords[gapBand(gap)], lang)}</p>
-                    ) : null}
-                    <details>
-                      <summary>{t(ui.detail, lang)}</summary>
-                      <code>
-                        H = {entropy(belief).toFixed(3)} / {Math.log(kb.needs.length).toFixed(3)} nats
-                        {gap !== null && <> | Fisher-Rao d = {gap.toFixed(3)} / {Math.PI.toFixed(3)}</>}
-                        {next && stop === null && <> | next gain = {next.gain.toFixed(3)} nats</>}
-                      </code>
-                    </details>
+                      ) : gap !== null ? (
+                        <p className="small">{t(ui.gapWords[gapBand(gap)], lang)}</p>
+                      ) : null}
+                      <details>
+                        <summary>{t(ui.detail, lang)}</summary>
+                        <code>
+                          H = {entropy(belief).toFixed(3)} / {Math.log(kb.needs.length).toFixed(3)} nats
+                          {gap !== null && <> | Fisher-Rao d = {gap.toFixed(3)} / {Math.PI.toFixed(3)}</>}
+                          {next && stop === null && <> | next gain = {next.gain.toFixed(3)} nats</>}
+                        </code>
+                      </details>
+                    </div>
                   </div>
                 </aside>
               </div>
@@ -423,4 +545,3 @@ export default function Shop() {
     </>
   );
 }
-

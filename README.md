@@ -1,8 +1,8 @@
-# atama-ga-amata
+# atamagazon (atama-ga-amata)
 
 Kiroween 2026, Frankenstein category (solo, student).
 
-**The XY problem, solved mechanically.** People ask for a solution (Y) when what hurts is a situation (X). Tell the shopkeeper of the midnight department store what you already have in mind, answer a few questions about real past episodes, and see how far your idea sits from the need your answers point to. Then pick from shelves that include things you did not ask for, and get an EARS-style spec.
+**atamagazon** is a pun on the repository name atama-ga-amata ("many heads"). It is a department store for troubles, styled after online storefronts around 2000, shown inside a Windows 98 browser window.`n`n**The XY problem, solved mechanically.** People ask for a solution (Y) when what hurts is a situation (X). Tell the shopkeeper of the midnight department store what you already have in mind, answer a few questions about real past episodes, and see how far your idea sits from the need your answers point to. Then pick from shelves that include things you did not ask for, and get an EARS-style spec.
 
 No LLM runs at runtime. The engine is a small, deterministic, tested core:
 
@@ -36,3 +36,4 @@ Deploys to Vercel as a static Next.js app. No environment variables, no database
 ## License
 
 MIT
+

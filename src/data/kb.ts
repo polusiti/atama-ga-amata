@@ -9,41 +9,49 @@ export const kb: KnowledgeBase = {
   needs: [
     {
       id: "spend-blind",
+      short: { ja: "お金", en: "Money" },
       title: { ja: "お金がいつの間にか消える", en: "Money disappears and I can't see where" },
       gloss: { ja: "使った額と行き先が見えていない", en: "Spending is invisible until it is too late" },
     },
     {
       id: "forget-deadline",
+      short: { ja: "期限", en: "Deadlines" },
       title: { ja: "期限や約束を忘れる", en: "I forget deadlines and promises" },
       gloss: { ja: "覚えておく負担が頭に乗っている", en: "Remembering is a load carried in my head" },
     },
     {
       id: "no-progress",
+      short: { ja: "進捗", en: "Progress" },
       title: { ja: "進んでいる実感がない", en: "I can't feel any progress" },
       gloss: { ja: "努力と成果のつながりが見えない", en: "Effort and results are not connected in view" },
     },
     {
       id: "info-scatter",
+      short: { ja: "探し物", en: "Finding things" },
       title: { ja: "情報が散らばって探せない", en: "Information is scattered and unfindable" },
       gloss: { ja: "どこに置いたか分からなくなる", en: "I lose track of where things are" },
     },
     {
       id: "slow-unknown",
+      short: { ja: "遅さ", en: "Slowness" },
       title: { ja: "遅いと言われるが原因が不明", en: "It's called slow but nobody knows why" },
       gloss: { ja: "原因を測らずに対処している", en: "Fixes are applied without measuring the cause" },
     },
     {
       id: "team-misalign",
+      short: { ja: "認識合わせ", en: "Alignment" },
       title: { ja: "認識がそろわず手戻りが多い", en: "We are not on the same page, so we redo work" },
       gloss: { ja: "「思っていたのと違う」が起きる", en: "\"That's not what I meant\" keeps happening" },
     },
     {
       id: "habit-drop",
+      short: { ja: "習慣", en: "Habits" },
       title: { ja: "始めても続かない", en: "I start things and drop them" },
       gloss: { ja: "続ける仕組みがない", en: "Nothing keeps the habit alive" },
     },
     {
       id: "manual-chore",
+      short: { ja: "手作業", en: "Chores" },
       title: { ja: "同じ手作業に時間を取られる", en: "Same manual chore eats my time" },
       gloss: { ja: "毎回同じ手順を人がやっている", en: "A person repeats the same steps every time" },
     },
@@ -379,3 +387,4 @@ export const kb: KnowledgeBase = {
     },
   ],
 };
+

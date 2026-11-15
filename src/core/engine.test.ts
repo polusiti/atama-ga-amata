@@ -5,6 +5,7 @@ import {
   answerDistribution,
   chooseNextQuestion,
   expectedInformationGain,
+  fitChanges,
   priorFromStated,
   rankSolutions,
   replayBelief,
@@ -173,6 +174,26 @@ describe("replayBelief", () => {
   });
 });
 
+describe("fitChanges", () => {
+  it("reports after - before, largest absolute change first, for every solution", () => {
+    fc.assert(
+      fc.property(belief(), belief(), (a, b) => {
+        const changes = fitChanges(kb, a, b);
+        expect(changes).toHaveLength(kb.solutions.length);
+        changes.forEach((c) => expect(c.delta).toBeCloseTo(c.after - c.before, 12));
+        for (let i = 1; i < changes.length; i++) {
+          expect(Math.abs(changes[i - 1].delta)).toBeGreaterThanOrEqual(Math.abs(changes[i].delta) - 1e-12);
+        }
+      }),
+    );
+  });
+
+  it("is all zeros when nothing changed", () => {
+    const b = uniform(N);
+    fitChanges(kb, b, b).forEach((c) => expect(c.delta).toBeCloseTo(0, 12));
+  });
+});
+
 describe("solution fixation (the XY problem)", () => {
   it("shows a large gap when the stated solution does not fit the inferred need", () => {
     // User says "add a cache" but every answer points to a team-alignment need.
@@ -187,3 +208,4 @@ describe("solution fixation (the XY problem)", () => {
     expect(rankSolutions(b, kb)[0].solution.id).toBe("shared-spec");
   });
 });
+
