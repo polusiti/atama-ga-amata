@@ -3,8 +3,9 @@ import { describe, expect, it } from "vitest";
 import { kb } from "../data/kb";
 import { asksWhy, decide, render, type Lookup } from "./dialogue";
 import { priorFromStated, replayBelief } from "./engine";
-import { contributions, explainWhy, traceBelief } from "./explain";
-import { entropy, normalize, sum } from "./math";
+import { contributions, explainWhy, pathLength, traceBelief } from "./explain";
+import { countAuthored } from "./limits";
+import { entropy, fisherRao, normalize, sum } from "./math";
 import { ANSWERS } from "./types";
 
 const N = kb.needs.length;
@@ -105,6 +106,35 @@ describe("traceBelief and contributions (HOW)", () => {
   });
 });
 
+describe("pathLength", () => {
+  it("is never shorter than the straight line from start to end (triangle inequality)", () => {
+    fc.assert(
+      fc.property(statedArb, fc.array(entryArb, { maxLength: 6 }), noteArb, (stated, entries, notes) => {
+        const trace = traceBelief(kb, stated, entries, undefined, notes);
+        const last = trace.steps.length > 0 ? trace.steps[trace.steps.length - 1].after : trace.start;
+        expect(pathLength(trace)).toBeGreaterThanOrEqual(fisherRao(trace.start, last) - 1e-9);
+      }),
+    );
+  });
+
+  it("equals the distance when there is a single step, and 0 when there is none", () => {
+    expect(pathLength(traceBelief(kb, null, []))).toBe(0);
+    const one = traceBelief(kb, null, [{ qid: kb.questions[0].id, answer: "yes" }]);
+    expect(pathLength(one)).toBeCloseTo(fisherRao(one.start, one.steps[0].after), 12);
+  });
+});
+
+describe("countAuthored", () => {
+  it("counts from the data and is consistent", () => {
+    const a = countAuthored(kb);
+    expect(a.questionStrengths).toBeGreaterThanOrEqual(kb.questions.length);
+    expect(a.solutionFits).toBeGreaterThanOrEqual(kb.solutions.length);
+    expect(a.modelParameters).toBe(3);
+    expect(a.total).toBe(a.questionStrengths + a.solutionFits + a.modelParameters + a.keywordWeights + a.solutionAliases);
+    expect(a.total).toBeGreaterThan(100);
+  });
+});
+
 describe("asking why in the shopkeeper window", () => {
   const lookup: Lookup = {
     need: (id, lang) => kb.needs.find((n) => n.id === id)!.short[lang],
@@ -127,3 +157,4 @@ describe("asking why in the shopkeeper window", () => {
     expect(decide({ event: "why", history: [], needIds: ["spend-blind"] }).kind).toBe("whyNone");
   });
 });
+

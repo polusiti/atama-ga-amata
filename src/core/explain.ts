@@ -6,7 +6,7 @@ import {
   updateBelief,
   type AnswerEntry,
 } from "./engine";
-import { normalize } from "./math";
+import { fisherRao, normalize } from "./math";
 import { ANSWERS, DEFAULT_PARAMS, type Answer, type KnowledgeBase, type ModelParams, type Question } from "./types";
 
 /**
@@ -109,6 +109,20 @@ export function traceBelief(
     steps.push({ kind: "answer", index, after: belief });
   });
   return { start, steps };
+}
+
+/**
+ * Total Fisher-Rao distance the belief travelled, step by step from the start.
+ * By the triangle inequality it is never shorter than the straight line (geodesic) from start to end.
+ */
+export function pathLength(trace: Trace): number {
+  let prev = trace.start;
+  let total = 0;
+  for (const step of trace.steps) {
+    total += fisherRao(prev, step.after);
+    prev = step.after;
+  }
+  return total;
 }
 
 export interface Contribution {

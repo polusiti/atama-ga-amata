@@ -23,3 +23,6 @@ These are choices made by the author, not measured facts. They are listed so jud
 16. **Voice is output only, opt-in, on-device only.** The toggle appears only when the browser exposes a voice with `localService` true. There is no speech input.
 
 17. **Explanations are exact for the model, not for the world.** "Why ask?" previews the posterior after each possible answer using the same functions that apply the answer. "Why do you think so?" shows odds multipliers whose product equals final over start. Both inherit every assumption above (authored numbers, noise model).
+
+18. **The geometry figure is exact for two beliefs, not for the world.** The drawn angle is half the Fisher-Rao distance between two model beliefs. "Efficiency" is straight-line distance divided by the path length of the belief; it describes how directly answers moved the model, not how good the answers were.
+19. **The count of hand-set numbers is computed from the data** (`src/core/limits.ts`), so it changes when the knowledge base or lexicon changes.

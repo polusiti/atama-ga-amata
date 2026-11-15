@@ -45,3 +45,8 @@ MIT
 - Motivational interviewing (Miller and Rollnick): phrasing of open questions, reflections and summaries. No claim of effect.
 - 98.css (MIT) for the Windows 98 widgets.
 - MYCIN (Stanford, 1970s): the WHY and HOW explanation facility. Our 'Why ask?' and 'Why do you think so?' follow the idea; the numbers are Bayesian, so odds multipliers multiply exactly to the result. No code was taken.
+
+## Mathematics, with a confession
+
+- **Geometry view.** The gap between your named idea and the current estimate is drawn as an arc on a quarter circle. The arc angle is exactly half the Fisher-Rao distance (two points on a sphere always share a plane through its center, so nothing is distorted). A browser test checks the drawn angle against the printed distance.
+- **Where the math stops.** The About page lists what is computed, what the author set by hand (230 numbers, counted from the data), and what mathematics cannot decide.

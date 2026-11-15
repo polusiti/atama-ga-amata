@@ -5,19 +5,22 @@ import { asksWhy, decide, render, type Kind, type Lookup, type Utterance } from 
 import {
   chooseNextQuestion,
   fitChanges,
+  priorFromStated,
   rankSolutions,
   replayBelief,
   shouldStop,
   statedGap,
   type AnswerEntry,
 } from "@/core/engine";
-import { contributions, explainWhy, traceBelief } from "@/core/explain";
+import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
 import { readText } from "@/core/evidence";
 import { samples } from "@/core/lexicon";
-import { entropy } from "@/core/math";
-import { ANSWERS, type Answer, type Lang, type Solution } from "@/core/types";
+import { countAuthored } from "@/core/limits";
+import { entropy, fisherRao, geodesicPoint } from "@/core/math";
+import { ANSWERS, DEFAULT_PARAMS, type Answer, type Lang, type Solution } from "@/core/types";
 import { kb } from "@/data/kb";
 import { Agent, type Line } from "./agent";
+import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
 import { t, ui } from "./strings";
 
@@ -120,13 +123,26 @@ export default function Shop() {
     [next, stop, belief],
   );
 
+  const trace = useMemo(
+    () => traceBelief(kb, stated, entries, undefined, noteVectors),
+    [stated, entries, noteVectors],
+  );
+
+  // Geometry: reference belief (named idea, or knowing nothing) versus now.
+  const refBelief = useMemo(() => priorFromStated(kb, stated), [stated]);
+  const refDistance = fisherRao(refBelief, belief);
+  const midBelief = useMemo(() => geodesicPoint(refBelief, belief, 0.5), [refBelief, belief]);
+  const midIdx = midBelief.indexOf(Math.max(...midBelief));
+  const travelled = pathLength(trace);
+  const straight = fisherRao(trace.start, belief);
+  const authored = useMemo(() => countAuthored(kb), []);
+
   const howRows = useMemo(() => {
-    const trace = traceBelief(kb, stated, entries, undefined, noteVectors);
     return contributions(trace, topIdx)
       .filter((c) => Math.abs(Math.log(c.factor)) >= 0.02)
       .sort((a, b) => Math.abs(Math.log(b.factor)) - Math.abs(Math.log(a.factor)))
       .slice(0, 6);
-  }, [stated, entries, noteVectors, topIdx]);
+  }, [trace, topIdx]);
 
   const howLabel = (c: { kind: "stated" | "note" | "answer"; index: number }) => {
     if (c.kind === "stated") {
@@ -592,6 +608,34 @@ export default function Shop() {
                   </div>
 
                   <div className="sbox">
+                    <h3>{t(ui.geometry.head, lang)}</h3>
+                    <div className="sbody">
+                      <GeodesicPlot
+                        theta={refDistance / 2}
+                        startLabel={stated ? t(ui.geometry.startStated, lang) : t(ui.geometry.startUniform, lang)}
+                        nowLabel={t(ui.geometry.now, lang)}
+                        limitLabel={t(ui.geometry.limit, lang)}
+                        ariaLabel={t(ui.geometry.aria, lang)}
+                      />
+                      <p className="small">{ui.geometry.distance[lang](refDistance)}</p>
+                      <p className="small">
+                        {refDistance < 1e-6
+                          ? t(ui.geometry.still, lang)
+                          : ui.geometry.midpoint[lang](kb.needs[midIdx].short[lang], pct(midBelief[midIdx]))}
+                      </p>
+                      {travelled > 1e-9 && (
+                        <p className="small">
+                          {ui.geometry.path[lang](travelled, straight, pct(Math.min(1, straight / travelled)))}
+                        </p>
+                      )}
+                      <details>
+                        <summary className="small">{t(ui.geometry.noteLink, lang)}</summary>
+                        <p className="small">{t(ui.geometry.note, lang)}</p>
+                      </details>
+                    </div>
+                  </div>
+
+                  <div className="sbox">
                     <h3>{t(ui.beliefHead, lang)}</h3>
                     <div className="sbody">
                       {kb.needs
@@ -643,6 +687,11 @@ export default function Shop() {
                           </ul>
                         )}
                       </details>
+                      <p className="small">
+                        <button className="linkbtn small" onClick={() => setTab("about")}>
+                          {t(ui.limits.link, lang)}
+                        </button>
+                      </p>
                     </div>
                   </div>
                 </aside>
@@ -702,6 +751,36 @@ export default function Shop() {
 
             {tab === "about" && (
               <section>
+                <h2>{t(ui.limits.head, lang)}</h2>
+                <p>{t(ui.limits.intro, lang)}</p>
+                <fieldset>
+                  <legend>{t(ui.limits.computedHead, lang)}</legend>
+                  <ul className="limitlist">
+                    {ui.limits.computed[lang].map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </fieldset>
+                <fieldset>
+                  <legend>{t(ui.limits.authoredHead, lang)}</legend>
+                  <p data-testid="authored">
+                    {ui.limits.authored[lang](
+                      authored,
+                      DEFAULT_PARAMS.sigma,
+                      DEFAULT_PARAMS.unknown,
+                      DEFAULT_PARAMS.mention,
+                    )}
+                  </p>
+                  <p>{t(ui.limits.authoredTail, lang)}</p>
+                </fieldset>
+                <fieldset>
+                  <legend>{t(ui.limits.beyondHead, lang)}</legend>
+                  <ul className="limitlist">
+                    {ui.limits.beyond[lang].map((line) => (
+                      <li key={line}>{line}</li>
+                    ))}
+                  </ul>
+                </fieldset>
                 <h2>{t(ui.aboutHead, lang)}</h2>
                 {ui.aboutBody[lang].map((para) => (
                   <p key={para}>{para}</p>
@@ -756,5 +835,7 @@ export default function Shop() {
     </>
   );
 }
+
+
 
 

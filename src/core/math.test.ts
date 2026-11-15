@@ -1,6 +1,6 @@
 import fc from "fast-check";
 import { describe, expect, it } from "vitest";
-import { entropy, fisherRao, jsd, kl, normalize, sum } from "./math";
+import { entropy, fisherRao, geodesicPoint, jsd, kl, normalize, sum } from "./math";
 
 /** Random categorical distribution of the given size, with strictly positive mass. */
 const dist = (n: number) =>
@@ -58,6 +58,50 @@ describe("fisherRao", () => {
   });
 });
 
+describe("geodesicPoint", () => {
+  const t01 = fc.double({ min: 0, max: 1, noNaN: true });
+
+  it("is a distribution", () => {
+    fc.assert(
+      fc.property(dist(5), dist(5), t01, (p, q, t) => {
+        const x = geodesicPoint(p, q, t);
+        expect(sum(x)).toBeCloseTo(1, 10);
+        expect(x.every((v) => v >= 0)).toBe(true);
+      }),
+    );
+  });
+
+  it("starts at p and ends at q", () => {
+    fc.assert(
+      fc.property(dist(5), dist(5), (p, q) => {
+        geodesicPoint(p, q, 0).forEach((v, i) => expect(v).toBeCloseTo(p[i], 8));
+        geodesicPoint(p, q, 1).forEach((v, i) => expect(v).toBeCloseTo(q[i], 8));
+      }),
+    );
+  });
+
+  it("moves at constant speed along the arc", () => {
+    fc.assert(
+      fc.property(dist(5), dist(5), t01, (p, q, t) => {
+        const d = fisherRao(p, q);
+        const x = geodesicPoint(p, q, t);
+        expect(fisherRao(p, x)).toBeCloseTo(t * d, 6);
+        expect(fisherRao(x, q)).toBeCloseTo((1 - t) * d, 6);
+      }),
+    );
+  });
+
+  it("is symmetric: from p to q at t equals from q to p at 1 - t", () => {
+    fc.assert(
+      fc.property(dist(5), dist(5), t01, (p, q, t) => {
+        const a = geodesicPoint(p, q, t);
+        const b = geodesicPoint(q, p, 1 - t);
+        a.forEach((v, i) => expect(v).toBeCloseTo(b[i], 7));
+      }),
+    );
+  });
+});
+
 describe("jsd", () => {
   it("is zero when everyone agrees", () => {
     fc.assert(
@@ -87,3 +131,4 @@ describe("entropy", () => {
     );
   });
 });
+

@@ -740,3 +740,17 @@ details.how summary {
 .howlist li {
   margin: 4px 0;
 }
+
+/* ---- geometry figure and limits ---- */
+.geoplot {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid #999;
+  margin-bottom: 6px;
+}
+
+.limitlist {
+  margin: 2px 0 4px;
+  padding-left: 20px;
+}

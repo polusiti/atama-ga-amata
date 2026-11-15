@@ -60,6 +60,24 @@ export function fisherRao(p: Dist, q: Dist): number {
 }
 
 /**
+ * The point at fraction t (0 to 1) along the Fisher-Rao geodesic from p to q.
+ * Under p -> sqrt(p) the geodesic is a great-circle arc, so this is spherical interpolation.
+ * The result is a distribution, equals p at t = 0 and q at t = 1, and moves at constant speed:
+ * fisherRao(p, point(t)) = t * fisherRao(p, q).
+ */
+export function geodesicPoint(p: Dist, q: Dist, t: number): number[] {
+  assertSameLength(p, q);
+  let bc = 0;
+  for (let i = 0; i < p.length; i++) bc += Math.sqrt(p[i] * q[i]);
+  const theta = Math.acos(Math.min(1, Math.max(0, bc)));
+  if (theta < 1e-9) return [...p];
+  const s = Math.sin(theta);
+  const a = Math.sin((1 - t) * theta) / s;
+  const b = Math.sin(t * theta) / s;
+  return normalize(p.map((pi, i) => (a * Math.sqrt(pi) + b * Math.sqrt(q[i])) ** 2));
+}
+
+/**
  * Generalized Jensen-Shannon divergence of several distributions with weights.
  * Equals the mutual information between "which party" and "which outcome",
  * so it is zero iff everyone holds the same belief.

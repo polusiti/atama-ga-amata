@@ -161,6 +161,83 @@ export const ui = {
   },
   source: { ja: "ソースコード", en: "Source code" },
 
+  geometry: {
+    head: { ja: "距離の図", en: "GEOMETRY" },
+    startStated: { ja: "挙げた品の想定", en: "your named idea" },
+    startUniform: { ja: "何も知らない状態", en: "knowing nothing" },
+    now: { ja: "いま", en: "now" },
+    limit: { ja: "全く重ならない", en: "no overlap" },
+    aria: { ja: "二つの考えの距離を、球面上の弧で表した図", en: "Distance between two beliefs drawn as an arc on a sphere" },
+    distance: {
+      ja: (d: number) => `距離 d = ${d.toFixed(2)}（最大 ${Math.PI.toFixed(2)}）`,
+      en: (d: number) => `distance d = ${d.toFixed(2)} (max ${Math.PI.toFixed(2)})`,
+    },
+    midpoint: {
+      ja: (need: string, p: string) => `弧の中間点で有力なのは「${need}」${p}`,
+      en: (need: string, p: string) => `At the midpoint of the arc, "${need}" leads at ${p}`,
+    },
+    path: {
+      ja: (len: number, line: number, eff: string) => `ここまでの歩き ${len.toFixed(2)} / まっすぐなら ${line.toFixed(2)}（効率 ${eff}）`,
+      en: (len: number, line: number, eff: string) => `Path so far ${len.toFixed(2)} / straight line ${line.toFixed(2)} (efficiency ${eff})`,
+    },
+    still: { ja: "まだ動いていません。", en: "No movement yet." },
+    noteLink: { ja: "この図について", en: "About this figure" },
+    note: {
+      ja: "弧の角度は、距離のちょうど半分です。二つの点は、球面の中心を通る一つの平面に必ず乗るので、この図はゆがみのない絵です。",
+      en: "The arc angle is exactly half the distance. Two points on a sphere always share a plane through its center, so this picture is undistorted.",
+    },
+  },
+
+  limits: {
+    link: { ja: "この数字はどこまで？", en: "How far to trust these numbers?" },
+    head: { ja: "数学の限界：ここから先は、数学ではありません", en: "Where the math stops" },
+    intro: {
+      ja: "この店は、人の意図に数学を持ち込んでいます。その分、どこまでが計算で、どこからが私の判断かを、言っておきます。",
+      en: "This store pushes mathematics into human intent. So it says what is computed and what is the author's judgment.",
+    },
+    computedHead: { ja: "計算で出たもの（モデルに対して正確）", en: "Computed (exact for the model)" },
+    computed: {
+      ja: [
+        "答えを聞いたあとの確率（ベイズ更新）",
+        "質問の価値（期待情報利得）と、答えごとの見込み",
+        "二つの考えのずれ（フィッシャー・ラオ距離）と、その最短の弧",
+        "根拠ごとの倍率（かけると結果に一致）",
+      ],
+      en: [
+        "Probabilities after each answer (Bayes update)",
+        "Value of a question (expected information gain) and the odds of each answer",
+        "The gap between two beliefs (Fisher-Rao distance) and its shortest arc",
+        "Evidence multipliers (their product equals the result)",
+      ],
+    },
+    authoredHead: { ja: "作者が手で決めたもの（実測ではありません）", en: "Set by hand by the author (not measured)" },
+    authored: {
+      ja: (n: { questionStrengths: number; solutionFits: number; keywordWeights: number; solutionAliases: number; total: number }, sigma: number, unknown: number, mention: number) =>
+        `質問ごとの強さ ${n.questionStrengths} 個、解決策の適合度 ${n.solutionFits} 個、キーワードの重み ${n.keywordWeights} 個、解決策を指す言葉 ${n.solutionAliases} 個、モデルの定数 3 個（雑音 σ=${sigma}、「分からない」率 ${unknown}、解決策への固執 ${mention}）。合計 ${n.total} 個。`,
+      en: (n: { questionStrengths: number; solutionFits: number; keywordWeights: number; solutionAliases: number; total: number }, sigma: number, unknown: number, mention: number) =>
+        `${n.questionStrengths} question strengths, ${n.solutionFits} solution fits, ${n.keywordWeights} keyword weights, ${n.solutionAliases} solution words, and 3 model constants (noise sigma=${sigma}, "don't know" share ${unknown}, solution fixation ${mention}). ${n.total} in total.`,
+    },
+    authoredTail: {
+      ja: "ここが違えば、結果は変わります。結果の数字は、世界についての主張ではなく、このモデルの出力です。",
+      en: "If any of these differ, the results change. The numbers are the model's output, not claims about the world.",
+    },
+    beyondHead: { ja: "数学では決まらないもの", en: "What mathematics cannot decide" },
+    beyond: {
+      ja: [
+        "何を「困りごと」と呼ぶか",
+        "本当に欲しいものは、聞かれるうちに変わりうること",
+        "どの提案が、親切で、どの提案が押しつけか",
+        "あなたの暮らしで、何がいちばん大事か",
+      ],
+      en: [
+        "What counts as a \"trouble\"",
+        "That what you want can change as you are asked",
+        "Which suggestion is kind and which is pushy",
+        "What matters most in your life",
+      ],
+    },
+  },
+
   explain: {
     whyLink: { ja: "なぜ聞くの？", en: "Why ask?" },
     whyLeaders: { ja: "いま有力な困りごと（「はい」になりやすさ）", en: "Leading troubles now (how likely a \"yes\" is)" },
@@ -189,5 +266,6 @@ export const ui = {
   },
   start: { ja: "スタート", en: "Start" },
 } as const;
+
 
 

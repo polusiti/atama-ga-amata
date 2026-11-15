@@ -30,3 +30,7 @@ Kept for the Kiro write-up. Dates are JST.
 
 - Added an explanation facility after MYCIN's WHY and HOW (spec in .kiro/specs/explain, written first). Property tests: answer probabilities sum to 1; information gain equals prior entropy minus expected posterior entropy; the trace ends at replayBelief; the product of evidence factors equals final over start. 58 tests in total. Ten headless-browser checks pass.
 - Mistake to remember: while cleaning up leftover test processes I stopped six node processes without confirming they were mine. They belonged to another app (OpenAI Codex). I told the user. From now on I stop only processes I started and can identify by their exact command line.
+
+- Built the geometry view and the "where the math stops" section (spec in .kiro/specs/geometry, written first). New pure functions: geodesicPoint (constant-speed spherical interpolation), pathLength, countAuthored. 65 tests pass. Twelve headless-browser checks pass, including that the drawn angle equals half the printed distance.
+- Mistake to remember: I edited Shop.tsx with the edit tool and with a PowerShell script at the same time. The script's write overwrote the edit tool's change, so the About section was missing. A browser check caught it. I redid the edit alone. From now on one writer per file at a time.
+- Label overlap in the figure was found only by looking at the screenshot and fixed by moving the labels.
