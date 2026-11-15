@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
-import { decide, render, type Kind, type Lookup, type Utterance } from "@/core/dialogue";
+import { asksWhy, decide, render, type Kind, type Lookup, type Utterance } from "@/core/dialogue";
 import {
   chooseNextQuestion,
   fitChanges,
@@ -11,6 +11,7 @@ import {
   statedGap,
   type AnswerEntry,
 } from "@/core/engine";
+import { contributions, explainWhy, traceBelief } from "@/core/explain";
 import { readText } from "@/core/evidence";
 import { samples } from "@/core/lexicon";
 import { entropy } from "@/core/math";
@@ -36,6 +37,9 @@ const lookup: Lookup = {
   need: (id, lang) => kb.needs.find((n) => n.id === id)?.short[lang] ?? id,
   solution: (id, lang) => kb.solutions.find((s) => s.id === id)?.title[lang] ?? id,
 };
+
+const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
+const pct = (x: number) => `${Math.round(x * 100)}%`;
 
 function gapBand(gap: number): "close" | "differ" | "far" {
   if (gap < 0.35) return "close";
@@ -111,6 +115,30 @@ export default function Shop() {
   const topIdx = belief.indexOf(Math.max(...belief));
   const dim = entries.length === 0 && notes.length === 0 && stated === null && browseNeed === null;
 
+  const whyData = useMemo(
+    () => (next && stop === null ? explainWhy(kb, belief, next.question) : null),
+    [next, stop, belief],
+  );
+
+  const howRows = useMemo(() => {
+    const trace = traceBelief(kb, stated, entries, undefined, noteVectors);
+    return contributions(trace, topIdx)
+      .filter((c) => Math.abs(Math.log(c.factor)) >= 0.02)
+      .sort((a, b) => Math.abs(Math.log(b.factor)) - Math.abs(Math.log(a.factor)))
+      .slice(0, 6);
+  }, [stated, entries, noteVectors, topIdx]);
+
+  const howLabel = (c: { kind: "stated" | "note" | "answer"; index: number }) => {
+    if (c.kind === "stated") {
+      const title = kb.solutions.find((s) => s.id === stated)?.title[lang] ?? "";
+      return ui.explain.howStated[lang](title);
+    }
+    if (c.kind === "note") return ui.explain.howNote[lang](cut(notes[c.index]?.text ?? "", 22));
+    const e = entries[c.index];
+    const q = kb.questions.find((x) => x.id === e?.qid);
+    return `${cut(q?.text[lang] ?? "", 26)} \u2192 ${e ? ui.answers[e.answer][lang] : ""}`;
+  };
+
   const movers = useMemo(
     () =>
       beforeLast
@@ -150,6 +178,14 @@ export default function Shop() {
   }
 
   function submitText(text: string) {
+    if (asksWhy(text)) {
+      let asked: LogItem[] = [...log, { from: "you", text }];
+      const ids = whyData ? whyData.leaders.map((l) => l.needId) : null;
+      asked = say(asked, decide({ event: "why", history: shopHistory(asked), needIds: ids }));
+      setLog(asked);
+      setTab("shop");
+      return;
+    }
     const reading = readText(kb, text);
     let nextLog: LogItem[] = [...log, { from: "you", text }];
     if (reading.top || reading.named) {
@@ -346,6 +382,36 @@ export default function Shop() {
                               </li>
                             ))}
                           </ul>
+                          {whyData && (
+                            <details className="why">
+                              <summary>{t(ui.explain.whyLink, lang)}</summary>
+                              <div className="whybody">
+                                <p className="small">{t(ui.explain.whyLeaders, lang)}</p>
+                                <ul>
+                                  {whyData.leaders.map((l) => (
+                                    <li key={l.needId}>
+                                      {kb.needs.find((n) => n.id === l.needId)?.short[lang]} {pct(l.probability)}
+                                      {" / "}
+                                      {l.strength.toFixed(2)}
+                                    </li>
+                                  ))}
+                                </ul>
+                                <p className="small">{t(ui.explain.whyOutcomes, lang)}</p>
+                                <ul>
+                                  {whyData.outcomes.map((o) => (
+                                    <li key={o.answer}>
+                                      {ui.answers[o.answer][lang]} ({pct(o.probability)}) {"\u2192"}{" "}
+                                      {kb.needs.find((n) => n.id === o.topNeedId)?.short[lang]} {pct(o.topProbability)}
+                                    </li>
+                                  ))}
+                                </ul>
+                                <p className="small">
+                                  {t(ui.explain.whyEffort, lang)} {whyData.gain.toFixed(3)} nats / {t(ui.explain.whyCost, lang)}{" "}
+                                  {whyData.cost.toFixed(1)}
+                                </p>
+                              </div>
+                            </details>
+                          )}
                         </>
                       ) : (
                         <p className="qtext">
@@ -561,6 +627,22 @@ export default function Shop() {
                           {next && stop === null && <> | next gain = {next.gain.toFixed(3)} nats</>}
                         </code>
                       </details>
+                      <details className="how">
+                        <summary>{t(ui.explain.howLink, lang)}</summary>
+                        <p className="small">{ui.explain.howHead[lang](kb.needs[topIdx].short[lang])}</p>
+                        {howRows.length === 0 ? (
+                          <p className="small">{t(ui.explain.howNone, lang)}</p>
+                        ) : (
+                          <ul className="howlist">
+                            {howRows.map((c) => (
+                              <li key={`${c.kind}-${c.index}`}>
+                                <span className={c.factor >= 1 ? "up" : "down"}>{"\u00D7"}{c.factor.toFixed(2)}</span>{" "}
+                                <span className="small">{howLabel(c)}</span>
+                              </li>
+                            ))}
+                          </ul>
+                        )}
+                      </details>
                     </div>
                   </div>
                 </aside>
@@ -674,4 +756,5 @@ export default function Shop() {
     </>
   );
 }
+
 

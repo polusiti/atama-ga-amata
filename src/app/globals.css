@@ -707,3 +707,36 @@ details code {
 .notes li {
   margin: 4px 0;
 }
+
+/* ---- WHY / HOW explanations ---- */
+details.why,
+details.how {
+  margin-top: 8px;
+}
+
+details.why summary,
+details.how summary {
+  cursor: pointer;
+  color: #003399;
+  text-decoration: underline;
+  font-weight: 700;
+}
+
+.whybody ul {
+  margin: 2px 0 6px;
+  padding-left: 16px;
+}
+
+.whybody li {
+  margin: 2px 0;
+}
+
+.howlist {
+  list-style: none;
+  margin: 4px 0 0;
+  padding: 0;
+}
+
+.howlist li {
+  margin: 4px 0;
+}

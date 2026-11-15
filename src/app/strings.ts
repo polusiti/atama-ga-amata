@@ -142,6 +142,7 @@ export const ui = {
       "この店は、あなたが挙げた解決策を、必要を示す証拠の一つとして扱います。答えから必要を推定し、挙げなかった選択肢も見せます。",
       "実行時にLLMは使いません。質問は、期待情報利得をコストで割った値で選びます。ずれは、フィッシャー・ラオ距離で測ります。",
       "店主は、決まった規則で動くプログラムです。キーワードを拾って、定型の文に当てはめているだけで、内容を分かっているわけではありません。人は、単純な規則の返事にも、理解を読み取ってしまうことがあります（ELIZA効果）。",
+      "「なぜ聞くの？」と「なぜそう思う？」は、1970年代の診断システム MYCIN（Stanford）の、WHY と HOW の説明機能にならったものです。MYCIN は確実さ係数を使いましたが、ここでは確率のかけ算なので、倍率の積が結果と一致します。コードは写していません。",
       "店主の作りは、1966年の ELIZA（Weizenbaum）のキーワードと定型文の仕組みと、確認してから実行するアシスタントの流れを参考にしました。コードは写していません。聞き返しの言い回しは、動機づけ面接の聞き方（Miller と Rollnick）を借りたもので、効果があると主張するものではありません。",
       "数値は、作者が設定した判断です。実測ではありません。詳しくは docs/assumptions.md を見てください。",
       "見た目は、2000年前後のオンライン書店への敬意です。実在の企業のロゴや商標は使っていません。",
@@ -152,12 +153,29 @@ export const ui = {
       "This store treats the solution you name as one piece of evidence about the need. It infers the need from your answers and shows options you did not name.",
       "No LLM runs at runtime. Questions are chosen by expected information gain per unit cost. The gap is measured with the Fisher-Rao distance.",
       "The shopkeeper is a rule-based program. It spots keywords and fills fixed sentences; it does not understand what you say. People tend to read understanding into even simple rule-based replies (the ELIZA effect).",
+      "\"Why ask?\" and \"Why do you think so?\" follow the WHY and HOW explanation features of MYCIN, a 1970s diagnosis system from Stanford. MYCIN used certainty factors; here the numbers are probabilities, so the multipliers multiply exactly to the result. No code was copied.",
       "Its design borrows the keyword-and-template idea of ELIZA (Weizenbaum, 1966) and the confirm-before-acting flow of assistant frameworks. No code was copied. The phrasing of reflections borrows from motivational interviewing (Miller and Rollnick) and makes no claim of effect.",
       "The numbers are the author's judgment, not measurements. See docs/assumptions.md.",
       "The look is a nod to online bookstores around 2000. No real company's logo or trademark is used.",
     ],
   },
   source: { ja: "ソースコード", en: "Source code" },
+
+  explain: {
+    whyLink: { ja: "なぜ聞くの？", en: "Why ask?" },
+    whyLeaders: { ja: "いま有力な困りごと（「はい」になりやすさ）", en: "Leading troubles now (how likely a \"yes\" is)" },
+    whyOutcomes: { ja: "答えると、こうなります", en: "If you answer" },
+    whyEffort: { ja: "情報利得", en: "Info gain" },
+    whyCost: { ja: "手間", en: "effort" },
+    howLink: { ja: "なぜそう思う？", en: "Why do you think so?" },
+    howHead: {
+      ja: (need: string) => `「${need}」と見ている根拠（かけ算の倍率）`,
+      en: (need: string) => `Why "${need}" leads (odds multiplier)`,
+    },
+    howStated: { ja: (s: string) => `挙げた解決策「${s}」`, en: (s: string) => `Named solution "${s}"` },
+    howNote: { ja: (s: string) => `あなたの言葉「${s}」`, en: (s: string) => `Your words "${s}"` },
+    howNone: { ja: "まだ根拠がありません。", en: "No evidence yet." },
+  },
 
   agent: {
     title: { ja: "店主.exe", en: "Shopkeeper.exe" },

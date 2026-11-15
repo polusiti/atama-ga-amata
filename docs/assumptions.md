@@ -21,3 +21,5 @@ These are choices made by the author, not measured facts. They are listed so jud
 14. **Japanese matching is substring matching on normalized text.** There is no tokenizer. False hits (a keyword inside a longer word) and misses (paraphrases) are expected.
 15. **The shopkeeper does not understand.** Replies are hedged templates. The About page says so (ELIZA effect). Reflection wording borrows from motivational interviewing; no effect is claimed.
 16. **Voice is output only, opt-in, on-device only.** The toggle appears only when the browser exposes a voice with `localService` true. There is no speech input.
+
+17. **Explanations are exact for the model, not for the world.** "Why ask?" previews the posterior after each possible answer using the same functions that apply the answer. "Why do you think so?" shows odds multipliers whose product equals final over start. Both inherit every assumption above (authored numbers, noise model).

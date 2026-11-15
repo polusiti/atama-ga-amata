@@ -27,3 +27,6 @@ Kept for the Kiro write-up. Dates are JST.
 - Wrote .kiro/specs/shopkeeper first. Built normalize, lexicon, evidence, dialogue as pure functions with 16 new tests (50 total). A property test failed once because of how I wrote it (an expression-bodied arrow returned false); the function was fine.
 - Drove the page in a headless browser: 19 checks on greeting, reflection, laddering, fallback, confirm-before-cart, summary with memory, language switch, reset.
 - A mis-tapped approval rejected one command; reran it unchanged.
+
+- Added an explanation facility after MYCIN's WHY and HOW (spec in .kiro/specs/explain, written first). Property tests: answer probabilities sum to 1; information gain equals prior entropy minus expected posterior entropy; the trace ends at replayBelief; the product of evidence factors equals final over start. 58 tests in total. Ten headless-browser checks pass.
+- Mistake to remember: while cleaning up leftover test processes I stopped six node processes without confirming they were mine. They belonged to another app (OpenAI Codex). I told the user. From now on I stop only processes I started and can identify by their exact command line.

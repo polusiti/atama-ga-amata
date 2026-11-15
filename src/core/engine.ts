@@ -39,7 +39,7 @@ export function answerDistribution(v: number, params: ModelParams = DEFAULT_PARA
   return ANSWERS.map((a) => byAnswer[a]);
 }
 
-function strength(q: Question, needId: string): number {
+export function strength(q: Question, needId: string): number {
   return q.yes[needId] ?? q.base;
 }
 
@@ -223,4 +223,5 @@ export function statedGap(
   if (!statedSolutionId) return null;
   return fisherRao(priorFromStated(kb, statedSolutionId, params), belief);
 }
+
 

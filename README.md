@@ -44,3 +44,4 @@ MIT
 - GUS (Bobrow et al., 1977) and SiriKit's resolve, confirm, handle flow: ask for what is missing and confirm before acting.
 - Motivational interviewing (Miller and Rollnick): phrasing of open questions, reflections and summaries. No claim of effect.
 - 98.css (MIT) for the Windows 98 widgets.
+- MYCIN (Stanford, 1970s): the WHY and HOW explanation facility. Our 'Why ask?' and 'Why do you think so?' follow the idea; the numbers are Bayesian, so odds multipliers multiply exactly to the result. No code was taken.

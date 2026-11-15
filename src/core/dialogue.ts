@@ -1,4 +1,5 @@
 import type { Reading } from "./evidence";
+import { normalize } from "./normalize";
 import type { Lang } from "./types";
 
 /**
@@ -7,13 +8,14 @@ import type { Lang } from "./types";
  * the OARS skills (open question, reflection, summary), and the confirm-before-acting step
  * of assistant frameworks. Wording is hedged on purpose: the program never claims to understand.
  */
-export type Kind = "greet" | "reflect" | "ladder" | "fallback" | "summary" | "summaryPlain" | "confirm";
+export type Kind = "greet" | "reflect" | "ladder" | "fallback" | "summary" | "summaryPlain" | "confirm" | "why" | "whyNone";
 
 export interface Utterance {
   kind: Kind;
   /** How many utterances of this kind came before. Picks the template, so repeats differ. */
   variant: number;
   needId?: string;
+  needId2?: string;
   solutionId?: string;
   first?: string;
   fit?: number;
@@ -23,7 +25,9 @@ export type DecideInput =
   | { event: "load"; history: readonly Kind[] }
   | { event: "text"; history: readonly Kind[]; reading: Reading }
   | { event: "stop"; history: readonly Kind[]; topNeedId: string; first: string | null }
-  | { event: "cart-low"; history: readonly Kind[]; solutionId: string; fit: number };
+  | { event: "cart-low"; history: readonly Kind[]; solutionId: string; fit: number }
+  /** needIds: the leading needs, best first, or null when no question is pending. */
+  | { event: "why"; history: readonly Kind[]; needIds: readonly string[] | null };
 
 const count = (history: readonly Kind[], kind: Kind) => history.filter((k) => k === kind).length;
 
@@ -44,7 +48,17 @@ export function decide(input: DecideInput): Utterance {
         : { kind: "summaryPlain", variant: v("summaryPlain"), needId: input.topNeedId };
     case "cart-low":
       return { kind: "confirm", variant: v("confirm"), solutionId: input.solutionId, fit: input.fit };
+    case "why":
+      return input.needIds && input.needIds.length >= 2
+        ? { kind: "why", variant: v("why"), needId: input.needIds[0], needId2: input.needIds[1] }
+        : { kind: "whyNone", variant: v("whyNone") };
   }
+}
+
+/** True when the user is asking the shopkeeper why (MYCIN-style WHY). Works on raw text. */
+export function asksWhy(text: string): boolean {
+  const s = normalize(text);
+  return ["なぜ", "何故", "どうして", "なんで", "why"].some((w) => s.startsWith(w));
 }
 
 export const templates: Record<Kind, Record<Lang, readonly string[]>> = {
@@ -110,6 +124,26 @@ export const templates: Record<Kind, Record<Lang, readonly string[]>> = {
       'Allow me to gather this. Your answers lean toward "{need}".',
     ],
   },
+  why: {
+    ja: [
+      "いま「{need}」と「{need2}」が有力で、この質問はその二つを見分けるのに役立つからです。左の「なぜ聞くの？」に、答えごとの見込みを出しています。",
+      "「{need}」か「{need2}」かで迷っているので、いちばん差が出る質問を選びました。",
+    ],
+    en: [
+      'Right now "{need}" and "{need2}" lead, and this question tells them apart best. The "Why ask?" panel on the left lists what each answer would do.',
+      'I am torn between "{need}" and "{need2}", so I picked the question that separates them most.',
+    ],
+  },
+  whyNone: {
+    ja: [
+      "いまは質問を出していません。聞くことは十分だと見ています。",
+      "質問はここまでです。気になる点は、右の「なぜそう思う？」で見られます。",
+    ],
+    en: [
+      "No question is pending right now. I think I have asked enough.",
+      "That is all the questions. See \"Why do you think so?\" on the right for the reasons.",
+    ],
+  },
   confirm: {
     ja: [
       "「{sol}」は、いまのところ合う度合いが{fit}%です。それでもカートに入れますか？",
@@ -131,10 +165,12 @@ export interface Lookup {
 export function render(u: Utterance, lang: Lang, lookup: Lookup): string {
   const list = templates[u.kind][lang];
   const template = list[u.variant % list.length];
-  return template.replace(/\{(need|sol|first|fit)\}/g, (_, key: string) => {
+  return template.replace(/\{(need2|need|sol|first|fit)\}/g, (_, key: string) => {
     switch (key) {
       case "need":
         return u.needId ? lookup.need(u.needId, lang) : "";
+      case "need2":
+        return u.needId2 ? lookup.need(u.needId2, lang) : "";
       case "sol":
         return u.solutionId ? lookup.solution(u.solutionId, lang) : "";
       case "first":
@@ -144,3 +180,4 @@ export function render(u: Utterance, lang: Lang, lookup: Lookup): string {
     }
   });
 }
+
