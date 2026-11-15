@@ -15,3 +15,9 @@ These are choices made by the author, not measured facts. They are listed so jud
 
 10. **Browsing by trouble is a view filter.** Picking a trouble in the BROWSE list re-ranks the shelf by fit to that trouble but does not change the belief or the question flow.
 11. **Movers & Shakers** shows the change in expected fit (percentage points) caused by the latest answer. It is computed from the belief before and after, not from any external data.
+
+12. **The lexicon is hand-written.** Keywords and weights in `src/core/lexicon.ts` are the author's. The sample sentences that the tests expect to be recognized were written by the same author, so that test is a regression check, not a measure of accuracy. Coverage on other people's sentences is unknown and should be measured with sentences collected from real users.
+13. **Text evidence is bounded.** Each matched keyword point multiplies the odds of a need by 1.8 at most 4 points (likelihood up to 4.2). One sentence cannot override the answers.
+14. **Japanese matching is substring matching on normalized text.** There is no tokenizer. False hits (a keyword inside a longer word) and misses (paraphrases) are expected.
+15. **The shopkeeper does not understand.** Replies are hedged templates. The About page says so (ELIZA effect). Reflection wording borrows from motivational interviewing; no effect is claimed.
+16. **Voice is output only, opt-in, on-device only.** The toggle appears only when the browser exposes a voice with `localService` true. There is no speech input.

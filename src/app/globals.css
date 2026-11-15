@@ -31,11 +31,16 @@ body {
 
 .desk {
   padding: 16px 8px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  justify-content: center;
+  align-items: flex-start;
 }
 
 .win {
-  width: min(1100px, 100%);
-  margin: 0 auto;
+  width: min(940px, 100%);
+  margin: 0;
 }
 
 /* ---- browser chrome ---- */
@@ -607,4 +612,98 @@ details code {
     flex-direction: column;
     align-items: flex-start;
   }
+}
+
+/* ---- shopkeeper window ---- */
+.agent {
+  width: 290px;
+  flex: 0 0 290px;
+}
+
+@media (max-width: 1300px) {
+  .agent {
+    width: min(940px, 100%);
+    flex: 1 1 100%;
+  }
+}
+
+.agent-head {
+  display: flex;
+  justify-content: center;
+  padding: 4px 0 6px;
+}
+
+.agent-log {
+  height: 230px;
+  padding: 6px;
+  overflow-y: auto;
+  background: #fff;
+}
+
+.bubble {
+  margin: 0 0 8px;
+  padding: 5px 8px;
+  max-width: 92%;
+  line-height: 1.5;
+}
+
+.bubble.shop {
+  background: #fffbe0;
+  border: 1px solid #c9b458;
+}
+
+.bubble.you {
+  margin-left: auto;
+  background: #e8f2f8;
+  border: 1px solid #6a9fbf;
+}
+
+.confirm {
+  margin-top: 8px;
+  padding: 6px;
+  background: #c0c0c0;
+  box-shadow:
+    inset -1px -1px #0a0a0a,
+    inset 1px 1px #dfdfdf,
+    inset -2px -2px #808080,
+    inset 2px 2px #fff;
+}
+
+.chips {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.chip {
+  text-align: left;
+  min-height: 0;
+  padding: 3px 8px;
+  line-height: 1.4;
+}
+
+.agent-form {
+  display: flex;
+  gap: 4px;
+  margin-top: 8px;
+}
+
+.agent-form input {
+  flex: 1;
+  min-width: 0;
+}
+
+.agent-form button {
+  min-width: 52px;
+}
+
+.notes {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.notes li {
+  margin: 4px 0;
 }

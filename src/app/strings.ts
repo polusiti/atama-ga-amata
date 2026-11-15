@@ -141,6 +141,8 @@ export const ui = {
       "人は、解決策を頼みますが、本当に持っているのは困りごとです。200年前のおばあさんは、洗濯機がほしいとは言わず、冬の水仕事で手が痛いと言いました。",
       "この店は、あなたが挙げた解決策を、必要を示す証拠の一つとして扱います。答えから必要を推定し、挙げなかった選択肢も見せます。",
       "実行時にLLMは使いません。質問は、期待情報利得をコストで割った値で選びます。ずれは、フィッシャー・ラオ距離で測ります。",
+      "店主は、決まった規則で動くプログラムです。キーワードを拾って、定型の文に当てはめているだけで、内容を分かっているわけではありません。人は、単純な規則の返事にも、理解を読み取ってしまうことがあります（ELIZA効果）。",
+      "店主の作りは、1966年の ELIZA（Weizenbaum）のキーワードと定型文の仕組みと、確認してから実行するアシスタントの流れを参考にしました。コードは写していません。聞き返しの言い回しは、動機づけ面接の聞き方（Miller と Rollnick）を借りたもので、効果があると主張するものではありません。",
       "数値は、作者が設定した判断です。実測ではありません。詳しくは docs/assumptions.md を見てください。",
       "見た目は、2000年前後のオンライン書店への敬意です。実在の企業のロゴや商標は使っていません。",
     ],
@@ -149,11 +151,25 @@ export const ui = {
       "People ask for solutions but what they have is a trouble. A woman two centuries ago would not ask for a washing machine; she would say her hands ache in winter water.",
       "This store treats the solution you name as one piece of evidence about the need. It infers the need from your answers and shows options you did not name.",
       "No LLM runs at runtime. Questions are chosen by expected information gain per unit cost. The gap is measured with the Fisher-Rao distance.",
+      "The shopkeeper is a rule-based program. It spots keywords and fills fixed sentences; it does not understand what you say. People tend to read understanding into even simple rule-based replies (the ELIZA effect).",
+      "Its design borrows the keyword-and-template idea of ELIZA (Weizenbaum, 1966) and the confirm-before-acting flow of assistant frameworks. No code was copied. The phrasing of reflections borrows from motivational interviewing (Miller and Rollnick) and makes no claim of effect.",
       "The numbers are the author's judgment, not measurements. See docs/assumptions.md.",
       "The look is a nod to online bookstores around 2000. No real company's logo or trademark is used.",
     ],
   },
   source: { ja: "ソースコード", en: "Source code" },
 
+  agent: {
+    title: { ja: "店主.exe", en: "Shopkeeper.exe" },
+    placeholder: { ja: "お困りごとを一言で", en: "Your trouble, in a sentence" },
+    send: { ja: "送る", en: "Send" },
+    chipsLabel: { ja: "たとえば：", en: "For example:" },
+    yes: { ja: "はい、入れます", en: "Yes, add it" },
+    no: { ja: "やめておく", en: "Never mind" },
+    voice: { ja: "声で読み上げる（この端末内の音声のみ）", en: "Read aloud (on-device voice only)" },
+    notesHead: { ja: "あなたの言葉", en: "YOUR WORDS" },
+  },
   start: { ja: "スタート", en: "Start" },
 } as const;
+
+

@@ -90,8 +90,13 @@ export function replayBelief(
   statedSolutionId: string | null,
   entries: readonly AnswerEntry[],
   params: ModelParams = DEFAULT_PARAMS,
+  /** Likelihood vectors from free-text notes, aligned with kb.needs. Multiplication commutes, so order does not matter. */
+  notes: readonly (readonly number[])[] = [],
 ): number[] {
   let belief = priorFromStated(kb, statedSolutionId, params);
+  for (const note of notes) {
+    belief = normalize(belief.map((b, i) => b * (note[i] ?? 1)));
+  }
   for (const entry of entries) {
     const question = kb.questions.find((q) => q.id === entry.qid);
     if (question) belief = updateBelief(belief, kb, question, entry.answer, params);
@@ -218,3 +223,4 @@ export function statedGap(
   if (!statedSolutionId) return null;
   return fisherRao(priorFromStated(kb, statedSolutionId, params), belief);
 }
+

@@ -22,3 +22,8 @@ Kept for the Kiro write-up. Dates are JST.
 - Inspected archived storefronts from 2000 and 2002 with a headless browser. Rebuilt the skin: white page, blue header bars, yellow question box, pale tabs with a blue selected tab, blue sub-nav, brown-orange headings. Kept Halloween to the pumpkin, the stitched wordmark and the Coffin Box.
 - Renamed the product to atamagazon (pun on atama-ga-amata). Wordmark is original; no real logo or trade dress.
 - Added Movers & Shakers (fitChanges, property-tested), BROWSE as a view filter, expandable items.
+
+- User asked for an assistant in the spirit of old voice assistants and for a psychological approach, and not to reinvent the wheel. Checked claims first (GUS 1977, SiriKit 2016 resolve/confirm/handle, ELIZA and the ELIZA effect, OARS, Web Speech API privacy, localService). Searched GitHub and npm for ELIZA ports: English regex lists or no license, so ideas only. Corrected two of my own claims (on-device speech recognition now exists; the prize of the 2025 ELIZA entry is unconfirmed).
+- Wrote .kiro/specs/shopkeeper first. Built normalize, lexicon, evidence, dialogue as pure functions with 16 new tests (50 total). A property test failed once because of how I wrote it (an expression-bodied arrow returned false); the function was fine.
+- Drove the page in a headless browser: 19 checks on greeting, reflection, laddering, fallback, confirm-before-cart, summary with memory, language switch, reset.
+- A mis-tapped approval rejected one command; reran it unchanged.

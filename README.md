@@ -37,3 +37,10 @@ Deploys to Vercel as a static Next.js app. No environment variables, no database
 
 MIT
 
+
+## Prior art and credits
+
+- ELIZA (Weizenbaum, 1966): keyword rank, templates, a fallback when nothing matches, and a memory of an earlier statement. The recovered original source was released CC0 (ELIZAGEN). We borrowed the ideas only. The English ELIZA ports found on GitHub were unlicensed or English-only regex lists, so none was reused.
+- GUS (Bobrow et al., 1977) and SiriKit's resolve, confirm, handle flow: ask for what is missing and confirm before acting.
+- Motivational interviewing (Miller and Rollnick): phrasing of open questions, reflections and summaries. No claim of effect.
+- 98.css (MIT) for the Windows 98 widgets.

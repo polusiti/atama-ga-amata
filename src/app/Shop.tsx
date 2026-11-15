@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import { decide, render, type Kind, type Lookup, type Utterance } from "@/core/dialogue";
 import {
   chooseNextQuestion,
   fitChanges,
@@ -10,16 +11,31 @@ import {
   statedGap,
   type AnswerEntry,
 } from "@/core/engine";
+import { readText } from "@/core/evidence";
+import { samples } from "@/core/lexicon";
 import { entropy } from "@/core/math";
 import { ANSWERS, type Answer, type Lang, type Solution } from "@/core/types";
 import { kb } from "@/data/kb";
+import { Agent, type Line } from "./agent";
 import { BrowserFrame, Pumpkin } from "./parts";
 import { t, ui } from "./strings";
 
 type Tab = "home" | "shop" | "cart" | "about";
+type LogItem = { from: "you"; text: string } | { from: "shop"; u: Utterance };
+interface Note {
+  text: string;
+  likelihood: number[];
+}
 
 const REPO_URL = "https://github.com/polusiti/atama-ga-amata";
 const MAX_SHELF = 5;
+/** Below this expected fit the shopkeeper asks before putting a solution in the cart. */
+const CONFIRM_BELOW = 0.5;
+
+const lookup: Lookup = {
+  need: (id, lang) => kb.needs.find((n) => n.id === id)?.short[lang] ?? id,
+  solution: (id, lang) => kb.solutions.find((s) => s.id === id)?.title[lang] ?? id,
+};
 
 function gapBand(gap: number): "close" | "differ" | "far" {
   if (gap < 0.35) return "close";
@@ -57,11 +73,16 @@ export default function Shop() {
   const [tab, setTab] = useState<Tab>("home");
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
+  const [notes, setNotes] = useState<Note[]>([]);
   const [cartId, setCartId] = useState<string | null>(null);
+  const [pendingCart, setPendingCart] = useState<{ id: string; fit: number } | null>(null);
   const [browseNeed, setBrowseNeed] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [clock, setClock] = useState("");
+  const [log, setLog] = useState<LogItem[]>(() => [
+    { from: "shop", u: decide({ event: "load", history: [] }) },
+  ]);
 
   useEffect(() => {
     const tick = () => {
@@ -73,10 +94,14 @@ export default function Shop() {
     return () => clearInterval(id);
   }, []);
 
-  const belief = useMemo(() => replayBelief(kb, stated, entries), [stated, entries]);
+  const noteVectors = useMemo(() => notes.map((n) => n.likelihood), [notes]);
+  const belief = useMemo(
+    () => replayBelief(kb, stated, entries, undefined, noteVectors),
+    [stated, entries, noteVectors],
+  );
   const beforeLast = useMemo(
-    () => (entries.length > 0 ? replayBelief(kb, stated, entries.slice(0, -1)) : null),
-    [stated, entries],
+    () => (entries.length > 0 ? replayBelief(kb, stated, entries.slice(0, -1), undefined, noteVectors) : null),
+    [stated, entries, noteVectors],
   );
   const askedIds = useMemo(() => entries.map((e) => e.qid), [entries]);
   const next = useMemo(() => chooseNextQuestion(belief, kb, askedIds), [belief, askedIds]);
@@ -84,7 +109,7 @@ export default function Shop() {
   const gap = statedGap(kb, stated, belief);
   const ranked = useMemo(() => rankSolutions(belief, kb), [belief]);
   const topIdx = belief.indexOf(Math.max(...belief));
-  const dim = entries.length === 0 && stated === null && browseNeed === null;
+  const dim = entries.length === 0 && notes.length === 0 && stated === null && browseNeed === null;
 
   const movers = useMemo(
     () =>
@@ -116,17 +141,67 @@ export default function Shop() {
     : "";
   const browseName = browseNeed ? kb.needs.find((n) => n.id === browseNeed)?.short[lang] : undefined;
 
+  const shopHistory = (items: LogItem[]): Kind[] =>
+    items.flatMap((i) => (i.from === "shop" ? [i.u.kind] : []));
+  const firstStatement = log.find((i) => i.from === "you")?.text ?? null;
+
+  function say(items: LogItem[], u: Utterance): LogItem[] {
+    return [...items, { from: "shop", u }];
+  }
+
+  function submitText(text: string) {
+    const reading = readText(kb, text);
+    let nextLog: LogItem[] = [...log, { from: "you", text }];
+    if (reading.top || reading.named) {
+      setNotes([...notes, { text, likelihood: reading.likelihood }]);
+    }
+    if (reading.named && stated === null) setStated(reading.named);
+    nextLog = say(nextLog, decide({ event: "text", history: shopHistory(nextLog), reading }));
+    setLog(nextLog);
+    setTab("shop");
+  }
+
   function answer(a: Answer) {
-    if (next) setEntries([...entries, { qid: next.question.id, answer: a }]);
+    if (!next) return;
+    const nextEntries = [...entries, { qid: next.question.id, answer: a }];
+    setEntries(nextEntries);
+    const b = replayBelief(kb, stated, nextEntries, undefined, noteVectors);
+    const reason = shouldStop(b, kb, nextEntries.map((e) => e.qid));
+    if (reason !== null) {
+      setLog(
+        say(
+          log,
+          decide({
+            event: "stop",
+            history: shopHistory(log),
+            topNeedId: kb.needs[b.indexOf(Math.max(...b))].id,
+            first: firstStatement,
+          }),
+        ),
+      );
+    }
+  }
+
+  function requestCart(id: string, fit: number) {
+    if (cartId === id) return;
+    if (fit < CONFIRM_BELOW) {
+      setPendingCart({ id, fit });
+      setLog(say(log, decide({ event: "cart-low", history: shopHistory(log), solutionId: id, fit })));
+    } else {
+      setCartId(id);
+    }
   }
 
   function reset() {
     setTab("home");
     setStated(null);
     setEntries([]);
+    setNotes([]);
     setCartId(null);
+    setPendingCart(null);
     setBrowseNeed(null);
     setOpenId(null);
+    setLog([{ from: "shop", u: decide({ event: "load", history: [] }) }]);
   }
 
   const address = `http://www.atamagazon.example/exec/${tab}/${
@@ -140,6 +215,14 @@ export default function Shop() {
     { id: "about", label: t(ui.tabs.about, lang) },
   ];
   const subnavTargets: Tab[] = ["about", "shop", "shop", "cart"];
+
+  const lines: Line[] = log.map((i) =>
+    i.from === "you" ? { from: "you", text: i.text } : { from: "shop", text: render(i.u, lang, lookup) },
+  );
+  const lastKind = [...log].reverse().find((i) => i.from === "shop");
+  const showChips =
+    !log.some((i) => i.from === "you") || (lastKind?.from === "shop" && lastKind.u.kind === "fallback");
+  const pendingSolution = pendingCart ? kb.solutions.find((s) => s.id === pendingCart.id) : undefined;
 
   return (
     <>
@@ -288,6 +371,27 @@ export default function Shop() {
                     </ul>
                   </div>
 
+                  {notes.length > 0 && (
+                    <div className="sbox">
+                      <h3>{t(ui.agent.notesHead, lang)}</h3>
+                      <div className="sbody">
+                        <ul className="notes">
+                          {notes.map((n, i) => (
+                            <li key={`${i}-${n.text}`}>
+                              <span className="small">{n.text}</span>{" "}
+                              <button
+                                className="linkbtn small"
+                                onClick={() => setNotes(notes.filter((_, j) => j !== i))}
+                              >
+                                [{t(ui.undo, lang)}]
+                              </button>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
                   <div className="sbox">
                     <h3>{t(ui.historyHead, lang)}</h3>
                     <div className="sbody">
@@ -366,7 +470,7 @@ export default function Shop() {
                         </div>
                         <button
                           className={cartId === solution.id ? "" : "default"}
-                          onClick={() => setCartId(solution.id)}
+                          onClick={() => requestCart(solution.id, score)}
                           disabled={cartId === solution.id}
                         >
                           {cartId === solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
@@ -388,7 +492,7 @@ export default function Shop() {
                           <span className="small">{coffin.solution.pitch[lang]}</span>
                         </p>
                         <button
-                          onClick={() => setCartId(coffin.solution.id)}
+                          onClick={() => requestCart(coffin.solution.id, coffin.score)}
                           disabled={cartId === coffin.solution.id}
                         >
                           {cartId === coffin.solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
@@ -529,6 +633,31 @@ export default function Shop() {
             )}
           </div>
         </BrowserFrame>
+
+        <Agent
+          lang={lang}
+          title={t(ui.agent.title, lang)}
+          lines={lines}
+          placeholder={t(ui.agent.placeholder, lang)}
+          send={t(ui.agent.send, lang)}
+          chipsLabel={t(ui.agent.chipsLabel, lang)}
+          chips={showChips ? samples.slice(0, 4).map((s) => s[lang]) : []}
+          onSubmit={submitText}
+          voiceLabel={t(ui.agent.voice, lang)}
+          confirm={
+            pendingCart && pendingSolution
+              ? {
+                  yes: t(ui.agent.yes, lang),
+                  no: t(ui.agent.no, lang),
+                  onYes: () => {
+                    setCartId(pendingCart.id);
+                    setPendingCart(null);
+                  },
+                  onNo: () => setPendingCart(null),
+                }
+              : null
+          }
+        />
       </div>
 
       <div className="taskbar">
@@ -545,3 +674,4 @@ export default function Shop() {
     </>
   );
 }
+
