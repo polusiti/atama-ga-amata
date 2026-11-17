@@ -44,8 +44,8 @@ Chance is 12.5% (8 needs).
 ## What this shows
 
 - The always-yes failure is fixed: two agreeable answers can no longer produce near certainty. The lapse rate bounds the evidence of any single answer (tested as a property).
-- It is **not** fixed for random and off-shelf users. About four in ten still stop "confident" with chance-level accuracy. The engine has no "none of these" hypothesis, so evidence that fits no need is forced onto one of them. Next step: add that hypothesis, abstain ("I can't tell") when it wins, and re-run this benchmark.
-- The cost of the fix is real: truthful users now get a confident conclusion less often (84.8% to 60.5%) and need about one more question.
+- It is **not** fixed for random and off-shelf users. About 45% still stop "confident" with chance-level accuracy. The engine has no "none of these" hypothesis, so evidence that fits no need is forced onto one of them. Next step: add that hypothesis, abstain ("I can't tell") when it wins, and re-run this benchmark.
+- The cost of the fix is real: truthful users now get a confident conclusion less often (84.8% to 62.7%) and need about one more question.
 
 ## Limits
 

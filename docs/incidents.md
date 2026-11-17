@@ -39,6 +39,7 @@ Source labels: `own` means it happened in this project and is in `docs/journal.m
 - **Conditions:** The counts were typed into the text when the pack was smaller. Nothing linked the text to the data.
 - **Noticed:** By looking at a screenshot.
 - **Changed:** The counts are read from the pack. Other typed numbers may remain.
+- **Recurrence:** While preparing the project report, two documents were found with typed numbers that no longer matched: `docs/benchmark.md` (a sentence said 60.5% where the table said 62.7%, and "four in ten" where the table said 45%) and `docs/assumptions.md` item 20 (eight stalls, 17 probes, 12 moves; the pack has 12, 27 and 17). Both were corrected. The documents are not generated from data, so this can happen again.
 
 ## INC-07 A scripted edit did not apply, and the checks still passed (own)
 - **Happened:** A multi-step PowerShell edit of one file changed a copy of the text inside a helper function. No error was shown. Typecheck and tests passed because the file had not changed.
