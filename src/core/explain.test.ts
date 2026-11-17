@@ -112,7 +112,8 @@ describe("pathLength", () => {
       fc.property(statedArb, fc.array(entryArb, { maxLength: 6 }), noteArb, (stated, entries, notes) => {
         const trace = traceBelief(kb, stated, entries, undefined, notes);
         const last = trace.steps.length > 0 ? trace.steps[trace.steps.length - 1].after : trace.start;
-        expect(pathLength(trace)).toBeGreaterThanOrEqual(fisherRao(trace.start, last) - 1e-9);
+        // acos(1 - e) is about sqrt(2e), so rounding of 1e-16 in the sum shows up as about 1e-8 near equal beliefs.
+        expect(pathLength(trace)).toBeGreaterThanOrEqual(fisherRao(trace.start, last) - 1e-6);
       }),
     );
   });
