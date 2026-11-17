@@ -4,7 +4,7 @@
  * so write them naturally (katakana, kanji, English). English entries are stems.
  * These are authored judgments; coverage is small on purpose.
  */
-export type Weighted = readonly [word: string, weight: 1 | 2];
+import type { Lexicon, Weighted } from "./types";
 
 export const needWords: Record<string, readonly Weighted[]> = {
   "spend-blind": [
@@ -73,3 +73,6 @@ export const samples: { needId: string; ja: string; en: string }[] = [
   { needId: "manual-chore", ja: "毎週同じ作業を手作業で繰り返している", en: "I repeat the same task by hand every week" },
 ];
 
+
+/** The everyday-troubles pack's lexicon, bundled for `readText` and `countAuthored`. */
+export const everydayLexicon: Lexicon = { needWords, solutionAliases, wantMarkers };

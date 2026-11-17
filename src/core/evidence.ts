@@ -1,6 +1,6 @@
-import { needWords, solutionAliases, wantMarkers } from "./lexicon";
+import { everydayLexicon } from "./lexicon";
 import { normalize } from "./normalize";
-import type { KnowledgeBase } from "./types";
+import type { KnowledgeBase, Lexicon } from "./types";
 
 /** Each matched point of keyword weight multiplies the odds for that need by this much, up to MAX_POINTS. */
 export const POINT_GAIN = 0.8;
@@ -18,23 +18,28 @@ export interface Reading {
   named: string | null;
 }
 
-const normalizedWords = new Map<string, { word: string; weight: number }[]>();
-function wordsFor(needId: string) {
-  let list = normalizedWords.get(needId);
+const normalizedWords = new WeakMap<Lexicon, Map<string, { word: string; weight: number }[]>>();
+function wordsFor(lexicon: Lexicon, needId: string) {
+  let perNeed = normalizedWords.get(lexicon);
+  if (!perNeed) {
+    perNeed = new Map();
+    normalizedWords.set(lexicon, perNeed);
+  }
+  let list = perNeed.get(needId);
   if (!list) {
-    list = (needWords[needId] ?? []).map(([w, weight]) => ({ word: normalize(w), weight }));
-    normalizedWords.set(needId, list);
+    list = (lexicon.needWords[needId] ?? []).map(([w, weight]) => ({ word: normalize(w), weight }));
+    perNeed.set(needId, list);
   }
   return list;
 }
 
 /** Read free text: keyword evidence about the need and a named solution if "I want X" is present. */
-export function readText(kb: KnowledgeBase, text: string): Reading {
+export function readText(kb: KnowledgeBase, text: string, lexicon: Lexicon = everydayLexicon): Reading {
   const s = normalize(text);
   const points = kb.needs.map((need) => {
     let p = 0;
     const seen = new Set<string>();
-    for (const { word, weight } of wordsFor(need.id)) {
+    for (const { word, weight } of wordsFor(lexicon, need.id)) {
       if (word && !seen.has(word) && s.includes(word)) {
         seen.add(word);
         p += weight;
@@ -49,9 +54,9 @@ export function readText(kb: KnowledgeBase, text: string): Reading {
   const top = best > 0 && leaders === 1 ? kb.needs[points.indexOf(best)].id : null;
 
   let named: string | null = null;
-  if (wantMarkers.some((m) => s.includes(normalize(m)))) {
+  if (lexicon.wantMarkers.some((m) => s.includes(normalize(m)))) {
     for (const solution of kb.solutions) {
-      const aliases = solutionAliases[solution.id] ?? [];
+      const aliases = lexicon.solutionAliases[solution.id] ?? [];
       if (aliases.some((a) => s.includes(normalize(a)))) {
         named = solution.id;
         break;
@@ -60,3 +65,4 @@ export function readText(kb: KnowledgeBase, text: string): Reading {
   }
   return { likelihood, points, top, named };
 }
+

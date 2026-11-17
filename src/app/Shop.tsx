@@ -12,13 +12,13 @@ import {
   statedGap,
   type AnswerEntry,
 } from "@/core/engine";
-import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
 import { readText } from "@/core/evidence";
-import { samples } from "@/core/lexicon";
+import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
+import { establishedSteps, stepStates } from "@/core/fringe";
 import { countAuthored } from "@/core/limits";
 import { entropy, fisherRao, geodesicPoint } from "@/core/math";
-import { ANSWERS, DEFAULT_PARAMS, type Answer, type Lang, type Solution } from "@/core/types";
-import { kb } from "@/data/kb";
+import { ANSWERS, DEFAULT_PARAMS, type Answer, type KnowledgeBase, type Lang, type Solution } from "@/core/types";
+import { DEFAULT_PACK, packs, type Pack, type PackId } from "@/data/packs";
 import { Agent, type Line } from "./agent";
 import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
@@ -36,10 +36,10 @@ const MAX_SHELF = 5;
 /** Below this expected fit the shopkeeper asks before putting a solution in the cart. */
 const CONFIRM_BELOW = 0.5;
 
-const lookup: Lookup = {
+const makeLookup = (kb: KnowledgeBase): Lookup => ({
   need: (id, lang) => kb.needs.find((n) => n.id === id)?.short[lang] ?? id,
   solution: (id, lang) => kb.solutions.find((s) => s.id === id)?.title[lang] ?? id,
-};
+});
 
 const cut = (s: string, n: number) => (s.length > n ? `${s.slice(0, n)}…` : s);
 const pct = (x: number) => `${Math.round(x * 100)}%`;
@@ -51,38 +51,40 @@ function gapBand(gap: number): "close" | "differ" | "far" {
 }
 
 function buildSpec(
+  pack: Pack,
   solution: Solution,
   needTitle: string,
   confidence: number,
   statedTitle: string | null,
   lang: Lang,
 ): string {
+  const o = pack.texts.output;
   const lines = [
-    `# ${solution.title[lang]}`,
+    `# ${o.titlePrefix[lang]}${solution.title[lang]}`,
     "",
-    lang === "ja" ? "## 背景（本当の困りごと）" : "## Background (underlying need)",
+    `## ${o.background[lang]}`,
     `${needTitle} (${Math.round(confidence * 100)}%)`,
     "",
-    lang === "ja" ? "## 要件（EARS）" : "## Requirements (EARS)",
+    `## ${o.requirements[lang]}`,
     ...solution.requirements.map((r, i) => `${i + 1}. ${r[lang]}`),
     "",
-    lang === "ja" ? "## 代償・注意" : "## Costs and cautions",
+    `## ${o.costs[lang]}`,
     solution.cost[lang],
   ];
-  if (statedTitle) {
-    lines.push("", lang === "ja" ? "## 最初に挙げられた解決策" : "## Solution named first", statedTitle);
-  }
+  if (solution.source) lines.push("", `## ${o.source[lang]}`, solution.source[lang]);
+  if (statedTitle) lines.push("", `## ${o.stated[lang]}`, statedTitle);
   return lines.join("\n");
 }
 
 export default function Shop() {
   const [lang, setLang] = useState<Lang>("ja");
+  const [packId, setPackId] = useState<PackId>(DEFAULT_PACK);
   const [tab, setTab] = useState<Tab>("home");
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
   const [cartId, setCartId] = useState<string | null>(null);
-  const [pendingCart, setPendingCart] = useState<{ id: string; fit: number } | null>(null);
+  const [pendingCart, setPendingCart] = useState<{ id: string } | null>(null);
   const [browseNeed, setBrowseNeed] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -90,6 +92,10 @@ export default function Shop() {
   const [log, setLog] = useState<LogItem[]>(() => [
     { from: "shop", u: decide({ event: "load", history: [] }) },
   ]);
+
+  const pack = packs[packId];
+  const kb = pack.kb;
+  const lookup = useMemo(() => makeLookup(kb), [kb]);
 
   useEffect(() => {
     const tick = () => {
@@ -104,38 +110,50 @@ export default function Shop() {
   const noteVectors = useMemo(() => notes.map((n) => n.likelihood), [notes]);
   const belief = useMemo(
     () => replayBelief(kb, stated, entries, undefined, noteVectors),
-    [stated, entries, noteVectors],
+    [kb, stated, entries, noteVectors],
   );
   const beforeLast = useMemo(
     () => (entries.length > 0 ? replayBelief(kb, stated, entries.slice(0, -1), undefined, noteVectors) : null),
-    [stated, entries, noteVectors],
+    [kb, stated, entries, noteVectors],
   );
   const askedIds = useMemo(() => entries.map((e) => e.qid), [entries]);
-  const next = useMemo(() => chooseNextQuestion(belief, kb, askedIds), [belief, askedIds]);
-  const stop = useMemo(() => shouldStop(belief, kb, askedIds), [belief, askedIds]);
+  const next = useMemo(() => chooseNextQuestion(belief, kb, askedIds), [belief, kb, askedIds]);
+  const stop = useMemo(() => shouldStop(belief, kb, askedIds), [belief, kb, askedIds]);
   const gap = statedGap(kb, stated, belief);
-  const ranked = useMemo(() => rankSolutions(belief, kb), [belief]);
+  const ranked = useMemo(() => rankSolutions(belief, kb), [belief, kb]);
   const topIdx = belief.indexOf(Math.max(...belief));
   const dim = entries.length === 0 && notes.length === 0 && stated === null && browseNeed === null;
 
+  // Steps already in place, blocked or next (problem-solving packs only).
+  const established = useMemo(() => establishedSteps(kb, entries), [kb, entries]);
+  const states = useMemo(() => stepStates(kb, established), [kb, established]);
+  const orderedRanked = useMemo(() => {
+    if (!pack.useFringe) return ranked;
+    const order = { next: 0, blocked: 1, done: 2 } as const;
+    return [...ranked].sort(
+      (a, b) =>
+        order[states.get(a.solution.id)!.status] - order[states.get(b.solution.id)!.status] || b.score - a.score,
+    );
+  }, [ranked, states, pack.useFringe]);
+
   const whyData = useMemo(
     () => (next && stop === null ? explainWhy(kb, belief, next.question) : null),
-    [next, stop, belief],
+    [kb, next, stop, belief],
   );
 
   const trace = useMemo(
     () => traceBelief(kb, stated, entries, undefined, noteVectors),
-    [stated, entries, noteVectors],
+    [kb, stated, entries, noteVectors],
   );
 
   // Geometry: reference belief (named idea, or knowing nothing) versus now.
-  const refBelief = useMemo(() => priorFromStated(kb, stated), [stated]);
+  const refBelief = useMemo(() => priorFromStated(kb, stated), [kb, stated]);
   const refDistance = fisherRao(refBelief, belief);
   const midBelief = useMemo(() => geodesicPoint(refBelief, belief, 0.5), [refBelief, belief]);
   const midIdx = midBelief.indexOf(Math.max(...midBelief));
   const travelled = pathLength(trace);
   const straight = fisherRao(trace.start, belief);
-  const authored = useMemo(() => countAuthored(kb), []);
+  const authored = useMemo(() => countAuthored(kb, pack.lexicon), [kb, pack.lexicon]);
 
   const howRows = useMemo(() => {
     return contributions(trace, topIdx)
@@ -162,7 +180,7 @@ export default function Shop() {
             .filter((c) => Math.abs(c.delta) >= 0.005)
             .slice(0, 4)
         : [],
-    [beforeLast, belief],
+    [kb, beforeLast, belief],
   );
 
   const shelf = useMemo(() => {
@@ -172,16 +190,22 @@ export default function Shop() {
         .sort((a, b) => b.score - a.score)
         .slice(0, MAX_SHELF);
     }
-    const top = ranked.slice(0, MAX_SHELF);
-    const named = stated ? ranked.find((r) => r.solution.id === stated) : undefined;
+    const top = orderedRanked.slice(0, MAX_SHELF);
+    const named = stated ? orderedRanked.find((r) => r.solution.id === stated) : undefined;
     return named && !top.some((r) => r.solution.id === stated) ? [...top, named] : top;
-  }, [ranked, stated, browseNeed]);
-  const coffin = useMemo(() => ranked.find((r) => r.solution.id !== stated), [ranked, stated]);
+  }, [kb, orderedRanked, stated, browseNeed]);
+  const coffin = useMemo(
+    () =>
+      orderedRanked.find(
+        (r) => r.solution.id !== stated && (!pack.useFringe || states.get(r.solution.id)?.status === "next"),
+      ),
+    [orderedRanked, stated, pack.useFringe, states],
+  );
 
   const cartSolution = cartId ? kb.solutions.find((s) => s.id === cartId) : undefined;
   const statedTitle = stated ? (kb.solutions.find((s) => s.id === stated)?.title[lang] ?? null) : null;
   const specText = cartSolution
-    ? buildSpec(cartSolution, kb.needs[topIdx].title[lang], belief[topIdx], statedTitle, lang)
+    ? buildSpec(pack, cartSolution, kb.needs[topIdx].title[lang], belief[topIdx], statedTitle, lang)
     : "";
   const browseName = browseNeed ? kb.needs.find((n) => n.id === browseNeed)?.short[lang] : undefined;
 
@@ -202,7 +226,7 @@ export default function Shop() {
       setTab("shop");
       return;
     }
-    const reading = readText(kb, text);
+    const reading = readText(kb, text, pack.lexicon);
     let nextLog: LogItem[] = [...log, { from: "you", text }];
     if (reading.top || reading.named) {
       setNotes([...notes, { text, likelihood: reading.likelihood }]);
@@ -236,8 +260,17 @@ export default function Shop() {
 
   function requestCart(id: string, fit: number) {
     if (cartId === id) return;
-    if (fit < CONFIRM_BELOW) {
-      setPendingCart({ id, fit });
+    const st = pack.useFringe ? states.get(id) : undefined;
+    if (st && st.status === "blocked") {
+      setPendingCart({ id });
+      setLog(
+        say(
+          log,
+          decide({ event: "cart-blocked", history: shopHistory(log), solutionId: id, firstSolutionId: st.blockedBy[0] }),
+        ),
+      );
+    } else if (fit < CONFIRM_BELOW) {
+      setPendingCart({ id });
       setLog(say(log, decide({ event: "cart-low", history: shopHistory(log), solutionId: id, fit })));
     } else {
       setCartId(id);
@@ -254,6 +287,11 @@ export default function Shop() {
     setBrowseNeed(null);
     setOpenId(null);
     setLog([{ from: "shop", u: decide({ event: "load", history: [] }) }]);
+  }
+
+  function switchPack(id: PackId) {
+    setPackId(id);
+    reset();
   }
 
   const address = `http://www.atamagazon.example/exec/${tab}/${
@@ -304,7 +342,7 @@ export default function Shop() {
             <div className="brand">
               <h1 className="wordmark">{ui.storeName}</h1>
               <Pumpkin size={30} />
-              <span className="tagline">{t(ui.tagline, lang)}</span>
+              <span className="tagline">{t(pack.texts.tagline, lang)}</span>
             </div>
             <div className="toplinks">
               <button className="linkbtn" onClick={() => setTab("cart")}>
@@ -344,13 +382,30 @@ export default function Shop() {
           <div className="content">
             {tab === "home" && (
               <section>
-                <h2>{t(ui.homeHead, lang)}</h2>
-                <p>{t(ui.homeBody, lang)}</p>
+                <h2>{t(pack.texts.homeHead, lang)}</h2>
+                <p>{t(pack.texts.homeBody, lang)}</p>
                 <fieldset>
-                  <legend>{t(ui.statedLegend, lang)}</legend>
+                  <legend>{t(ui.pack.choose, lang)}</legend>
                   <div className="field-row">
                     <select
-                      aria-label={t(ui.statedLegend, lang)}
+                      aria-label={t(ui.pack.choose, lang)}
+                      value={packId}
+                      onChange={(e) => switchPack(e.target.value as PackId)}
+                      style={{ flex: 1 }}
+                    >
+                      {Object.values(packs).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label[lang]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </fieldset>
+                <fieldset>
+                  <legend>{t(pack.texts.statedLegend, lang)}</legend>
+                  <div className="field-row">
+                    <select
+                      aria-label={t(pack.texts.statedLegend, lang)}
                       value={stated ?? ""}
                       onChange={(e) => setStated(e.target.value === "" ? null : e.target.value)}
                       style={{ flex: 1 }}
@@ -368,7 +423,7 @@ export default function Shop() {
                   </div>
                 </fieldset>
                 <ul className="news">
-                  {ui.newItems[lang].map((line) => (
+                  {pack.texts.newItems[lang].map((line) => (
                     <li key={line}>
                       <span className="blink">{t(ui.newBadge, lang)}!</span> {line}
                     </li>
@@ -438,7 +493,7 @@ export default function Shop() {
                   </div>
 
                   <div className="sbox">
-                    <h3>{t(ui.browseBox, lang)}</h3>
+                    <h3>{t(pack.texts.browse, lang)}</h3>
                     <ul className="browse">
                       {kb.needs.map((n) => (
                         <li key={n.id}>
@@ -501,7 +556,7 @@ export default function Shop() {
                 </aside>
 
                 <main className={dim ? "center dim" : "center"}>
-                  <h2 className="results-head">{t(ui.resultsHead, lang)}</h2>
+                  <h2 className="results-head">{t(pack.texts.results, lang)}</h2>
                   {browseNeed && browseName && (
                     <p className="banner">
                       {ui.browseBanner[lang](browseName)}{" "}
@@ -512,53 +567,70 @@ export default function Shop() {
                   )}
                   {dim && <p className="dimnote">{t(ui.dimNote, lang)}</p>}
                   <ol className="items">
-                    {shelf.map(({ solution, score }) => (
-                      <li key={solution.id} className="item">
-                        <div className="itembody">
-                          <button
-                            className="linkbtn title"
-                            aria-expanded={openId === solution.id}
-                            onClick={() => setOpenId(openId === solution.id ? null : solution.id)}
-                          >
-                            {solution.title[lang]}
-                          </button>
-                          <span className={solution.id === stated ? "tag named" : "tag"}>
-                            {solution.id === stated ? t(ui.named, lang) : t(ui.suggested, lang)}
-                          </span>
-                          <p>{solution.pitch[lang]}</p>
-                          <p className="small">
-                            {t(ui.costLabel, lang)}: {solution.cost[lang]}
-                          </p>
-                          {openId === solution.id && (
-                            <div className="reqs">
-                              <b>{t(ui.reqHead, lang)}</b>
-                              <ol>
-                                {solution.requirements.map((r) => (
-                                  <li key={r.en}>{r[lang]}</li>
-                                ))}
-                              </ol>
+                    {shelf.map(({ solution, score }) => {
+                      const st = pack.useFringe ? states.get(solution.id) : undefined;
+                      return (
+                        <li key={solution.id} className={st?.status === "done" ? "item done" : "item"}>
+                          <div className="itembody">
+                            <button
+                              className="linkbtn title"
+                              aria-expanded={openId === solution.id}
+                              onClick={() => setOpenId(openId === solution.id ? null : solution.id)}
+                            >
+                              {solution.title[lang]}
+                            </button>
+                            <span className={solution.id === stated ? "tag named" : "tag"}>
+                              {solution.id === stated ? t(ui.named, lang) : t(ui.suggested, lang)}
+                            </span>
+                            {st && (
+                              <span className={`tag status ${st.status}`}>
+                                {st.status === "done"
+                                  ? t(ui.pack.done, lang)
+                                  : st.status === "next"
+                                    ? t(ui.pack.next, lang)
+                                    : ui.pack.blocked[lang](lookup.solution(st.blockedBy[0], lang))}
+                              </span>
+                            )}
+                            <p>{solution.pitch[lang]}</p>
+                            <p className="small">
+                              {t(ui.costLabel, lang)}: {solution.cost[lang]}
+                            </p>
+                            {solution.source && (
+                              <p className="small">
+                                {t(ui.pack.sourceLabel, lang)}: {solution.source[lang]}
+                              </p>
+                            )}
+                            {openId === solution.id && (
+                              <div className="reqs">
+                                <b>{t(ui.reqHead, lang)}</b>
+                                <ol>
+                                  {solution.requirements.map((r) => (
+                                    <li key={r.en}>{r[lang]}</li>
+                                  ))}
+                                </ol>
+                              </div>
+                            )}
+                            <div className="fit" aria-label={`${t(ui.fitLabel, lang)} ${Math.round(score * 100)}%`}>
+                              <span>{t(ui.fitLabel, lang)}</span>
+                              <div className="progress-indicator segmented">
+                                <span
+                                  className="progress-indicator-bar"
+                                  style={{ width: `${Math.round(score * 100)}%` }}
+                                />
+                              </div>
+                              <span>{Math.round(score * 100)}%</span>
                             </div>
-                          )}
-                          <div className="fit" aria-label={`${t(ui.fitLabel, lang)} ${Math.round(score * 100)}%`}>
-                            <span>{t(ui.fitLabel, lang)}</span>
-                            <div className="progress-indicator segmented">
-                              <span
-                                className="progress-indicator-bar"
-                                style={{ width: `${Math.round(score * 100)}%` }}
-                              />
-                            </div>
-                            <span>{Math.round(score * 100)}%</span>
                           </div>
-                        </div>
-                        <button
-                          className={cartId === solution.id ? "" : "default"}
-                          onClick={() => requestCart(solution.id, score)}
-                          disabled={cartId === solution.id}
-                        >
-                          {cartId === solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
-                        </button>
-                      </li>
-                    ))}
+                          <button
+                            className={cartId === solution.id ? "" : "default"}
+                            onClick={() => requestCart(solution.id, score)}
+                            disabled={cartId === solution.id}
+                          >
+                            {cartId === solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
+                          </button>
+                        </li>
+                      );
+                    })}
                   </ol>
                 </main>
 
@@ -636,7 +708,7 @@ export default function Shop() {
                   </div>
 
                   <div className="sbox">
-                    <h3>{t(ui.beliefHead, lang)}</h3>
+                    <h3>{t(pack.texts.belief, lang)}</h3>
                     <div className="sbody">
                       {kb.needs
                         .map((n, i) => ({ n, p: belief[i] }))
@@ -700,7 +772,7 @@ export default function Shop() {
 
             {tab === "cart" && (
               <section>
-                <h2>{t(ui.cartHead, lang)}</h2>
+                <h2>{t(pack.texts.output.cartHead, lang)}</h2>
                 {!cartSolution ? (
                   <p>{t(ui.cartEmpty, lang)}</p>
                 ) : (
@@ -712,7 +784,7 @@ export default function Shop() {
                       </button>
                     </p>
                     <fieldset>
-                      <legend>{t(ui.specLegend, lang)}</legend>
+                      <legend>{t(pack.texts.output.specLegend, lang)}</legend>
                       <pre className="specbox">{specText}</pre>
                       <div className="field-row" style={{ marginTop: 8 }}>
                         <button
@@ -769,6 +841,7 @@ export default function Shop() {
                       DEFAULT_PARAMS.sigma,
                       DEFAULT_PARAMS.unknown,
                       DEFAULT_PARAMS.mention,
+                      DEFAULT_PARAMS.lapse,
                     )}
                   </p>
                   <p>{t(ui.limits.authoredTail, lang)}</p>
@@ -802,7 +875,7 @@ export default function Shop() {
           placeholder={t(ui.agent.placeholder, lang)}
           send={t(ui.agent.send, lang)}
           chipsLabel={t(ui.agent.chipsLabel, lang)}
-          chips={showChips ? samples.slice(0, 4).map((s) => s[lang]) : []}
+          chips={showChips ? pack.samples.slice(0, 4).map((s) => s[lang]) : []}
           onSubmit={submitText}
           voiceLabel={t(ui.agent.voice, lang)}
           confirm={
@@ -835,7 +908,3 @@ export default function Shop() {
     </>
   );
 }
-
-
-
-

@@ -1,0 +1,6 @@
+params: {"sigma":0.25,"unknown":0.1,"mention":0.3,"lapse":0.1}  runs per row: 600  seed: 12345
+row | stopped confident | mean top prob | mean questions | accuracy when confident
+truthful | 60.5% | 0.802 | 5.64 | 89.3%
+always-yes | 0.0% | 0.602 | 4.00 | n/a
+random | 42.7% | 0.747 | 5.82 | 10.9%
+off-shelf | 42.3% | 0.754 | 5.79 | 11.8%

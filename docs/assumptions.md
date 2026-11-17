@@ -26,3 +26,8 @@ These are choices made by the author, not measured facts. They are listed so jud
 
 18. **The geometry figure is exact for two beliefs, not for the world.** The drawn angle is half the Fisher-Rao distance between two model beliefs. "Efficiency" is straight-line distance divided by the path length of the belief; it describes how directly answers moved the model, not how good the answers were.
 19. **The count of hand-set numbers is computed from the data** (`src/core/limits.ts`), so it changes when the knowledge base or lexicon changes.
+
+20. **The developer-stuck shelf is authored, not measured.** The eight kinds of stall, the seventeen probes and the twelve moves, with their strengths, fits and prerequisites, are the author's judgment built on the sources named in `src/data/devstuck.ts`. Moves labeled "rule of thumb, not tested" are exactly that.
+21. **Probes are self-report.** They are phrased as facts about the last exchanges and include reverse-keyed probes, but the app cannot verify them. "Already in place" means "the user says yes or probably".
+22. **Prerequisites are a simplification.** The `requires` relation says which move is easier after which. Real work does not always follow it. The shop asks for confirmation instead of forbidding a blocked move.
+23. **The lapse rate (0.1) is a guess.** It bounds how far one answer can move the belief. It was chosen to stop agreeable users from reaching certainty in two answers, not fitted to data. See `docs/benchmark.md` for what it fixed and what it did not.

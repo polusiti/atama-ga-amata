@@ -129,7 +129,7 @@ describe("countAuthored", () => {
     const a = countAuthored(kb);
     expect(a.questionStrengths).toBeGreaterThanOrEqual(kb.questions.length);
     expect(a.solutionFits).toBeGreaterThanOrEqual(kb.solutions.length);
-    expect(a.modelParameters).toBe(3);
+    expect(a.modelParameters).toBe(4);
     expect(a.total).toBe(a.questionStrengths + a.solutionFits + a.modelParameters + a.keywordWeights + a.solutionAliases);
     expect(a.total).toBeGreaterThan(100);
   });
@@ -157,4 +157,5 @@ describe("asking why in the shopkeeper window", () => {
     expect(decide({ event: "why", history: [], needIds: ["spend-blind"] }).kind).toBe("whyNone");
   });
 });
+
 

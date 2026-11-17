@@ -8,7 +8,7 @@ import type { Lang } from "./types";
  * the OARS skills (open question, reflection, summary), and the confirm-before-acting step
  * of assistant frameworks. Wording is hedged on purpose: the program never claims to understand.
  */
-export type Kind = "greet" | "reflect" | "ladder" | "fallback" | "summary" | "summaryPlain" | "confirm" | "why" | "whyNone";
+export type Kind = "greet" | "reflect" | "ladder" | "fallback" | "summary" | "summaryPlain" | "confirm" | "blocked" | "why" | "whyNone";
 
 export interface Utterance {
   kind: Kind;
@@ -17,6 +17,8 @@ export interface Utterance {
   needId?: string;
   needId2?: string;
   solutionId?: string;
+  /** The step that should come first, for "blocked". */
+  solutionId2?: string;
   first?: string;
   fit?: number;
 }
@@ -26,6 +28,7 @@ export type DecideInput =
   | { event: "text"; history: readonly Kind[]; reading: Reading }
   | { event: "stop"; history: readonly Kind[]; topNeedId: string; first: string | null }
   | { event: "cart-low"; history: readonly Kind[]; solutionId: string; fit: number }
+  | { event: "cart-blocked"; history: readonly Kind[]; solutionId: string; firstSolutionId: string }
   /** needIds: the leading needs, best first, or null when no question is pending. */
   | { event: "why"; history: readonly Kind[]; needIds: readonly string[] | null };
 
@@ -48,6 +51,13 @@ export function decide(input: DecideInput): Utterance {
         : { kind: "summaryPlain", variant: v("summaryPlain"), needId: input.topNeedId };
     case "cart-low":
       return { kind: "confirm", variant: v("confirm"), solutionId: input.solutionId, fit: input.fit };
+    case "cart-blocked":
+      return {
+        kind: "blocked",
+        variant: v("blocked"),
+        solutionId: input.solutionId,
+        solutionId2: input.firstSolutionId,
+      };
     case "why":
       return input.needIds && input.needIds.length >= 2
         ? { kind: "why", variant: v("why"), needId: input.needIds[0], needId2: input.needIds[1] }
@@ -124,6 +134,16 @@ export const templates: Record<Kind, Record<Lang, readonly string[]>> = {
       'Allow me to gather this. Your answers lean toward "{need}".',
     ],
   },
+  blocked: {
+    ja: [
+      "「{sol}」は、先に「{sol2}」が済んでいないと、進めにくい手です。それでも入れますか？",
+      "「{sol}」の前に、「{sol2}」を先に済ませるほうが、遠回りになりません。それでも「{sol}」にしますか？",
+    ],
+    en: [
+      '"{sol}" is hard to do before "{sol2}" is in place. Add it anyway?',
+      'Doing "{sol2}" before "{sol}" avoids a detour. Still want "{sol}"?',
+    ],
+  },
   why: {
     ja: [
       "いま「{need}」と「{need2}」が有力で、この質問はその二つを見分けるのに役立つからです。左の「なぜ聞くの？」に、答えごとの見込みを出しています。",
@@ -165,7 +185,7 @@ export interface Lookup {
 export function render(u: Utterance, lang: Lang, lookup: Lookup): string {
   const list = templates[u.kind][lang];
   const template = list[u.variant % list.length];
-  return template.replace(/\{(need2|need|sol|first|fit)\}/g, (_, key: string) => {
+  return template.replace(/\{(need2|need|sol2|sol|first|fit)\}/g, (_, key: string) => {
     switch (key) {
       case "need":
         return u.needId ? lookup.need(u.needId, lang) : "";
@@ -173,6 +193,8 @@ export function render(u: Utterance, lang: Lang, lookup: Lookup): string {
         return u.needId2 ? lookup.need(u.needId2, lang) : "";
       case "sol":
         return u.solutionId ? lookup.solution(u.solutionId, lang) : "";
+      case "sol2":
+        return u.solutionId2 ? lookup.solution(u.solutionId2, lang) : "";
       case "first":
         return u.first ?? "";
       default:
@@ -180,4 +202,5 @@ export function render(u: Utterance, lang: Lang, lookup: Lookup): string {
     }
   });
 }
+
 

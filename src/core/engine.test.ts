@@ -4,6 +4,7 @@ import { kb } from "../data/kb";
 import {
   answerDistribution,
   chooseNextQuestion,
+  DEFAULT_STOP,
   expectedInformationGain,
   fitChanges,
   priorFromStated,
@@ -37,8 +38,54 @@ describe("answerDistribution", () => {
 
   it("gives \"unknown\" the same probability whatever the truth is", () => {
     const u = ANSWERS.indexOf("unknown");
-    expect(answerDistribution(0)[u]).toBeCloseTo(DEFAULT_PARAMS.unknown, 12);
-    expect(answerDistribution(1)[u]).toBeCloseTo(DEFAULT_PARAMS.unknown, 12);
+    // The "don't know" share, mixed with the lapse rate (uniform over five answers).
+    const expected = (1 - DEFAULT_PARAMS.lapse) * DEFAULT_PARAMS.unknown + DEFAULT_PARAMS.lapse / ANSWERS.length;
+    expect(answerDistribution(0)[u]).toBeCloseTo(expected, 12);
+    expect(answerDistribution(1)[u]).toBeCloseTo(expected, 12);
+    expect(answerDistribution(0.4)[u]).toBeCloseTo(expected, 12);
+  });
+});
+
+describe("lapse rate (bounded evidence)", () => {
+  it("keeps every answer probability at least lapse / 5, so no answer can move the odds by more than 5 / lapse", () => {
+    const floor = DEFAULT_PARAMS.lapse / ANSWERS.length;
+    const bound = 1 / floor;
+    fc.assert(
+      fc.property(
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        fc.double({ min: 0, max: 1, noNaN: true }),
+        (v1, v2) => {
+          const a = answerDistribution(v1);
+          const b = answerDistribution(v2);
+          a.forEach((p, i) => {
+            expect(p).toBeGreaterThanOrEqual(floor - 1e-12);
+            expect(p / b[i]).toBeLessThanOrEqual(bound + 1e-9);
+          });
+        },
+      ),
+    );
+  });
+
+  it("makes two agreeable answers unable to give near certainty", () => {
+    let b = uniform(N);
+    for (const qid of ["q-recall-money", "q-weekly"]) {
+      const q = kb.questions.find((x) => x.id === qid)!;
+      b = updateBelief(b, kb, q, "yes");
+    }
+    expect(Math.max(...b)).toBeLessThan(0.95);
+  });
+});
+
+describe("stop rule minimum", () => {
+  it("never declares confidence before the minimum number of answers", () => {
+    const sharp = new Array(N).fill(0.001);
+    sharp[0] = 1 - 0.001 * (N - 1);
+    for (let asked = 0; asked < DEFAULT_STOP.minQuestions; asked++) {
+      const ids = kb.questions.slice(0, asked).map((q) => q.id);
+      expect(shouldStop(sharp, kb, ids)).not.toBe("confident");
+    }
+    const enough = kb.questions.slice(0, DEFAULT_STOP.minQuestions).map((q) => q.id);
+    expect(shouldStop(sharp, kb, enough)).toBe("confident");
   });
 });
 
@@ -208,4 +255,5 @@ describe("solution fixation (the XY problem)", () => {
     expect(rankSolutions(b, kb)[0].solution.id).toBe("shared-spec");
   });
 });
+
 

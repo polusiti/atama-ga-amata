@@ -212,10 +212,10 @@ export const ui = {
     },
     authoredHead: { ja: "作者が手で決めたもの（実測ではありません）", en: "Set by hand by the author (not measured)" },
     authored: {
-      ja: (n: { questionStrengths: number; solutionFits: number; keywordWeights: number; solutionAliases: number; total: number }, sigma: number, unknown: number, mention: number) =>
-        `質問ごとの強さ ${n.questionStrengths} 個、解決策の適合度 ${n.solutionFits} 個、キーワードの重み ${n.keywordWeights} 個、解決策を指す言葉 ${n.solutionAliases} 個、モデルの定数 3 個（雑音 σ=${sigma}、「分からない」率 ${unknown}、解決策への固執 ${mention}）。合計 ${n.total} 個。`,
-      en: (n: { questionStrengths: number; solutionFits: number; keywordWeights: number; solutionAliases: number; total: number }, sigma: number, unknown: number, mention: number) =>
-        `${n.questionStrengths} question strengths, ${n.solutionFits} solution fits, ${n.keywordWeights} keyword weights, ${n.solutionAliases} solution words, and 3 model constants (noise sigma=${sigma}, "don't know" share ${unknown}, solution fixation ${mention}). ${n.total} in total.`,
+      ja: (n: { questionStrengths: number; solutionFits: number; keywordWeights: number; solutionAliases: number; total: number }, sigma: number, unknown: number, mention: number, lapse: number) =>
+        `質問ごとの強さ ${n.questionStrengths} 個、解決策の適合度 ${n.solutionFits} 個、キーワードの重み ${n.keywordWeights} 個、解決策を指す言葉 ${n.solutionAliases} 個、モデルの定数 4 個（雑音 σ=${sigma}、「分からない」率 ${unknown}、解決策への固執 ${mention}、迷い（でたらめ）の率 ${lapse}）。合計 ${n.total} 個。`,
+      en: (n: { questionStrengths: number; solutionFits: number; keywordWeights: number; solutionAliases: number; total: number }, sigma: number, unknown: number, mention: number, lapse: number) =>
+        `${n.questionStrengths} question strengths, ${n.solutionFits} solution fits, ${n.keywordWeights} keyword weights, ${n.solutionAliases} solution words, and 4 model constants (noise sigma=${sigma}, "don't know" share ${unknown}, solution fixation ${mention}, lapse (random answers) ${lapse}). ${n.total} in total.`,
     },
     authoredTail: {
       ja: "ここが違えば、結果は変わります。結果の数字は、世界についての主張ではなく、このモデルの出力です。",
@@ -264,8 +264,20 @@ export const ui = {
     voice: { ja: "声で読み上げる（この端末内の音声のみ）", en: "Read aloud (on-device voice only)" },
     notesHead: { ja: "あなたの言葉", en: "YOUR WORDS" },
   },
+  pack: {
+    choose: { ja: "棚を選ぶ", en: "Choose a shelf" },
+    done: { ja: "済み", en: "in place" },
+    next: { ja: "次の一手", en: "next move" },
+    blocked: {
+      ja: (first: string) => `先に「${first}」を`,
+      en: (first: string) => `first: "${first}"`,
+    },
+    sourceLabel: { ja: "出所", en: "Source" },
+  },
+
   start: { ja: "スタート", en: "Start" },
 } as const;
+
 
 
 

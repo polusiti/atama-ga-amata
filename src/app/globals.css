@@ -754,3 +754,20 @@ details.how summary {
   margin: 2px 0 4px;
   padding-left: 20px;
 }
+
+/* ---- step status (problem-solving shelf) ---- */
+.item.done {
+  opacity: 0.6;
+}
+
+.tag.status.next {
+  background: #138a13;
+}
+
+.tag.status.blocked {
+  background: #996600;
+}
+
+.tag.status.done {
+  background: #777;
+}

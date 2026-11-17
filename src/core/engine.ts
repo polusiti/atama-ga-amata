@@ -36,7 +36,9 @@ export function answerDistribution(v: number, params: ModelParams = DEFAULT_PARA
     no: graded[3] * share,
     unknown,
   };
-  return ANSWERS.map((a) => byAnswer[a]);
+  // A share of answers is random whatever the truth. It bounds the evidence any one answer can give.
+  const lapse = params.lapse;
+  return ANSWERS.map((a) => (1 - lapse) * byAnswer[a] + lapse / ANSWERS.length);
 }
 
 export function strength(q: Question, needId: string): number {
@@ -148,12 +150,14 @@ export function chooseNextQuestion(
 
 export interface StopRule {
   maxQuestions: number;
+  /** No confident conclusion before this many answers, however sharp they look. */
+  minQuestions: number;
   confidence: number;
   /** Stop when the best remaining question is worth less than this many nats per unit cost. */
   minScore: number;
 }
 
-export const DEFAULT_STOP: StopRule = { maxQuestions: 8, confidence: 0.85, minScore: 0.05 };
+export const DEFAULT_STOP: StopRule = { maxQuestions: 8, minQuestions: 4, confidence: 0.85, minScore: 0.05 };
 
 export type StopReason = "confident" | "budget" | "low-value" | "exhausted";
 
@@ -164,7 +168,7 @@ export function shouldStop(
   params: ModelParams = DEFAULT_PARAMS,
   rule: StopRule = DEFAULT_STOP,
 ): StopReason | null {
-  if (Math.max(...belief) >= rule.confidence) return "confident";
+  if (askedIds.length >= rule.minQuestions && Math.max(...belief) >= rule.confidence) return "confident";
   if (askedIds.length >= rule.maxQuestions) return "budget";
   const next = chooseNextQuestion(belief, kb, askedIds, params);
   if (next === null) return "exhausted";

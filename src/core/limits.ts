@@ -1,5 +1,5 @@
-import { needWords, solutionAliases } from "./lexicon";
-import { DEFAULT_PARAMS, type KnowledgeBase } from "./types";
+import { everydayLexicon } from "./lexicon";
+import { DEFAULT_PARAMS, type KnowledgeBase, type Lexicon } from "./types";
 
 /**
  * How many numbers in this store were set by hand rather than computed.
@@ -19,12 +19,12 @@ export interface Authored {
   total: number;
 }
 
-export function countAuthored(kb: KnowledgeBase): Authored {
+export function countAuthored(kb: KnowledgeBase, lexicon: Lexicon = everydayLexicon): Authored {
   const questionStrengths = kb.questions.reduce((acc, q) => acc + 1 + Object.keys(q.yes).length, 0);
   const solutionFits = kb.solutions.reduce((acc, s) => acc + Object.keys(s.fit).length, 0);
   const modelParameters = Object.keys(DEFAULT_PARAMS).length;
-  const keywordWeights = Object.values(needWords).reduce((acc, list) => acc + list.length, 0);
-  const aliases = Object.values(solutionAliases).reduce((acc, list) => acc + list.length, 0);
+  const keywordWeights = Object.values(lexicon.needWords).reduce((acc, list) => acc + list.length, 0);
+  const aliases = Object.values(lexicon.solutionAliases).reduce((acc, list) => acc + list.length, 0);
   return {
     questionStrengths,
     solutionFits,
@@ -34,3 +34,4 @@ export function countAuthored(kb: KnowledgeBase): Authored {
     total: questionStrengths + solutionFits + modelParameters + keywordWeights + aliases,
   };
 }
+
