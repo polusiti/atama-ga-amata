@@ -17,3 +17,5 @@ Each rule comes from an incident in `docs/incidents.md`. Keep this list short. A
 9. Report negative results as they are. (INC-05)
 10. Write text with non-ASCII characters with the edit tool, not with a script. After a scripted edit, read the changed lines back. Send each check's output to a new file and compare its timestamp with the time of the run. An interrupted run is a failed run. (INC-12)
 11. A rule needs a check that covers every place it applies, not one example. (INC-11)
+12. Before reading a log or an output file, compare its last-write time with the present time. "No line found" counts as evidence only if the file was being written at the time in question. (INC-15)
+13. After writing a Kiro configuration file, run `npm run check:kiro` and read the live IDE log for "not a recognized name" or "failed schema validation". Do not describe a hook, agent or MCP server as working until the log or an observed effect shows it. (INC-13, INC-14)
