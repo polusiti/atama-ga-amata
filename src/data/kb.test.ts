@@ -76,6 +76,47 @@ for (const pack of Object.values(packs)) {
   });
 }
 
+describe("user-side causes (self-checkable stalls)", () => {
+  const { kb } = packs.devstuck;
+  const selfNeeds = kb.needs.filter((n) => n.side === "self");
+
+  it("has at least four self-checkable stall types", () => {
+    expect(selfNeeds.length).toBeGreaterThanOrEqual(4);
+  });
+
+  it("gives each one a move that fits it, a practice probe and a signal probe", () => {
+    for (const need of selfNeeds) {
+      const moves = kb.solutions.filter((s) => (s.fit[need.id] ?? 0) >= 0.7);
+      expect(moves.length, `${need.id} move`).toBeGreaterThanOrEqual(1);
+      const probes = kb.questions.filter((q) => q.yes[need.id] !== undefined);
+      expect(probes.some((q) => q.practice), `${need.id} practice probe`).toBe(true);
+      expect(probes.some((q) => !q.practice), `${need.id} signal probe`).toBe(true);
+    }
+  });
+
+  it("states a source or a rule-of-thumb label for the moves that serve them", () => {
+    for (const need of selfNeeds) {
+      for (const s of kb.solutions.filter((x) => (x.fit[need.id] ?? 0) >= 0.7)) {
+        expect(s.source, s.id).toBeDefined();
+      }
+    }
+  });
+
+  it("does not blame the person in any wording (no second-person fault phrases)", () => {
+    const banned = [/あなたが悪/, /あなたのせい/, /your fault/i, /you are to blame/i, /you're the problem/i, /あなたが原因/];
+    const texts = [
+      ...kb.needs.flatMap((n) => [n.title, n.gloss]),
+      ...kb.solutions.flatMap((s) => [s.title, s.pitch, s.cost, ...s.requirements]),
+      ...kb.questions.map((q) => q.text),
+    ];
+    for (const t of texts) {
+      for (const re of banned) {
+        expect(re.test(t.ja) || re.test(t.en), `${t.ja} / ${t.en}`).toBe(false);
+      }
+    }
+  });
+});
+
 describe("problem-solving pack (requirement 9)", () => {
   it("states a source, or says it is a rule of thumb, for every step", () => {
     for (const s of packs.devstuck.kb.solutions) {

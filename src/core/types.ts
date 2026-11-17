@@ -8,6 +8,8 @@ export interface L10n {
 /** An underlying need (the situation that actually hurts), not a solution. */
 export interface Need {
   id: string;
+  /** "self": a stall the person can check with their own hands (a gap, an assumption, a target, wear). */
+  side?: "self";
   short: L10n;
   title: L10n;
   gloss: L10n;

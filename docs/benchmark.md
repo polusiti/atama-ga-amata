@@ -28,14 +28,16 @@ Before: answer model without a lapse rate, no minimum number of answers.
 | random | 81.2% | 11.3% | 4.5 |
 | off-shelf | 83.0% | 11.2% | 4.3 |
 
-After: 10% of answers are treated as random whatever the truth (lapse rate), and no confident conclusion before four answers.
+After: 10% of answers are treated as random whatever the truth (lapse rate), and no conclusion of any kind (confident or "low value") before four answers.
 
 | user | stopped confident | accuracy when confident | questions |
 |---|---|---|---|
-| truthful | 60.5% | 89.3% | 5.6 |
+| truthful | 62.7% | 90.2% | 5.7 |
 | always-yes | **0%** | n/a | 4.0 |
-| random | 42.7% | 10.9% | 5.8 |
-| off-shelf | 42.3% | 11.8% | 5.8 |
+| random | 46.7% | 12.9% | 5.8 |
+| off-shelf | 44.8% | 13.0% | 5.8 |
+
+(An earlier run of this table, 60.5% / 42.7% / 42.3%, applied the four-answer minimum only to the "confident" stop. The "low value" stop could still end the questions after two answers. A screenshot of the app showed it; the rule now covers both, and the test says so.)
 
 Chance is 12.5% (8 needs).
 

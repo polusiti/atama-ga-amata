@@ -723,6 +723,9 @@ export default function Shop() {
                             <span className="pct">{Math.round(p * 100)}%</span>
                           </div>
                         ))}
+                      {kb.needs[topIdx].side === "self" && entries.length > 0 && (
+                        <p className="small">{t(ui.pack.selfSide, lang)}</p>
+                      )}
                       {gap !== null && gapBand(gap) === "far" ? (
                         <div className="msgbox" role="alert">
                           <div className="icon">!</div>

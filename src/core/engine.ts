@@ -168,11 +168,13 @@ export function shouldStop(
   params: ModelParams = DEFAULT_PARAMS,
   rule: StopRule = DEFAULT_STOP,
 ): StopReason | null {
-  if (askedIds.length >= rule.minQuestions && Math.max(...belief) >= rule.confidence) return "confident";
+  // Until the minimum number of answers, neither confidence nor "low value" may end the questions.
+  const enough = askedIds.length >= rule.minQuestions;
+  if (enough && Math.max(...belief) >= rule.confidence) return "confident";
   if (askedIds.length >= rule.maxQuestions) return "budget";
   const next = chooseNextQuestion(belief, kb, askedIds, params);
   if (next === null) return "exhausted";
-  if (next.score < rule.minScore) return "low-value";
+  if (enough && next.score < rule.minScore) return "low-value";
   return null;
 }
 

@@ -82,7 +82,8 @@ describe("stop rule minimum", () => {
     sharp[0] = 1 - 0.001 * (N - 1);
     for (let asked = 0; asked < DEFAULT_STOP.minQuestions; asked++) {
       const ids = kb.questions.slice(0, asked).map((q) => q.id);
-      expect(shouldStop(sharp, kb, ids)).not.toBe("confident");
+      // Neither "confident" nor "low-value" may end the questions early: the answer is to keep asking.
+      expect(shouldStop(sharp, kb, ids), `after ${asked} answers`).toBeNull();
     }
     const enough = kb.questions.slice(0, DEFAULT_STOP.minQuestions).map((q) => q.id);
     expect(shouldStop(sharp, kb, enough)).toBe("confident");

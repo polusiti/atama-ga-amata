@@ -273,6 +273,10 @@ export const ui = {
       en: (first: string) => `first: "${first}"`,
     },
     sourceLabel: { ja: "出所", en: "Source" },
+    selfSide: {
+      ja: "この詰まりは、自分の手で確かめられる種類です。下の手を、一つ試してみてください。",
+      en: "This kind of stall can be checked with your own hands. Try one of the moves below.",
+    },
   },
 
   start: { ja: "スタート", en: "Start" },
