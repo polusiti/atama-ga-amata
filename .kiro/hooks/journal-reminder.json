@@ -1,0 +1,14 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "journal-reminder",
+      "description": "The Kiro write-up needs a record of what each task changed. Append it to docs/journal.md after every spec task.",
+      "trigger": "PostTaskExecution",
+      "action": {
+        "type": "agent",
+        "prompt": "A spec task just finished. Append a short entry to docs/journal.md: date, spec and task name, what changed, and anything that surprised you or went wrong. If the task changed src/core or src/data, also say whether docs/benchmark.md needs a re-run. Keep it under six lines."
+      }
+    }
+  ]
+}

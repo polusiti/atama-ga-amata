@@ -1,0 +1,12 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "verify-on-stop",
+      "description": "At the end of every agent turn, typecheck and run the tests so breakage is reported at once.",
+      "trigger": "Stop",
+      "action": { "type": "command", "command": "npm run typecheck && npm test" },
+      "timeout": 180
+    }
+  ]
+}

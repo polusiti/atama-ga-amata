@@ -45,3 +45,9 @@ Kept for the Kiro write-up. Dates are JST.
 - User observation: when the cause of being stuck is on the user's side, an AI rarely says so (sycophancy; Sharma et al. 2023). Wrote .kiro/specs/user-side-causes first. Added four self-checkable stall types, ten probes and five self-test moves to the developer-stuck shelf; a one-line note appears when such a stall leads; a test scans the wording for blame phrases. 94 tests, 8 browser checks.
 - A screenshot showed the app stopping after two answers with "no more value in asking". My minimum-answers rule had covered only the "confident" stop. Fixed for every stop reason and tested. The browser checks passed while the bug was there, because none of them asserted the number of questions in that path; I only saw it by looking at the picture. Re-ran the benchmark and corrected the table in docs/benchmark.md.
 - User noted that this kind of diagnosis helps in education, shopping, private life, design and companies. Not built: each field needs its own pack with its own sources; the engine and the pack format already allow it.
+
+## 2026-11-17 Kiro integration
+- Spec kiro-integration written first. Added MCP server (4 tools, 7 unit tests, stdio check), 4 hooks, 3 steering files, 2 agents, design.md for all specs, English default.
+- Fixed: home page counts were typed constants (8 and 12) and wrong; now read from the pack.
+- Not yet verified inside Kiro: that hooks and agents load in the IDE UI.
+

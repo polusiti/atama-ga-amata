@@ -1,0 +1,15 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "voice-check",
+      "description": "Wording rules are judgement calls, so an agent checks them against steering/voice.md after user-facing text changes.",
+      "trigger": "PostFileSave",
+      "matcher": "(src[\\\\/]app[\\\\/]strings\\.ts|src[\\\\/]core[\\\\/]dialogue\\.ts|src[\\\\/]data[\\\\/].*\\.ts)$",
+      "action": {
+        "type": "agent",
+        "prompt": "A file with user-facing wording was just saved. Read .kiro/steering/voice.md, then check only the lines that changed in that file. Report any line that (1) blames the user, (2) sounds like an AI disclaimer, (3) claims understanding, or (4) states a cause without hedging. Quote the line and give a replacement. If nothing breaks the rules, say so in one sentence and do not edit anything."
+      }
+    }
+  ]
+}

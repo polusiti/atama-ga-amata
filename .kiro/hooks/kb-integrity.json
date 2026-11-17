@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "kb-integrity",
+      "description": "Knowledge base edits can break advice silently (requires cycles, unknown ids, missing sources). Run the data tests on save.",
+      "trigger": "PostFileSave",
+      "matcher": "(src[\\\\/]data[\\\\/].*\\.ts|src[\\\\/]core[\\\\/]lexicon\\.ts)$",
+      "action": { "type": "command", "command": "npx vitest run src/data src/core/fringe.test.ts mcp" },
+      "timeout": 120
+    }
+  ]
+}

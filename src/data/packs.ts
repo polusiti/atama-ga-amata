@@ -61,8 +61,8 @@ export const packs: Record<PackId, Pack> = {
       },
       statedLegend: { ja: "いま試そうとしていること（任意）", en: "What you are about to try (optional)" },
       newItems: {
-        ja: ["詰まりの種類8種、次の一手12種、入荷", "次の一手には、出所がついています"],
-        en: ["8 kinds of stall and 12 next moves in stock", "Every next move shows its source"],
+        ja: [`詰まりの種類${devstuck.needs.length}種、次の一手${devstuck.solutions.length}種、入荷`, "次の一手には、出所がついています"],
+        en: [`${devstuck.needs.length} kinds of stall and ${devstuck.solutions.length} next moves in stock`, "Every next move shows its source"],
       },
       output: {
         titlePrefix: { ja: "次の一手: ", en: "Next move: " },
@@ -98,8 +98,8 @@ export const packs: Record<PackId, Pack> = {
         en: "Do you already have a solution in mind? (optional)",
       },
       newItems: {
-        ja: ["今夜の棺（Coffin Box）、はじめました", "困りごと8種、新入荷"],
-        en: ["Tonight's Coffin Box is now open", "8 new troubles in stock"],
+        ja: ["今夜の棺（Coffin Box）、はじめました", `困りごと${everyday.needs.length}種、新入荷`],
+        en: ["Tonight's Coffin Box is now open", `${everyday.needs.length} new troubles in stock`],
       },
       output: {
         titlePrefix: { ja: "", en: "" },

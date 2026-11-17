@@ -77,7 +77,10 @@ function buildSpec(
 }
 
 export default function Shop() {
-  const [lang, setLang] = useState<Lang>("ja");
+  const [lang, setLang] = useState<Lang>("en");
+  useEffect(() => {
+    document.documentElement.lang = lang;
+  }, [lang]);
   const [packId, setPackId] = useState<PackId>(DEFAULT_PACK);
   const [tab, setTab] = useState<Tab>("home");
   const [stated, setStated] = useState<string | null>(null);

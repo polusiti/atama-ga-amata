@@ -1,0 +1,19 @@
+{
+  "mcpServers": {
+    "atamagazon": {
+      "command": "npx",
+      "args": [
+        "tsx",
+        "mcp/server.ts"
+      ],
+      "env": {},
+      "disabled": false,
+      "autoApprove": [
+        "list_packs",
+        "next_question",
+        "diagnose",
+        "explain"
+      ]
+    }
+  }
+}

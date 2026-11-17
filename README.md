@@ -68,3 +68,18 @@ MIT
 
 - **Geometry view.** The gap between your named idea and the current estimate is drawn as an arc on a quarter circle. The arc angle is exactly half the Fisher-Rao distance (two points on a sphere always share a plane through its center, so nothing is distorted). A browser test checks the drawn angle against the printed distance.
 - **Where the math stops.** The About page lists what is computed, what the author set by hand (230 numbers, counted from the data), and what mathematics cannot decide.
+
+## How Kiro is used
+
+Kiro is the builder and the voice. The examiner is a deterministic engine that Kiro reaches through MCP, because an LLM tends to agree with the person (Sharma et al. 2023) and does not test their level.
+
+| Kiro feature | What it does here |
+|---|---|
+| Specs | Every part has requirements, design and tasks in `.kiro/specs/` and was written before the code. |
+| Steering | `charter.md`, `product.md` (always); `voice.md`, `evidence.md` (by file); `interview.md` (manual, `/interview`). |
+| MCP | `mcp/server.ts` exposes `list_packs`, `next_question`, `diagnose`, `explain`. Stateless, same functions as the web app. Registered in `.kiro/settings/mcp.json`. Check: `npm run test:mcp`. |
+| Hooks | `kb-integrity` (tests on data save), `voice-check` (agent reviews wording), `verify-on-stop` (typecheck and tests), `journal-reminder` (after a spec task). |
+| Custom agents | `stall-doctor` interviews first and then writes a spec; `kb-reviewer` is read-only and audits sources and blame wording. |
+| Property-based tests | fast-check over the geometry and belief updates (`src/core/*.test.ts`). |
+
+Not used: Powers, Kiro CLI/Web/Crew (the work was done in the IDE).
