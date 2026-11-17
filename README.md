@@ -79,7 +79,7 @@ Kiro is the builder and the voice. The examiner is a deterministic engine that K
 | Steering | `charter.md`, `product.md`, `agent-conduct.md` (always); `voice.md`, `evidence.md` (by file); `interview.md` (manual, `/interview`). `agent-conduct.md` is written from the incidents in `docs/incidents.md`, each rule naming the incident that caused it. |
 | MCP | `mcp/server.ts` exposes `list_packs`, `next_question`, `diagnose`, `explain`. Stateless, same functions as the web app. Registered in `.kiro/settings/mcp.json`. Check: `npm run test:mcp`. |
 | Hooks | `kb-integrity` (tests on data save), `pack-coverage` (reports which needs lack probes, moves, words or samples; reports only, never fills in numbers), `voice-check` (agent reviews wording), `verify-on-stop` (typecheck and tests), `journal-reminder` (after a spec task). |
-| Custom agents | `stall-doctor` interviews first and then writes a spec; `kb-reviewer` is read-only and audits sources and blame wording. |
+| Custom agents | `stall-doctor` interviews first and then writes a spec; `kb-reviewer` is read-only and audits sources and blame wording. `npm run check:kiro` checks the hook, agent and MCP files against the names the IDE itself accepts. |
 | Property-based tests | fast-check over the geometry and belief updates (`src/core/*.test.ts`). |
 
 Not used: Powers, Kiro CLI/Web/Crew (the work was done in the IDE).

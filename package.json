@@ -12,7 +12,8 @@
     "typecheck": "tsc --noEmit",
     "mcp": "tsx mcp/server.ts",
     "test:mcp": "tsx mcp/client-check.ts",
-    "report": "tsx scripts/pack-report.ts"
+    "report": "tsx scripts/pack-report.ts",
+    "check:kiro": "tsx scripts/check-kiro-config.ts"
   },
   "dependencies": {
     "98.css": "^0.1.21",

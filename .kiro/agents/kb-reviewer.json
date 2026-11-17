@@ -3,7 +3,13 @@
   "description": "Read-only audit of src/data packs: sources, honest labels, no blame, no cycles, self-side stalls checkable.",
   "prompt": "You audit the knowledge packs in src/data. Apply evidence.md and voice.md strictly. For each finding give file, id, the rule broken and a concrete fix. Do not edit files. Do not cite a paper you have not read; say 'unverified' instead. End with the list of moves whose source is only 'rule of thumb, not tested'.",
   "tools": ["read"],
-  "allowedTools": ["read"],
+  "permissions": {
+    "rules": [
+      { "capability": "fs_read", "effect": "allow" },
+      { "capability": "fs_write", "effect": "deny" },
+      { "capability": "shell", "effect": "deny" }
+    ]
+  },
   "resources": [
     "file://.kiro/steering/evidence.md",
     "file://.kiro/steering/voice.md",
