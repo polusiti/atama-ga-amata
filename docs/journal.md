@@ -51,3 +51,10 @@ Kept for the Kiro write-up. Dates are JST.
 - Fixed: home page counts were typed constants (8 and 12) and wrong; now read from the pack.
 - Not yet verified inside Kiro: that hooks and agents load in the IDE UI.
 
+
+## 2026-11-17 Guess and confirm
+- Read Aaklon/akinator (AGPL-3.0) for ideas only: final guess with a verdict, smoothing so a rejection never zeroes a candidate, corrections staged and not applied at once. No code copied.
+- Added src/core/guess.ts (13 property tests) and a guess panel: fits / not quite / can't tell, second guess, picker, tally with Wilson interval, copy as JSON. Nothing is stored or sent.
+- Found by looking at a screenshot: after 'none of these' the shelf still showed 78% fit. Added a banner saying it is a weak guess; a chosen stall switches the shelf to that stall.
+- Known gap: verdicts measure 'felt right', not 'was the cause'. Needs real testers to mean anything.
+

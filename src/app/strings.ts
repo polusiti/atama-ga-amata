@@ -84,6 +84,43 @@ export const ui = {
     exhausted: { ja: "お聞きすることは以上です。", en: "That is all I wanted to ask." },
   } satisfies Record<StopReason, L>,
   stopNote: { ja: "どうぞ棚をご覧ください。", en: "Please, have a look at the shelves." },
+  guess: {
+    head: { ja: "いまのお困りごとは、これに近いでしょうか？", en: "Does this sound like where you are stuck?" },
+    headSecond: { ja: "では、こちらはいかがでしょう？", en: "Then perhaps this one?" },
+    fits: { ja: "はい、近いです", en: "Yes, that fits" },
+    notQuite: { ja: "ちょっと違う", en: "Not quite" },
+    cantTell: { ja: "判断できない", en: "Can't tell" },
+    pickHead: { ja: "では、いちばん近いのはどれでしょう？", en: "Then which is closest?" },
+    none: { ja: "どれも違う", en: "None of these" },
+    thanks: {
+      ja: "ありがとうございます。この回の結果は、このタブの中だけに残ります。",
+      en: "Thank you. This round stays in this tab only.",
+    },
+    tally: {
+      ja: (n: number, right: number, wrong: number, unsure: number) =>
+        `今回の来店で ${n} 回: 近い ${right} / 違う ${wrong} / 判断できない ${unsure}`,
+      en: (n: number, right: number, wrong: number, unsure: number) =>
+        `${n} round(s) this visit: fits ${right} / not ${wrong} / can't tell ${unsure}`,
+    },
+    interval: {
+      ja: (lo: number, hi: number) => `近い割合の95%区間（Wilson）: ${lo}% から ${hi}%`,
+      en: (lo: number, hi: number) => `95% interval for the share that fit (Wilson): ${lo}% to ${hi}%`,
+    },
+    calibration: {
+      ja: (mean: number, rate: number) => `最初の推測につけた確率の平均は約 ${mean}%、近いと答えた割合は ${rate}%`,
+      en: (mean: number, rate: number) => `My first guesses averaged about ${mean}%. You said ${rate}% fit.`,
+    },
+    caution: {
+      ja: "回数が少ないうちは、ほとんど何も言えません。「近い」は、あなたの実感であって、原因だと確かめたわけではありません。",
+      en: "With few rounds this says very little. 'Fits' means it felt right to you, not that it was the cause.",
+    },
+    noneBanner: {
+      ja: "どの詰まりにも合わなかったので、下の棚は弱い当て推量です。出発点として見てください。",
+      en: "None of my stalls fit, so the shelf below is a weak guess. Treat it as a starting point.",
+    },
+    copy: { ja: "結果をJSONでコピー", en: "Copy results as JSON" },
+    copied: { ja: "コピーしました。どこにも送られていません。", en: "Copied. Nothing was sent anywhere." },
+  },
 
   resultsHead: { ja: "おすすめの品（適合度順）", en: "Recommended (by fit)" },
   browseBanner: {

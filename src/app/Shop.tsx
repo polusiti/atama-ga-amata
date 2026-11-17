@@ -15,6 +15,15 @@ import {
 import { readText } from "@/core/evidence";
 import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
 import { establishedSteps, stepStates } from "@/core/fringe";
+import {
+  MAX_GUESSES,
+  applyRejections,
+  exportRecords,
+  pickGuess,
+  summarize,
+  type GuessRecord,
+  type Verdict,
+} from "@/core/guess";
 import { countAuthored } from "@/core/limits";
 import { entropy, fisherRao, geodesicPoint } from "@/core/math";
 import { ANSWERS, DEFAULT_PARAMS, type Answer, type KnowledgeBase, type Lang, type Solution } from "@/core/types";
@@ -91,6 +100,11 @@ export default function Shop() {
   const [browseNeed, setBrowseNeed] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [rejected, setRejected] = useState<number[]>([]);
+  const [guessLog, setGuessLog] = useState<{ need: string; probability: number }[]>([]);
+  const [outcome, setOutcome] = useState<{ verdict: Verdict; actual: string | null } | null>(null);
+  const [records, setRecords] = useState<GuessRecord[]>([]);
+  const [recCopied, setRecCopied] = useState(false);
   const [clock, setClock] = useState("");
   const [log, setLog] = useState<LogItem[]>(() => [
     { from: "shop", u: decide({ event: "load", history: [] }) },
@@ -111,10 +125,12 @@ export default function Shop() {
   }, []);
 
   const noteVectors = useMemo(() => notes.map((n) => n.likelihood), [notes]);
-  const belief = useMemo(
+  const rawBelief = useMemo(
     () => replayBelief(kb, stated, entries, undefined, noteVectors),
     [kb, stated, entries, noteVectors],
   );
+  // A rejected guess is lowered, not removed (see guess.ts).
+  const belief = useMemo(() => applyRejections(rawBelief, rejected), [rawBelief, rejected]);
   const beforeLast = useMemo(
     () => (entries.length > 0 ? replayBelief(kb, stated, entries.slice(0, -1), undefined, noteVectors) : null),
     [kb, stated, entries, noteVectors],
@@ -244,7 +260,7 @@ export default function Shop() {
     if (!next) return;
     const nextEntries = [...entries, { qid: next.question.id, answer: a }];
     setEntries(nextEntries);
-    const b = replayBelief(kb, stated, nextEntries, undefined, noteVectors);
+    const b = applyRejections(replayBelief(kb, stated, nextEntries, undefined, noteVectors), rejected);
     const reason = shouldStop(b, kb, nextEntries.map((e) => e.qid));
     if (reason !== null) {
       setLog(
@@ -280,7 +296,37 @@ export default function Shop() {
     }
   }
 
+  function clearGuess() {
+    setRejected([]);
+    setGuessLog([]);
+    setOutcome(null);
+    setRecCopied(false);
+  }
+
+  const guess = pickGuess(belief, rejected);
+  const summary = useMemo(() => summarize(records), [records]);
+
+  function finishRound(verdict: Verdict, actual: string | null, guesses: { need: string; probability: number }[]) {
+    setRecords([...records, { pack: packId, answers: entries.length, guesses, verdict, actual }]);
+    setOutcome({ verdict, actual });
+    // The person named the closest stall: show that shelf instead of the rejected guesses.
+    if (verdict === "wrong" && actual && actual !== "none") setBrowseNeed(actual);
+  }
+  function currentGuesses() {
+    return guess ? [...guessLog, { need: kb.needs[guess.index].id, probability: guess.probability }] : guessLog;
+  }
+  function guessNotQuite() {
+    if (!guess) return;
+    setRejected([...rejected, guess.index]);
+    setGuessLog(currentGuesses());
+  }
+  function copyRecords() {
+    void navigator.clipboard?.writeText(exportRecords(records));
+    setRecCopied(true);
+  }
+
   function reset() {
+    clearGuess();
     setTab("home");
     setStated(null);
     setEntries([]);
@@ -488,9 +534,87 @@ export default function Shop() {
                           )}
                         </>
                       ) : (
-                        <p className="qtext">
-                          {stop ? t(ui.stopReason[stop], lang) : ""} {t(ui.stopNote, lang)}
-                        </p>
+                        <>
+                          <p className="small">
+                            {stop ? t(ui.stopReason[stop], lang) : ""} {t(ui.stopNote, lang)}
+                          </p>
+                          {outcome ? (
+                            <>
+                              <p className="qtext">{t(ui.guess.thanks, lang)}</p>
+                              <p className="small">
+                                {ui.guess.tally[lang](summary.rounds, summary.right, summary.wrong, summary.unsure)}
+                              </p>
+                              {summary.rate !== null && (
+                                <p className="small">
+                                  {ui.guess.interval[lang](
+                                    Math.round(summary.interval[0] * 100),
+                                    Math.round(summary.interval[1] * 100),
+                                  )}
+                                </p>
+                              )}
+                              {summary.rate !== null && summary.meanFirstProbability !== null && (
+                                <p className="small">
+                                  {ui.guess.calibration[lang](
+                                    Math.round(summary.meanFirstProbability * 100),
+                                    Math.round(summary.rate * 100),
+                                  )}
+                                </p>
+                              )}
+                              <p className="small">{t(ui.guess.caution, lang)}</p>
+                              <button className="linkbtn" onClick={copyRecords}>
+                                {t(ui.guess.copy, lang)}
+                              </button>
+                              {recCopied && <p className="small">{t(ui.guess.copied, lang)}</p>}
+                            </>
+                          ) : rejected.length >= MAX_GUESSES || !guess ? (
+                            <>
+                              <p className="qtext">{t(ui.guess.pickHead, lang)}</p>
+                              <ul className="answers">
+                                {kb.needs.map((n) => (
+                                  <li key={n.id}>
+                                    <button className="linkbtn" onClick={() => finishRound("wrong", n.id, guessLog)}>
+                                      {n.short[lang]}
+                                    </button>
+                                  </li>
+                                ))}
+                                <li>
+                                  <button className="linkbtn" onClick={() => finishRound("wrong", "none", guessLog)}>
+                                    {t(ui.guess.none, lang)}
+                                  </button>
+                                </li>
+                              </ul>
+                            </>
+                          ) : (
+                            <>
+                              <p className="qn">{t(rejected.length === 0 ? ui.guess.head : ui.guess.headSecond, lang)}</p>
+                              <p className="qtext">{kb.needs[guess.index].title[lang]}</p>
+                              <p className="small">{kb.needs[guess.index].gloss[lang]}</p>
+                              <ul className="answers">
+                                <li>
+                                  <button
+                                    className="linkbtn"
+                                    onClick={() => finishRound("right", kb.needs[guess.index].id, currentGuesses())}
+                                  >
+                                    {t(ui.guess.fits, lang)}
+                                  </button>
+                                </li>
+                                <li>
+                                  <button className="linkbtn" onClick={guessNotQuite}>
+                                    {t(ui.guess.notQuite, lang)}
+                                  </button>
+                                </li>
+                                <li>
+                                  <button
+                                    className="linkbtn"
+                                    onClick={() => finishRound("unsure", null, currentGuesses())}
+                                  >
+                                    {t(ui.guess.cantTell, lang)}
+                                  </button>
+                                </li>
+                              </ul>
+                            </>
+                          )}
+                        </>
                       )}
                     </div>
                   </div>
@@ -546,7 +670,10 @@ export default function Shop() {
                                 <span className="small">{q.text[lang]}</span>
                                 <br />
                                 <strong>{ui.answers[e.answer][lang]}</strong>{" "}
-                                <button className="linkbtn small" onClick={() => setEntries(entries.slice(0, i))}>
+                                <button className="linkbtn small" onClick={() => {
+                                  setEntries(entries.slice(0, i));
+                                  clearGuess();
+                                }}>
                                   [{t(ui.undo, lang)}]
                                 </button>
                               </li>
@@ -568,6 +695,7 @@ export default function Shop() {
                       </button>
                     </p>
                   )}
+                  {outcome?.actual === "none" && <p className="banner">{t(ui.guess.noneBanner, lang)}</p>}
                   {dim && <p className="dimnote">{t(ui.dimNote, lang)}</p>}
                   <ol className="items">
                     {shelf.map(({ solution, score }) => {
