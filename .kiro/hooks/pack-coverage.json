@@ -1,0 +1,13 @@
+{
+  "version": "v1",
+  "hooks": [
+    {
+      "name": "pack-coverage",
+      "description": "Extending a pack touches probes, moves, lexicon and samples. Report which needs have gaps. It reports only; it never fills in numbers (see steering/evidence.md).",
+      "trigger": "PostFileSave",
+      "matcher": "(src[\\\\/]data[\\\\/].*\\.ts|src[\\\\/]core[\\\\/]lexicon\\.ts)$",
+      "action": { "type": "command", "command": "npm run report" },
+      "timeout": 60
+    }
+  ]
+}

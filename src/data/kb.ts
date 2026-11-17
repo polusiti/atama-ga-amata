@@ -1,5 +1,8 @@
 import type { KnowledgeBase } from "@/core/types";
 
+// No source was read for these moves, so each carries the rule-of-thumb label (steering/evidence.md).
+const RULE = { ja: "経験則（検証していません）", en: "Rule of thumb, not tested" };
+
 /**
  * First shelf of the midnight department store.
  * Needs are situations that hurt. Solutions are things that could be built.
@@ -198,6 +201,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "毎回の入力が手間で、続かないことも", en: "Entry for every expense; many people stop" },
       fit: { "spend-blind": 0.75, "habit-drop": 0.15 },
+      source: RULE,
       requirements: [
         {
           ja: "ユーザーが支出を入力したとき、システムは日付・金額・カテゴリを保存する。",
@@ -218,6 +222,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "予算の初期設定が必要", en: "Needs an initial budget" },
       fit: { "spend-blind": 0.9, "habit-drop": 0.4 },
+      source: RULE,
       requirements: [
         {
           ja: "当月の支出が日割り予算を超える見込みのとき、システムは通知を1日1回までに制限して送る。",
@@ -238,6 +243,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "通知が多いと無視される", en: "Too many reminders get ignored" },
       fit: { "forget-deadline": 0.95, "manual-chore": 0.2 },
+      source: RULE,
       requirements: [
         {
           ja: "ユーザーが期限を登録したとき、システムは指定した時刻に通知を送る。",
@@ -258,6 +264,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "記録の元データが必要", en: "Needs source data to summarize" },
       fit: { "no-progress": 0.85, "habit-drop": 0.45, "spend-blind": 0.3 },
+      source: RULE,
       requirements: [
         {
           ja: "毎週決まった曜日に、システムはその週の記録を集計して表示する。",
@@ -278,6 +285,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "途切れた時に落ち込みやすい", en: "A broken streak can feel discouraging" },
       fit: { "habit-drop": 0.9, "no-progress": 0.4 },
+      source: RULE,
       requirements: [
         {
           ja: "ユーザーがその日の実施を記録したとき、システムは連続日数を更新する。",
@@ -298,6 +306,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "最初に取り込む作業が必要", en: "Initial import work" },
       fit: { "info-scatter": 0.95, "team-misalign": 0.3 },
+      source: RULE,
       requirements: [
         {
           ja: "ユーザーが検索語を入力したとき、システムは全ての取り込み済み情報源から一致する項目を返す。",
@@ -318,6 +327,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "最初は直接の改善にならない", en: "No direct speed-up at first" },
       fit: { "slow-unknown": 0.95, "no-progress": 0.2 },
+      source: RULE,
       requirements: [
         {
           ja: "リクエストを処理するとき、システムは処理時間を記録する。",
@@ -338,6 +348,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "原因が別なら効かず、古いデータの不具合を生む", en: "Useless if the cause is elsewhere; can serve stale data" },
       fit: { "slow-unknown": 0.4 },
+      source: RULE,
       requirements: [
         {
           ja: "同じ入力の要求が来たとき、システムは有効期間内なら保存済みの結果を返す。",
@@ -354,6 +365,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "最初の合意に時間がかかる", en: "Agreeing up front takes time" },
       fit: { "team-misalign": 0.95, "info-scatter": 0.3 },
+      source: RULE,
       requirements: [
         {
           ja: "作業を始める前に、システムは受け入れ条件を一覧で表示し、関係者全員の確認を求める。",
@@ -374,6 +386,7 @@ export const kb: KnowledgeBase = {
       },
       cost: { ja: "例外処理の設計が要る", en: "Edge cases need design" },
       fit: { "manual-chore": 0.95, "forget-deadline": 0.3 },
+      source: RULE,
       requirements: [
         {
           ja: "設定した時刻になったとき、システムは登録された手順を順に実行する。",

@@ -58,3 +58,10 @@ Kept for the Kiro write-up. Dates are JST.
 - Found by looking at a screenshot: after 'none of these' the shelf still showed 78% fit. Added a banner saying it is a weak guess; a chosen stall switches the shelf to that stall.
 - Known gap: verdicts measure 'felt right', not 'was the cause'. Needs real testers to mean anything.
 
+
+## 2026-11-17 Lessons from failures
+- Read three repositories for how they use Kiro (InteractionKit, rumornet, no-vibe-no-code). Took two ideas: turn the "how to extend" procedure into a hook, and write steering from the agent's own failures. Specs for both: `.kiro/specs/lessons-from-failures`.
+- Wrote `docs/incidents.md` (12 entries, blameless, labelled own or third party) and `.kiro/steering/agent-conduct.md` (11 rules, each pointing to an incident).
+- Added `src/core/coverage.ts` with 5 tests, `npm run report`, and the `pack-coverage` hook. The report found two needs without a sample sentence; two were added.
+- The census script found that none of the 10 `everyday` moves had a source field, which `evidence.md` forbids. The test for that rule looped over one pack only (INC-11). Wrote a failing test over all packs, then added the rule-of-thumb label. No citation was invented.
+- My scripted edit corrupted `kb.ts` (INC-12). Six test files could not load. I first read an old results file as current. Found by timestamps. 121 tests pass after the fix.

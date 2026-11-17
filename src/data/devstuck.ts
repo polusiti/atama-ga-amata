@@ -733,4 +733,6 @@ export const devstuckSamples: { needId: string; ja: string; en: string }[] = [
   { needId: "unchecked-assumption", ja: "そんなはずはないのに動かない", en: "It should work, so this can't be happening" },
   { needId: "unclear-requirement", ja: "やり取りの途中で、本当はこうしたかった、と目的が変わってしまった", en: "The requirements keep changing; it is a moving target" },
   { needId: "worn-out", ja: "同じ問題にもう何時間も向き合っていて、疲れた", en: "I am exhausted after hours on this bug" },
+  { needId: "goal-swapped", ja: "どうすれば動くかより、このエラーを回避する方法を探している", en: "I only want a workaround; how do I get past this error?" },
+  { needId: "unfalsifiable", ja: "直ったかどうか確かめようがない。何を試しても分からない", en: "There is no way to test whether the fix worked" },
 ];

@@ -136,3 +136,14 @@ describe("problem-solving pack (requirement 9)", () => {
     expect(qs.some((q) => !q.practice)).toBe(true);
   });
 });
+
+describe("evidence rule: every move in every pack states a source or the rule-of-thumb label", () => {
+  for (const pack of Object.values(packs)) {
+    it(`${pack.id}`, () => {
+      for (const s of pack.kb.solutions) {
+        expect(s.source?.en?.trim(), `${pack.id}/${s.id} en`).toBeTruthy();
+        expect(s.source?.ja?.trim(), `${pack.id}/${s.id} ja`).toBeTruthy();
+      }
+    });
+  }
+});
