@@ -97,3 +97,13 @@ Source labels: `own` means it happened in this project and is in `docs/journal.m
 - **Conditions:** Each reply was shaped by the newest example. The principle was not written down in one sentence before designing, so it could not be checked against a different example. This is the pattern of INC-03 (math, twice) in a new form.
 - **Noticed:** By the user, twice in a row.
 - **Changed:** Rule 14 in `agent-conduct.md`. The principle is now written as: when the person's state and the plan clearly do not fit, say so, with numbers and a way forward, and never blame the person.
+## INC-17 The same shape of long command was sent again after it was interrupted (own)
+- **Happened:** During the checks of this day, a command that ran for a long time was interrupted by the environment several times. The next command had the same shape (a long chain in one call, waiting for the result), and was interrupted too. The shape was changed only after several tries: start the work in the background, and read the result file in a separate call.
+- **Conditions:** Each interruption was read as bad luck and not as a sign that the shape does not work here. No count of failed tries of the same approach was kept. Nothing asked whether a new fact had appeared between tries. Old rule 12 and rule 4 covered reading results, not repeating an approach.
+- **Noticed:** By the agent itself, after the repetition, and again when the user asked why the checks kept stopping.
+- **Exact count:** not stated. The IDE log does not mark an interruption the way it marks a finished command, so the number of repeats cannot be recovered from it. "Several" is what the conversation shows.
+- **Changed:** `pit-guard.md`: after two failed tries of the same approach, and before a third, call `pit_check` with the history. The tool compares the chance that another try works with the chance that a fresh approach works. This incident is the first real case for the product's own demo.
+
+## INC-02, second recurrence (own)
+- **Happened:** Two edits to the same file were sent in one step again (the task list of the pit-escape spec). Both landed, and a search confirmed it.
+- **Changed:** No change to the rule. It is recorded here because the pattern repeats, and the rule is still "one writer per file".

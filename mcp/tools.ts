@@ -6,7 +6,9 @@ import {
   shouldStop,
   type AnswerEntry,
 } from "@/core/engine";
+import { exitMoves, roughMoves } from "@/core/escape";
 import { contributions, explainWhy, traceBelief } from "@/core/explain";
+import { PIT_PARAMS, pitCheck, type Attempt } from "@/core/pit";
 import { establishedSteps, stepStates } from "@/core/fringe";
 import { ANSWERS, type Answer, type KnowledgeBase, type L10n } from "@/core/types";
 import { packs, type Pack, type PackId } from "@/data/packs";
@@ -18,6 +20,8 @@ export interface ToolInput {
   answers?: { qid: string; answer: string }[];
   stated?: string | null;
   need?: string;
+  /** For pit_check: the recent tries, oldest first. */
+  attempts?: { newApproach: boolean; newFact?: boolean }[];
 }
 
 export type ToolResult = { ok: true; data: unknown } | { ok: false; error: string };
@@ -164,6 +168,57 @@ export function explain(input: ToolInput): ToolResult {
             })),
           }
         : null,
+    },
+  };
+}
+
+/**
+ * The antlion pit. Given the recent tries, says whether another try of the same approach is still the better bet.
+ * With a pack answer list it also ranks the likely causes and returns up to three exit moves that name a source.
+ * The four numbers behind the verdict are set by hand; the result shows both probabilities and does not state a count of tries.
+ */
+export function pitCheckTool(input: ToolInput): ToolResult {
+  const raw = input.attempts ?? [];
+  if (!Array.isArray(raw)) return fail("attempts must be a list.");
+  for (const a of raw) {
+    if (typeof a !== "object" || a === null || typeof a.newApproach !== "boolean") {
+      return fail("Each attempt needs newApproach: true or false.");
+    }
+  }
+  const attempts: Attempt[] = raw.map((a) => ({ newApproach: a.newApproach }));
+  const report = pitCheck(attempts);
+  const newFacts = raw.filter((a) => a.newFact === true).length;
+
+  const p = parse({ ...input, pack: input.pack ?? "devstuck" });
+  if (typeof p === "string") return fail(p);
+  const belief = replayBelief(p.kb, p.stated, p.entries);
+  const move = (m: { solution: { id: string; title: L10n; cost: L10n; requirements: L10n[]; source?: L10n }; score: number }) => ({
+    id: m.solution.id,
+    title: en(m.solution.title),
+    score: round(m.score),
+    cost: en(m.solution.cost),
+    steps: m.solution.requirements.map(en),
+    source: m.solution.source ? en(m.solution.source) : "none given",
+  });
+  const sourced = exitMoves(p.kb, belief, 3);
+  const verdict = report.verdict;
+  return {
+    ok: true,
+    data: {
+      verdict,
+      sameApproachFailuresInRun: report.failuresInRun,
+      newFactsReported: newFacts,
+      chanceNextTryOfSameApproachWorks: round(report.pNext),
+      chanceFreshApproachWorks: round(report.pSwitch),
+      numbersAreSetByHand: { ...PIT_PARAMS },
+      reading:
+        verdict === "switch"
+          ? "The same approach keeps failing. Another try of it is the worse bet by these numbers. Stop repeating it and choose an exit move."
+          : "The same approach has not failed often enough to say it is the worse bet. Continue, and record each try.",
+      exitMoves: verdict === "switch" ? sourced.map(move) : [],
+      noSourcedMoveFits:
+        verdict === "switch" && sourced.length === 0 ? "No move that names a source fits these answers. Rule-of-thumb moves are listed separately." : null,
+      ruleOfThumbMoves: verdict === "switch" ? roughMoves(p.kb, belief, 2).map(move) : [],
     },
   };
 }

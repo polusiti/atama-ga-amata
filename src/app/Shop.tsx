@@ -14,6 +14,7 @@ import {
 } from "@/core/engine";
 import { readText } from "@/core/evidence";
 import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
+import { checkCart } from "@/core/cart";
 import { establishedSteps, stepStates } from "@/core/fringe";
 import {
   MAX_GUESSES,
@@ -99,6 +100,7 @@ export default function Shop() {
   const [pendingCart, setPendingCart] = useState<{ id: string } | null>(null);
   const [browseNeed, setBrowseNeed] = useState<string | null>(null);
   const [openId, setOpenId] = useState<string | null>(null);
+  const [plan, setPlan] = useState<string[]>([]);
   const [copied, setCopied] = useState(false);
   const [rejected, setRejected] = useState<number[]>([]);
   const [guessLog, setGuessLog] = useState<{ need: string; probability: number }[]>([]);
@@ -145,6 +147,11 @@ export default function Shop() {
 
   // Steps already in place, blocked or next (problem-solving packs only).
   const established = useMemo(() => establishedSteps(kb, entries), [kb, entries]);
+  const sheets = pack.sheets;
+  const planReport = useMemo(
+    () => checkCart(kb, plan, new Set(established), sheets ?? {}),
+    [kb, plan, established, sheets],
+  );
   const states = useMemo(() => stepStates(kb, established), [kb, established]);
   const orderedRanked = useMemo(() => {
     if (!pack.useFringe) return ranked;
@@ -332,6 +339,7 @@ export default function Shop() {
     setEntries([]);
     setNotes([]);
     setCartId(null);
+    setPlan([]);
     setPendingCart(null);
     setBrowseNeed(null);
     setOpenId(null);
@@ -731,6 +739,29 @@ export default function Shop() {
                                 {t(ui.pack.sourceLabel, lang)}: {solution.source[lang]}
                               </p>
                             )}
+                            {sheets && (
+                              <details className="sheet">
+                                <summary>{t(ui.sheet.head, lang)}</summary>
+                                {sheets[solution.id] ? (
+                                  <>
+                                    <p className="small">
+                                      <b>{t(ui.sheet.theory, lang)}:</b> {sheets[solution.id].theory[lang]}
+                                    </p>
+                                    <p className="small">
+                                      <b>{t(ui.sheet.evidence, lang)}:</b>{" "}
+                                      {t(ui.sheet.levels[sheets[solution.id].evidence.level], lang)}.{" "}
+                                      {sheets[solution.id].evidence.note[lang]}
+                                    </p>
+                                    <p className="small">
+                                      <b>{t(ui.sheet.unfitWhen, lang)}:</b> {sheets[solution.id].unfitWhen[lang]}
+                                    </p>
+                                    <p className="small">{t(ui.sheet.caveat, lang)}</p>
+                                  </>
+                                ) : (
+                                  <p className="small">{t(ui.sheet.none, lang)}</p>
+                                )}
+                              </details>
+                            )}
                             {openId === solution.id && (
                               <div className="reqs">
                                 <b>{t(ui.reqHead, lang)}</b>
@@ -752,13 +783,25 @@ export default function Shop() {
                               <span>{Math.round(score * 100)}%</span>
                             </div>
                           </div>
-                          <button
-                            className={cartId === solution.id ? "" : "default"}
-                            onClick={() => requestCart(solution.id, score)}
-                            disabled={cartId === solution.id}
-                          >
-                            {cartId === solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
-                          </button>
+                          <div className="itembtns">
+                            <button
+                              className={cartId === solution.id ? "" : "default"}
+                              onClick={() => requestCart(solution.id, score)}
+                              disabled={cartId === solution.id}
+                            >
+                              {cartId === solution.id ? t(ui.inCart, lang) : t(ui.addToCart, lang)}
+                            </button>
+                            {sheets && (
+                              <button
+                                onClick={() =>
+                                  setPlan((p) => (p.includes(solution.id) ? p : [...p, solution.id]))
+                                }
+                                disabled={plan.includes(solution.id)}
+                              >
+                                {plan.includes(solution.id) ? t(ui.plan.inPlan, lang) : t(ui.plan.add, lang)}
+                              </button>
+                            )}
+                          </div>
                         </li>
                       );
                     })}
@@ -907,6 +950,51 @@ export default function Shop() {
             {tab === "cart" && (
               <section>
                 <h2>{t(pack.texts.output.cartHead, lang)}</h2>
+                {sheets && (
+                  <fieldset>
+                    <legend>{t(ui.plan.head, lang)}</legend>
+                    {plan.length === 0 ? (
+                      <p>{t(ui.plan.empty, lang)}</p>
+                    ) : (
+                      <>
+                        {planReport.allNoData && <p>{t(ui.plan.allNoData, lang)}</p>}
+                        <p className="small">{t(ui.plan.order, lang)}:</p>
+                        <ol>
+                          {planReport.order.map((id) => (
+                            <li key={id}>
+                              {kb.solutions.find((s) => s.id === id)?.title[lang]}{" "}
+                              <button className="linkbtn small" onClick={() => setPlan((p) => p.filter((x) => x !== id))}>
+                                [{t(ui.remove, lang)}]
+                              </button>
+                            </li>
+                          ))}
+                        </ol>
+                        {planReport.suggestAdd.length > 0 && (
+                          <>
+                            <p className="small">{t(ui.plan.missing, lang)}:</p>
+                            <ul>
+                              {planReport.suggestAdd.map((id) => (
+                                <li key={id}>
+                                  {kb.solutions.find((s) => s.id === id)?.title[lang]}{" "}
+                                  <button className="linkbtn small" onClick={() => setPlan((p) => [...p, id])}>
+                                    [{t(ui.plan.addMissing, lang)}]
+                                  </button>
+                                </li>
+                              ))}
+                            </ul>
+                          </>
+                        )}
+                        <p className="small">
+                          {t(ui.plan.steps, lang)}: {planReport.steps}. {t(ui.plan.evidence, lang)}:{" "}
+                          {t(ui.sheet.levels["method-published"], lang)} {planReport.evidence["method-published"]},{" "}
+                          {t(ui.sheet.levels["problem-studied"], lang)} {planReport.evidence["problem-studied"]},{" "}
+                          {t(ui.sheet.levels.none, lang)} {planReport.evidence.none}.
+                        </p>
+                        <p>{t(ui.plan.back, lang)}</p>
+                      </>
+                    )}
+                  </fieldset>
+                )}
                 {!cartSolution ? (
                   <p>{t(ui.cartEmpty, lang)}</p>
                 ) : (

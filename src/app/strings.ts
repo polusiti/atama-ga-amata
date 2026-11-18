@@ -301,6 +301,44 @@ export const ui = {
     voice: { ja: "声で読み上げる（この端末内の音声のみ）", en: "Read aloud (on-device voice only)" },
     notesHead: { ja: "あなたの言葉", en: "YOUR WORDS" },
   },
+  sheet: {
+    head: { ja: "仕様書き（理論とデータ）", en: "Spec sheet (theory and data)" },
+    theory: { ja: "理論", en: "Theory" },
+    evidence: { ja: "データ", en: "Data" },
+    unfitWhen: { ja: "合わないとき", en: "May not fit when" },
+    none: {
+      ja: "この手について、記録した理論やデータはありません。",
+      en: "No theory or data is recorded for this move.",
+    },
+    levels: {
+      none: { ja: "データなし", en: "no data" },
+      "problem-studied": { ja: "問題は研究されている", en: "the problem is studied" },
+      "method-published": { ja: "手法が公表されている", en: "the method is published" },
+    },
+    caveat: {
+      ja: "出所は手法の由来を示すだけで、この場面で効くとは示しません。",
+      en: "A source says where a method comes from. It does not show the method works here.",
+    },
+  },
+  plan: {
+    head: { ja: "抜け出しの計画", en: "Exit plan" },
+    add: { ja: "計画に入れる", en: "Add to plan" },
+    inPlan: { ja: "計画に入っています", en: "In plan" },
+    empty: { ja: "計画はまだ空です。手を選ぶと、順番と前提を確認します。", en: "The plan is empty. Pick moves and the shop checks order and prerequisites." },
+    order: { ja: "進める順", en: "Order" },
+    steps: { ja: "手順の数", en: "Steps" },
+    missing: { ja: "先に必要かもしれない手", en: "Moves that may be needed first" },
+    addMissing: { ja: "追加", en: "Add" },
+    evidence: { ja: "データの内訳", en: "Evidence" },
+    allNoData: {
+      ja: "選んだ手は、どれも記録したデータがありません。経験則として、試せる範囲で試せます。",
+      en: "None of the chosen moves has recorded data. They are rules of thumb, to try as far as you like.",
+    },
+    back: {
+      ja: "試したあと、結果を持って戻ってこられます。新しい試みとして数え直します。",
+      en: "After trying, you can come back with the result. It counts as a new attempt.",
+    },
+  },
   pack: {
     choose: { ja: "棚を選ぶ", en: "Choose a shelf" },
     done: { ja: "済み", en: "in place" },

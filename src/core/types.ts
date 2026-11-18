@@ -48,6 +48,19 @@ export interface Solution {
   source?: L10n;
 }
 
+/**
+ * What is known about a move, in the form of a product page.
+ * `none`: no test of this move in this use. `problem-studied`: a study shows the problem the move addresses.
+ * `method-published`: a published method, not tested for this product. None of the levels says the move works here.
+ */
+export type EvidenceLevel = "none" | "problem-studied" | "method-published";
+
+export interface SpecSheet {
+  theory: L10n;
+  evidence: { level: EvidenceLevel; note: L10n };
+  unfitWhen: L10n;
+}
+
 export interface KnowledgeBase {
   needs: Need[];
   questions: Question[];

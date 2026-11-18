@@ -1,6 +1,7 @@
 import { everydayLexicon, samples as everydaySamples } from "@/core/lexicon";
-import type { KnowledgeBase, L10n, Lexicon } from "@/core/types";
+import type { KnowledgeBase, L10n, Lexicon, SpecSheet } from "@/core/types";
 import { devstuck, devstuckLexicon, devstuckSamples } from "./devstuck";
+import { devstuckSheets } from "./devstuck-sheets";
 import { kb as everyday } from "./kb";
 
 export type PackId = "devstuck" | "everyday";
@@ -38,6 +39,8 @@ export interface Pack {
   samples: { needId: string; ja: string; en: string }[];
   /** Show step status (done, blocked, next) built from the probes' `practice` and the steps' `requires`. */
   useFringe: boolean;
+  /** Spec sheets by move id. A move without a sheet has no recorded theory or data. */
+  sheets?: Record<string, SpecSheet>;
   texts: PackTexts;
 }
 
@@ -49,6 +52,7 @@ export const packs: Record<PackId, Pack> = {
     lexicon: devstuckLexicon,
     samples: devstuckSamples,
     useFringe: true,
+    sheets: devstuckSheets,
     texts: {
       tagline: { ja: "壁打ちが止まったら、次の一手を", en: "When the back-and-forth stalls, find the next move" },
       browse: { ja: "詰まりの種類から探す", en: "BROWSE BY STALL" },

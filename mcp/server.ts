@@ -1,7 +1,7 @@
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
 import { StdioServerTransport } from "@modelcontextprotocol/sdk/server/stdio.js";
 import { z } from "zod";
-import { diagnose, explain, listPacks, nextQuestion, type ToolResult } from "./tools";
+import { diagnose, explain, listPacks, nextQuestion, pitCheckTool, type ToolResult } from "./tools";
 
 const answers = z
   .array(z.object({ qid: z.string(), answer: z.string() }))
@@ -40,6 +40,19 @@ server.tool(
   "HOW (which answers moved one need) and WHY (why the next probe is asked) for one need.",
   { ...base, need: z.string().describe("Need id from list_packs") },
   async (a) => reply(explain(a)),
+);
+
+server.tool(
+  "pit_check",
+  "Antlion pit check. Give the recent tries, oldest first, as {newApproach, newFact}. Says whether another try of the same approach is still the better bet, with both chances, and when it is not, returns up to three exit moves that name a source. Call it after two failed tries of the same approach, before a third.",
+  {
+    ...base,
+    attempts: z
+      .array(z.object({ newApproach: z.boolean(), newFact: z.boolean().optional() }))
+      .default([])
+      .describe("Recent tries, oldest first. newApproach: this try used a different approach from the one before. newFact: a new fact appeared."),
+  },
+  async (a) => reply(pitCheckTool(a)),
 );
 
 void server.connect(new StdioServerTransport());

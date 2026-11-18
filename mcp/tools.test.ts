@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { diagnose, explain, listPacks, nextQuestion } from "./tools";
+import { diagnose, explain, listPacks, nextQuestion, pitCheckTool } from "./tools";
 
 type Data = Record<string, any>;
 const data = (r: { ok: boolean; data?: unknown; error?: string }) => {
@@ -64,5 +64,58 @@ describe("mcp tools", () => {
     expect(diagnose({ answers: [{ qid: q, answer: "yes" }, { qid: q, answer: "no" }] })).toMatchObject({ ok: false });
     expect(explain({ need: "nope" })).toMatchObject({ ok: false });
     expect(diagnose({ pack: "__proto__" })).toMatchObject({ ok: false });
+  });
+});
+
+describe("pit_check", () => {
+  const same = (n: number) => Array.from({ length: n }, () => ({ newApproach: false, newFact: false }));
+
+  it("persists at the start and returns no exit moves", () => {
+    const d = data(pitCheckTool({ attempts: [] }));
+    expect(d.verdict).toBe("persist");
+    expect(d.exitMoves).toEqual([]);
+  });
+
+  it("switches after repeated failures of the same approach and returns only moves that name a source", () => {
+    const d = data(pitCheckTool({ attempts: same(4) }));
+    expect(d.verdict).toBe("switch");
+    expect(d.chanceNextTryOfSameApproachWorks).toBeLessThan(d.chanceFreshApproachWorks);
+    expect(d.exitMoves.length).toBeGreaterThan(0);
+    expect(d.exitMoves.length).toBeLessThanOrEqual(3);
+    for (const m of d.exitMoves) expect(m.source).not.toBe("Rule of thumb, not tested");
+  });
+
+  it("states both chances and that the numbers are set by hand, and no count of tries as a rule", () => {
+    const d = data(pitCheckTool({ attempts: same(3) }));
+    expect(typeof d.chanceNextTryOfSameApproachWorks).toBe("number");
+    expect(typeof d.chanceFreshApproachWorks).toBe("number");
+    expect(d.numbersAreSetByHand).toBeDefined();
+    expect(JSON.stringify(d)).not.toMatch(/after \d+ tries/i);
+  });
+
+  it("a new approach resets the count: a long history that ends with a new approach persists", () => {
+    const d = data(pitCheckTool({ attempts: [...same(8), { newApproach: true, newFact: true }] }));
+    expect(d.sameApproachFailuresInRun).toBe(0);
+    expect(d.verdict).toBe("persist");
+  });
+
+  it("a history made only of new approaches never says switch", () => {
+    const d = data(pitCheckTool({ attempts: Array.from({ length: 10 }, () => ({ newApproach: true })) }));
+    expect(d.verdict).toBe("persist");
+  });
+
+  it("is deterministic", () => {
+    expect(pitCheckTool({ attempts: same(4) })).toEqual(pitCheckTool({ attempts: same(4) }));
+  });
+
+  it("returns errors for bad input instead of throwing", () => {
+    expect(pitCheckTool({ attempts: [{ newApproach: "yes" } as never] })).toMatchObject({ ok: false });
+    expect(pitCheckTool({ attempts: "none" as never })).toMatchObject({ ok: false });
+    expect(pitCheckTool({ attempts: same(3), pack: "nope" })).toMatchObject({ ok: false });
+  });
+
+  it("uses the cause answers to rank the exits (no reproduction first leads to a reproduction move)", () => {
+    const d = data(pitCheckTool({ attempts: same(4), answers: [{ qid: "s-flaky", answer: "yes" }] }));
+    expect(d.exitMoves.map((m: { id: string }) => m.id)).toContain("fix-repro");
   });
 });
