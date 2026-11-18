@@ -19,3 +19,4 @@ Each rule comes from an incident in `docs/incidents.md`. Keep this list short. A
 11. A rule needs a check that covers every place it applies, not one example. (INC-11)
 12. Before reading a log or an output file, compare its last-write time with the present time. "No line found" counts as evidence only if the file was being written at the time in question. (INC-15)
 13. After writing a Kiro configuration file, run `npm run check:kiro` and read the live IDE log for "not a recognized name" or "failed schema validation". Do not describe a hook, agent or MCP server as working until the log or an observed effect shows it. (INC-13, INC-14)
+14. When the user gives an example, first write the principle behind it in one sentence. Then check that the design also holds for a different example from another field. Do not design around the example. (INC-16, INC-03)
