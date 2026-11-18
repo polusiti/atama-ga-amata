@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import type { Lang } from "@/core/types";
-import { Pumpkin } from "./parts";
+import { Mascot } from "./parts";
 
 export interface Line {
   from: "shop" | "you";
@@ -85,7 +85,7 @@ export function Agent(p: Props) {
       </div>
       <div className="window-body">
         <div className="agent-head">
-          <Pumpkin size={44} />
+          <Mascot size={80} />
         </div>
         <div className="agent-log sunken-panel" ref={logRef} role="log" aria-live="polite">
           {p.lines.map((l, i) => (
