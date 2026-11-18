@@ -12,7 +12,8 @@
         "list_packs",
         "next_question",
         "diagnose",
-        "explain"
+        "explain",
+        "pit_check" 
       ]
     }
   }

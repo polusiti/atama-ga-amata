@@ -25,7 +25,7 @@ body {
 .taskbar,
 .taskbar * {
   font-family: "Pixelated MS Sans Serif", "MS PGothic", "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   -webkit-font-smoothing: auto;
 }
 
@@ -90,14 +90,14 @@ body {
 .page,
 .page * {
   font-family: Verdana, Arial, "MS PGothic", "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   line-height: 1.5;
 }
 
 .page {
   --blue: #006699;
   --link: #003399;
-  --orange: #cc6600;
+  --orange: #a14a00;
   --yellow: #ffcc66;
   --pumpkin: #ff8a1f;
 }
@@ -129,13 +129,13 @@ body {
 }
 
 .brand .tagline {
-  font-size: 12px !important;
+  font-size: 14px !important;
   color: #555;
   padding-bottom: 6px;
 }
 
 .toplinks {
-  font-size: 11px !important;
+  font-size: 13px !important;
   padding-bottom: 6px;
 }
 
@@ -157,7 +157,7 @@ body {
   background: #f6e7a8;
   color: #3a2a10;
   text-shadow: none;
-  font-size: 11px !important;
+  font-size: 13px !important;
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
@@ -192,14 +192,14 @@ body {
   background: transparent;
   color: #fff;
   text-shadow: none;
-  font-size: 11px !important;
+  font-size: 13px !important;
   font-weight: 700;
   text-transform: uppercase;
   cursor: pointer;
 }
 
 .page .subnav button:hover {
-  background: #0b7fb8;
+  background: #095f8f;
 }
 
 .page .subnav button:not(:disabled):active {
@@ -222,7 +222,7 @@ body {
 
 .content h2 {
   margin: 0 0 8px;
-  font-size: 17px !important;
+  font-size: 20px !important;
   color: var(--orange);
 }
 
@@ -231,7 +231,7 @@ body {
 }
 
 .small {
-  font-size: 12px !important;
+  font-size: 14px !important;
   color: #444;
 }
 
@@ -310,7 +310,7 @@ body {
   padding: 2px 8px;
   background: var(--blue);
   color: #fff;
-  font-size: 11px !important;
+  font-size: 13px !important;
   letter-spacing: 0.04em;
   text-transform: uppercase;
 }
@@ -330,7 +330,7 @@ body {
 
 .qn {
   color: #6b4a00;
-  font-size: 12px !important;
+  font-size: 14px !important;
   margin-bottom: 0 !important;
 }
 
@@ -435,7 +435,7 @@ body {
 
 .page .title {
   font-weight: 700;
-  font-size: 14px !important;
+  font-size: 16px !important;
 }
 
 .reqs {
@@ -451,8 +451,8 @@ body {
 }
 
 .center.dim .items {
-  opacity: 0.45;
-  filter: grayscale(0.7);
+  opacity: 0.72;
+  filter: grayscale(0.3);
 }
 
 .tag {
@@ -461,7 +461,7 @@ body {
   padding: 0 5px;
   background: var(--blue);
   color: #fff;
-  font-size: 11px !important;
+  font-size: 13px !important;
   vertical-align: middle;
 }
 
@@ -494,7 +494,7 @@ body {
 }
 
 .up {
-  color: #138a13;
+  color: #0f6e0f;
   font-weight: 700;
 }
 
@@ -544,7 +544,7 @@ body {
 .specbox {
   white-space: pre-wrap;
   font-family: "Courier New", monospace !important;
-  font-size: 12px !important;
+  font-size: 14px !important;
   max-height: 260px;
   overflow: auto;
 }
@@ -555,7 +555,7 @@ details {
 
 details code {
   font-family: "Courier New", monospace !important;
-  font-size: 11px !important;
+  font-size: 13px !important;
   word-break: break-all;
 }
 
@@ -761,7 +761,7 @@ details.how summary {
 }
 
 .tag.status.next {
-  background: #138a13;
+  background: #0f6e0f;
 }
 
 .tag.status.blocked {
@@ -769,5 +769,29 @@ details.how summary {
 }
 
 .tag.status.done {
-  background: #777;
+  background: #5f5f5f;
+}
+
+/* Legibility: disabled and address text stay readable on the grey and white of the window. */
+.window button:disabled,
+.window input:disabled {
+  color: #404040;
+  text-shadow: none;
+}
+.addressbar input {
+  color: #404040;
+}
+
+/* The pixel font is drawn for 11px. Stretched to 15px it squeezes sideways, so window bodies use the same readable face as the page. Title bars keep the pixel font. */
+.window-body,
+.window-body * {
+  font-family: Verdana, Arial, "Yu Gothic UI", "Hiragino Sans", Meiryo, sans-serif;
+}
+
+/* Two small fixes seen in the screenshot: the read-aloud label lines overlapped, and the example in the input was cut. */
+.window input[type=checkbox] + label {
+  line-height: 1.4;
+}
+.agent-form input {
+  font-size: 14px !important;
 }
