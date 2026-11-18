@@ -15,6 +15,8 @@ import {
 import { readText } from "@/core/evidence";
 import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
 import { checkCart } from "@/core/cart";
+import { exitMoves, roughMoves } from "@/core/escape";
+import { pitCheck } from "@/core/pit";
 import { establishedSteps, stepStates } from "@/core/fringe";
 import {
   MAX_GUESSES,
@@ -34,7 +36,7 @@ import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
 import { t, ui } from "./strings";
 
-type Tab = "home" | "shop" | "cart" | "about";
+type Tab = "pit" | "home" | "shop" | "cart" | "about";
 type LogItem = { from: "you"; text: string } | { from: "shop"; u: Utterance };
 interface Note {
   text: string;
@@ -92,7 +94,8 @@ export default function Shop() {
     document.documentElement.lang = lang;
   }, [lang]);
   const [packId, setPackId] = useState<PackId>(DEFAULT_PACK);
-  const [tab, setTab] = useState<Tab>("home");
+  const [tab, setTab] = useState<Tab>(packs[DEFAULT_PACK].sheets ? "pit" : "home");
+  const [attempts, setAttempts] = useState<{ newApproach: boolean; newFact: boolean }[]>([]);
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -148,6 +151,9 @@ export default function Shop() {
   // Steps already in place, blocked or next (problem-solving packs only).
   const established = useMemo(() => establishedSteps(kb, entries), [kb, entries]);
   const sheets = pack.sheets;
+  const pitReport = useMemo(() => pitCheck(attempts), [attempts]);
+  const exits = useMemo(() => exitMoves(kb, belief, 3), [kb, belief]);
+  const rough = useMemo(() => roughMoves(kb, belief, 3), [kb, belief]);
   const planReport = useMemo(
     () => checkCart(kb, plan, new Set(established), sheets ?? {}),
     [kb, plan, established, sheets],
@@ -340,6 +346,7 @@ export default function Shop() {
     setNotes([]);
     setCartId(null);
     setPlan([]);
+    setAttempts([]);
     setPendingCart(null);
     setBrowseNeed(null);
     setOpenId(null);
@@ -349,6 +356,7 @@ export default function Shop() {
   function switchPack(id: PackId) {
     setPackId(id);
     reset();
+    setTab(packs[id].sheets ? "pit" : "home");
   }
 
   const address = `http://www.atamagazon.example/exec/${tab}/${
@@ -356,6 +364,7 @@ export default function Shop() {
   }`;
 
   const tabDefs: { id: Tab; label: string }[] = [
+    ...(sheets ? [{ id: "pit" as Tab, label: t(ui.pit.tab, lang) }] : []),
     { id: "home", label: t(ui.tabs.home, lang) },
     { id: "shop", label: t(ui.tabs.shop, lang) },
     { id: "cart", label: `${t(ui.tabs.cart, lang)} (${cartId ? 1 : 0})` },
@@ -437,6 +446,128 @@ export default function Shop() {
           </div>
 
           <div className="content">
+            {tab === "pit" && sheets && (
+              <section data-testid="pit">
+                <h2>{t(ui.pit.head, lang)}</h2>
+                <p>{t(ui.pit.intro, lang)}</p>
+                <fieldset>
+                  <ol className="attempts">
+                    {attempts.map((a, i) => (
+                      <li key={i}>
+                        <b>{ui.pit.tryN[lang](i + 1)}</b>{" "}
+                        <span className="field-row">
+                          <input
+                            id={`na-${i}`}
+                            type="checkbox"
+                            checked={a.newApproach}
+                            onChange={(e) =>
+                              setAttempts((xs) => xs.map((x, j) => (j === i ? { ...x, newApproach: e.target.checked } : x)))
+                            }
+                          />
+                          <label htmlFor={`na-${i}`}>{t(ui.pit.newApproach, lang)}</label>
+                        </span>{" "}
+                        <span className="field-row">
+                          <input
+                            id={`nf-${i}`}
+                            type="checkbox"
+                            checked={a.newFact}
+                            onChange={(e) =>
+                              setAttempts((xs) => xs.map((x, j) => (j === i ? { ...x, newFact: e.target.checked } : x)))
+                            }
+                          />
+                          <label htmlFor={`nf-${i}`}>{t(ui.pit.newFact, lang)}</label>
+                        </span>{" "}
+                        <button className="linkbtn small" onClick={() => setAttempts((xs) => xs.filter((_, j) => j !== i))}>
+                          [{t(ui.remove, lang)}]
+                        </button>
+                      </li>
+                    ))}
+                  </ol>
+                  <button className="default" onClick={() => setAttempts((xs) => [...xs, { newApproach: false, newFact: false }])}>
+                    {t(ui.pit.add, lang)}
+                  </button>
+                </fieldset>
+                {attempts.length === 0 ? (
+                  <p>{t(ui.pit.empty, lang)}</p>
+                ) : (
+                  <fieldset data-testid="pit-verdict">
+                    <p className="small">{ui.pit.run[lang](pitReport.failuresInRun)}</p>
+                    <p>
+                      {t(ui.pit.pNext, lang)}: <strong>{Math.round(pitReport.pNext * 100)}%</strong>
+                      <br />
+                      {t(ui.pit.pSwitch, lang)}: <strong>{Math.round(pitReport.pSwitch * 100)}%</strong>
+                    </p>
+                    <p className="small">{t(ui.pit.handSet, lang)}</p>
+                    <p>
+                      <strong>{t(pitReport.verdict === "switch" ? ui.pit.switch : ui.pit.persist, lang)}</strong>
+                    </p>
+                  </fieldset>
+                )}
+                {attempts.length > 0 && pitReport.verdict === "switch" && (
+                  <fieldset data-testid="pit-exits">
+                    <legend>{t(ui.pit.exitsHead, lang)}</legend>
+                    <p className="small">
+                      {t(ui.pit.rankNote, lang)}{" "}
+                      <button className="linkbtn small" onClick={() => setTab("shop")}>
+                        [{t(ui.pit.answerMore, lang)}]
+                      </button>
+                    </p>
+                    {exits.length === 0 && <p>{t(ui.pit.noSourced, lang)}</p>}
+                    <ul className="exits">
+                      {exits.map((m) => (
+                        <li key={m.solution.id}>
+                          <strong>{m.solution.title[lang]}</strong>
+                          <p>{m.solution.pitch[lang]}</p>
+                          <p className="small">
+                            {t(ui.costLabel, lang)}: {m.solution.cost[lang]}
+                          </p>
+                          {m.solution.source && (
+                            <p className="small">
+                              {t(ui.pack.sourceLabel, lang)}: {m.solution.source[lang]}
+                            </p>
+                          )}
+                          <p className="small">
+                            {t(ui.sheet.evidence, lang)}: {t(ui.sheet.levels[sheets[m.solution.id]?.evidence.level ?? "none"], lang)}
+                          </p>
+                          <p className="small">{t(ui.sheet.caveat, lang)}</p>
+                          <button
+                            onClick={() => setPlan((p) => (p.includes(m.solution.id) ? p : [...p, m.solution.id]))}
+                            disabled={plan.includes(m.solution.id)}
+                          >
+                            {plan.includes(m.solution.id) ? t(ui.plan.inPlan, lang) : t(ui.plan.add, lang)}
+                          </button>{" "}
+                          <button onClick={() => setAttempts((xs) => [...xs, { newApproach: true, newFact: false }])}>
+                            {t(ui.pit.tried, lang)}
+                          </button>
+                        </li>
+                      ))}
+                    </ul>
+                    <p className="small">{t(ui.pit.triedNote, lang)}</p>
+                    {rough.length > 0 && (
+                      <>
+                        <h3>{t(ui.pit.roughHead, lang)}</h3>
+                        <p className="small">{t(ui.pit.roughNote, lang)}</p>
+                        <ul className="exits">
+                          {rough.map((m) => (
+                            <li key={m.solution.id}>
+                              <strong>{m.solution.title[lang]}</strong> <span className="small">{m.solution.cost[lang]}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </>
+                    )}
+                    {plan.length > 0 && (
+                      <p>
+                        <button className="linkbtn" onClick={() => setTab("cart")}>
+                          [{t(ui.plan.head, lang)}: {plan.length}]
+                        </button>
+                      </p>
+                    )}
+                  </fieldset>
+                )}
+              </section>
+            )}
+
             {tab === "home" && (
               <section>
                 <h2>{t(pack.texts.homeHead, lang)}</h2>
@@ -749,7 +880,8 @@ export default function Shop() {
                                     </p>
                                     <p className="small">
                                       <b>{t(ui.sheet.evidence, lang)}:</b>{" "}
-                                      {t(ui.sheet.levels[sheets[solution.id].evidence.level], lang)}.{" "}
+                                      {t(ui.sheet.levels[sheets[solution.id].evidence.level], lang)}
+                                      {lang === "ja" ? "。" : ". "}
                                       {sheets[solution.id].evidence.note[lang]}
                                     </p>
                                     <p className="small">

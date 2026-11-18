@@ -301,6 +301,57 @@ export const ui = {
     voice: { ja: "声で読み上げる（この端末内の音声のみ）", en: "Read aloud (on-device voice only)" },
     notesHead: { ja: "あなたの言葉", en: "YOUR WORDS" },
   },
+  pit: {
+    tab: { ja: "アリジゴク", en: "THE PIT" },
+    head: { ja: "同じやり方が続いていないか、一緒に見ます", en: "Let's look at whether one approach keeps repeating" },
+    intro: {
+      ja: "試したことを順に並べると、同じやり方をもう一度試す見込みと、別のやり方の見込みを並べて出します。人を責める判定ではありません。",
+      en: "List what you tried in order. The shop shows the chance of one more try of the same approach next to the chance of a fresh one. It judges the approach, not you.",
+    },
+    add: { ja: "うまくいかなかった試みを足す", en: "Add a try that did not work" },
+    newApproach: { ja: "前とは違うやり方だった", en: "A different approach from the one before" },
+    newFact: {
+      ja: "新しい事実がわかった（ログの行、測った値、再現）",
+      en: "A new fact turned up (a log line, a measured value, a reproduction)",
+    },
+    tryN: { ja: (n: number) => `${n}回目`, en: (n: number) => `Try ${n}` },
+    empty: { ja: "まだ試みがありません。上のボタンで一つ足すと、見込みを出します。", en: "No tries yet. Add one with the button above and the shop shows the chances." },
+    run: {
+      ja: (k: number) => `いまのやり方での連続した失敗: ${k}回（違うやり方に変えると数え直します）`,
+      en: (k: number) => `Failures in a row with the current approach: ${k} (a different approach resets the count)`,
+    },
+    pNext: { ja: "同じやり方で、次がうまくいく見込み", en: "Chance the next try of the same approach works" },
+    pSwitch: { ja: "別のやり方で、うまくいく見込み", en: "Chance a fresh approach works" },
+    handSet: {
+      ja: "この2つの数字は手で決めた値で、測った値ではありません。何回で切り替えるという決まりも示しません。",
+      en: "Both numbers are set by hand, not measured. This does not give a rule of the form 'switch after N tries'.",
+    },
+    persist: {
+      ja: "いまのところ、同じやり方の見込みが別のやり方を上回っています。続ける道もあります。",
+      en: "For now the same approach still looks the better bet than a fresh one. Continuing is an option.",
+    },
+    switch: {
+      ja: "このやり方は、うまくいっていないようです。同じ試みをもう一度するより、別のやり方のほうが見込みが高くなっています。",
+      en: "This approach seems to be failing. A fresh approach now has the higher chance than one more try of the same.",
+    },
+    exitsHead: { ja: "抜け出しの手（出所のあるものだけ）", en: "Exit moves (only those that name a source)" },
+    rankNote: {
+      ja: "順番は、お店の質問への答えで変わります。答えるほど、いまの詰まりに近い手が上に来ます。",
+      en: "The order changes with your answers in the shop. The more you answer, the closer the top moves sit to your stall.",
+    },
+    answerMore: { ja: "お店の質問に答える", en: "Answer the shop's questions" },
+    noSourced: {
+      ja: "出所のある手で、いまの答えに合うものは見つかりませんでした。",
+      en: "No move that names a source fits the answers so far.",
+    },
+    roughHead: { ja: "経験則の手（出所なし）", en: "Rules of thumb (no source)" },
+    roughNote: { ja: "試されたデータはありません。参考として並べます。", en: "No tested data. Listed for reference only." },
+    tried: { ja: "試したが、うまくいかなかった", en: "I tried it and it did not work" },
+    triedNote: {
+      ja: "新しい試みとして足し、見込みを出し直します。",
+      en: "Adds a new try and recomputes the chances.",
+    },
+  },
   sheet: {
     head: { ja: "仕様書き（理論とデータ）", en: "Spec sheet (theory and data)" },
     theory: { ja: "理論", en: "Theory" },
