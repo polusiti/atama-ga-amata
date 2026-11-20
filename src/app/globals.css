@@ -795,3 +795,21 @@ details.how summary {
 .agent-form input {
   font-size: 14px !important;
 }
+
+/* Pit-focus mode: only what serves the pit check is shown. The other parts stay in the code. */
+.subnav[hidden] {
+  display: none;
+}
+.cols.focus {
+  grid-template-columns: 220px minmax(0, 1fr);
+}
+.cols.focus .right,
+.cols.focus .sbox:has(> ul.browse),
+.cols.focus .itembtns button.default {
+  display: none;
+}
+@media (max-width: 880px) {
+  .cols.focus {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

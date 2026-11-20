@@ -373,6 +373,11 @@ export const ui = {
   },
   plan: {
     head: { ja: "抜け出しの計画", en: "Exit plan" },
+    tab: { ja: "計画", en: "PLAN" },
+    otherShelves: {
+      ja: "ほかの棚（以前の診断と、日常の悩みの棚）",
+      en: "Other shelves (the earlier diagnosis, and the everyday shelf)",
+    },
     add: { ja: "計画に入れる", en: "Add to plan" },
     inPlan: { ja: "計画に入っています", en: "In plan" },
     empty: { ja: "計画はまだ空です。手を選ぶと、順番と前提を確認します。", en: "The plan is empty. Pick moves and the shop checks order and prerequisites." },

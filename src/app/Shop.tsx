@@ -151,6 +151,8 @@ export default function Shop() {
   // Steps already in place, blocked or next (problem-solving packs only).
   const established = useMemo(() => establishedSteps(kb, entries), [kb, entries]);
   const sheets = pack.sheets;
+  /** Pit-focus mode: a pack with spec sheets shows only what serves the pit check. The other parts stay in the code. */
+  const focus = Boolean(sheets);
   const pitReport = useMemo(() => pitCheck(attempts), [attempts]);
   const exits = useMemo(() => exitMoves(kb, belief, 3), [kb, belief]);
   const rough = useMemo(() => roughMoves(kb, belief, 3), [kb, belief]);
@@ -365,9 +367,11 @@ export default function Shop() {
 
   const tabDefs: { id: Tab; label: string }[] = [
     ...(sheets ? [{ id: "pit" as Tab, label: t(ui.pit.tab, lang) }] : []),
-    { id: "home", label: t(ui.tabs.home, lang) },
+    ...(focus ? [] : [{ id: "home" as Tab, label: t(ui.tabs.home, lang) }]),
     { id: "shop", label: t(ui.tabs.shop, lang) },
-    { id: "cart", label: `${t(ui.tabs.cart, lang)} (${cartId ? 1 : 0})` },
+    focus
+      ? { id: "cart", label: `${t(ui.plan.tab, lang)} (${plan.length})` }
+      : { id: "cart", label: `${t(ui.tabs.cart, lang)} (${cartId ? 1 : 0})` },
     { id: "about", label: t(ui.tabs.about, lang) },
   ];
   const subnavTargets: Tab[] = ["about", "shop", "shop", "cart"];
@@ -397,7 +401,7 @@ export default function Shop() {
             forward: { label: `${t(ui.toolbar.forward, lang)} >` },
             stop: { label: t(ui.toolbar.stop, lang) },
             refresh: { label: t(ui.toolbar.refresh, lang), onClick: reset },
-            home: { label: t(ui.toolbar.home, lang), onClick: () => setTab("home") },
+            home: { label: t(ui.toolbar.home, lang), onClick: () => setTab(focus ? "pit" : "home") },
           }}
           onClose={reset}
           statusLeft={t(ui.statusDone, lang)}
@@ -412,7 +416,7 @@ export default function Shop() {
             </div>
             <div className="toplinks">
               <button className="linkbtn" onClick={() => setTab("cart")}>
-                {t(ui.topLinks.cart, lang)} ({cartId ? 1 : 0})
+                {focus ? `${t(ui.plan.tab, lang)} (${plan.length})` : `${t(ui.topLinks.cart, lang)} (${cartId ? 1 : 0})`}
               </button>
               <span aria-hidden="true"> | </span>
               <button className="linkbtn" onClick={() => setTab("about")}>
@@ -434,7 +438,7 @@ export default function Shop() {
               </button>
             ))}
           </div>
-          <nav className="subnav" aria-label="site">
+          <nav className="subnav" aria-label="site" hidden={focus}>
             {ui.subnav[lang].map((label, i) => (
               <button key={label} onClick={() => setTab(subnavTargets[i])}>
                 {label}
@@ -621,7 +625,7 @@ export default function Shop() {
             )}
 
             {tab === "shop" && (
-              <div className="cols">
+              <div className={focus ? "cols focus" : "cols"}>
                 <aside className="left">
                   <div className="sbox">
                     <h3>{t(ui.questionBox, lang)}</h3>
@@ -1081,10 +1085,10 @@ export default function Shop() {
 
             {tab === "cart" && (
               <section>
-                <h2>{t(pack.texts.output.cartHead, lang)}</h2>
+                <h2>{focus ? t(ui.plan.head, lang) : t(pack.texts.output.cartHead, lang)}</h2>
                 {sheets && (
                   <fieldset>
-                    <legend>{t(ui.plan.head, lang)}</legend>
+                    {!focus && <legend>{t(ui.plan.head, lang)}</legend>}
                     {plan.length === 0 ? (
                       <p>{t(ui.plan.empty, lang)}</p>
                     ) : (
@@ -1127,7 +1131,7 @@ export default function Shop() {
                     )}
                   </fieldset>
                 )}
-                {!cartSolution ? (
+                {focus ? null : !cartSolution ? (
                   <p>{t(ui.cartEmpty, lang)}</p>
                 ) : (
                   <>
@@ -1178,6 +1182,23 @@ export default function Shop() {
             {tab === "about" && (
               <section>
                 <h2>{t(ui.limits.head, lang)}</h2>
+                <fieldset>
+                  <legend>{t(ui.plan.otherShelves, lang)}</legend>
+                  <div className="field-row">
+                    <select
+                      aria-label={t(ui.plan.otherShelves, lang)}
+                      value={packId}
+                      onChange={(e) => switchPack(e.target.value as PackId)}
+                      style={{ flex: 1 }}
+                    >
+                      {Object.values(packs).map((p) => (
+                        <option key={p.id} value={p.id}>
+                          {p.label[lang]}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </fieldset>
                 <p>{t(ui.limits.intro, lang)}</p>
                 <fieldset>
                   <legend>{t(ui.limits.computedHead, lang)}</legend>
