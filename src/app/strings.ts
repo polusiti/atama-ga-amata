@@ -348,6 +348,43 @@ export const ui = {
       en: "From the check, these may be worth reading first:",
     },
   },
+  level: {
+    pick: { ja: "いちばん近いもの:", en: "Pick the closest:" },
+    choices: {
+      ja: [
+        "ほとんど読まずに貼っている",
+        "読むが、動かないと AI にそのまま聞き直す",
+        "エラーやログを読んで、原因を自分でも考える",
+        "仕様やテストで確かめてから採用する",
+      ],
+      en: [
+        "I paste it without reading much",
+        "I read it, but if it fails I just ask the AI again",
+        "I read the errors and logs and think about the cause myself",
+        "I check it against a spec or tests before I use it",
+      ],
+    },
+    replies: {
+      ja: [
+        "「ほとんど読まずに貼っている」ということだね。その場合、AI の返事の誤りは見つけにくく、同じ修正のくり返しにつながりやすいかもしれない。先に短い確かめ（5分野、各2問まで）を見る？ それとも、試したことを一文で教えてくれる？",
+        "「読むが、動かないと AI にそのまま聞き直す」ということだね。同じ聞き直しが続いているなら、そこが、くり返しの入口かもしれない。先に短い確かめを見る？ それとも、試したことを一文で教えてくれる？",
+        "「エラーやログを読んで、原因を自分でも考える」ということだね。じゃあ、試したことを一文で教えてくれる？ 下の例のように、結果も添えてもらえると助かる。",
+        "「仕様やテストで確かめてから採用する」ということだね。じゃあ、試したことを一文で教えてくれる？ 下の例のように、結果も添えてもらえると助かる。",
+      ],
+      en: [
+        "So you paste it without reading much. If so, an AI's mistakes are hard to spot, and that may be part of why the same fix keeps coming back. Want a short check first (five areas, up to two questions each), or tell me one thing you tried?",
+        "So you read it, but when it fails you ask the AI again as it is. If the same question keeps going back, that may be where the loop starts. Want a short check first, or tell me one thing you tried?",
+        "So you read the errors and logs and think about the cause yourself. Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
+        "So you check it against a spec or tests before you use it. Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
+      ],
+    },
+    yes: { ja: "確かめを見る", en: "See the check" },
+    no: { ja: "試したことを書く", en: "I'll describe a try" },
+    afterNo: {
+      ja: "じゃあ、試したことを一文で教えてくれる？ 下の例のように、結果も添えてもらえると助かる。",
+      en: "Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
+    },
+  },
   entry: {
     headline: {
       ja: "AI とのやり取りが、同じところで止まっていませんか？",
@@ -413,8 +450,8 @@ export const ui = {
   },
   pit: {
     shopHello: {
-      ja: "いらっしゃいませ。AI に試したことと、その結果を、一文で教えてもらえますか。たとえば「AI に同じ修正をもう一度頼んだが、同じエラーで失敗した」のように。",
-      en: "Welcome. Tell me, in one sentence, something you tried with the AI and what came of it. For example: \"I asked the AI for the same fix again and it failed with the same error.\"",
+      ja: "やあ。まず聞くよ。AI が出したコードを、どのくらい自分で読んで直してる？下から、いちばん近いものを選んでね。",
+      en: "Hey. First question. How much of the code an AI gives you do you actually read and fix yourself? Pick the closest one below.",
     },
     examples: {
       ja: [

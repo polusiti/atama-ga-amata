@@ -113,6 +113,9 @@ export default function Shop() {
   const [checkStopped, setCheckStopped] = useState(false);
   /** A reading proposed by the sentence reader, waiting for the person's Yes or No. */
   const [pendingReading, setPendingReading] = useState<Reading | null>(null);
+  /** The answer to the opening question (0 to 3), and whether the knowledge check is being offered. */
+  const [level, setLevel] = useState<number | null>(null);
+  const [offerCheck, setOfferCheck] = useState(false);
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -286,6 +289,13 @@ export default function Shop() {
       return;
     }
     if (focus) {
+      // A button of the opening question comes in as its own text, in either language.
+      const levelChoices: string[][] = [[...ui.level.choices.ja], [...ui.level.choices.en]];
+      const levelIndex = Math.max(...levelChoices.map((c) => c.indexOf(text)));
+      if (level === null && levelIndex >= 0) {
+        answerLevel(levelIndex, text);
+        return;
+      }
       void submitToReader(text);
       return;
     }
@@ -327,6 +337,25 @@ export default function Shop() {
     if (!item) return;
     setCheckAnswers([...checkAnswers, { itemId: item.id, choice }]);
     setCheckShowing(true);
+  }
+
+  /** The opening question: the person picked how much of the AI's code they read and fix. The choice only decides what is said next. */
+  function answerLevel(index: number, text: string) {
+    setLevel(index);
+    const reply = ui.level.replies[lang][index];
+    setLog((l) => [...l, { from: "you", text }, { from: "shopText", text: reply }]);
+    // The first two choices (reads little, or asks the AI again) are offered the knowledge check.
+    setOfferCheck(index <= 1);
+  }
+
+  function acceptCheckOffer() {
+    setOfferCheck(false);
+    setTab("check");
+  }
+
+  function declineCheckOffer() {
+    setOfferCheck(false);
+    setLog((l) => [...l, { from: "shopText", text: t(ui.level.afterNo, lang) }]);
   }
 
   function confirmReading() {
@@ -428,6 +457,8 @@ export default function Shop() {
     setPendingReading(null);
     setPendingCart(null);
     setBrowseNeed(null);
+    setLevel(null);
+    setOfferCheck(false);
     setOpenId(null);
     setLog([
       (forPack ?? pack).sheets
@@ -1485,13 +1516,25 @@ export default function Shop() {
           lines={lines}
           placeholder={t(ui.agent.placeholder, lang)}
           send={t(ui.agent.send, lang)}
-          chipsLabel={t(ui.agent.chipsLabel, lang)}
-          chips={showChips ? (focus ? [...ui.pit.examples[lang]] : pack.samples.slice(0, 4).map((s) => s[lang])) : []}
+          chipsLabel={focus && level === null ? t(ui.level.pick, lang) : t(ui.agent.chipsLabel, lang)}
+          chips={
+            focus
+              ? offerCheck
+                ? []
+                : level === null
+                  ? [...ui.level.choices[lang]]
+                  : [...ui.pit.examples[lang]]
+              : showChips
+                ? pack.samples.slice(0, 4).map((s) => s[lang])
+                : []
+          }
           onSubmit={submitText}
           voiceLabel={t(ui.agent.voice, lang)}
           confirm={
             pendingReading
               ? { yes: t(ui.agent.yes, lang), no: t(ui.agent.no, lang), onYes: confirmReading, onNo: declineReading }
+              : offerCheck
+              ? { yes: t(ui.level.yes, lang), no: t(ui.level.no, lang), onYes: acceptCheckOffer, onNo: declineCheckOffer }
               : pendingCart && pendingSolution
               ? {
                   yes: t(ui.agent.yes, lang),
