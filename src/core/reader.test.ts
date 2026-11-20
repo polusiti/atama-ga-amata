@@ -88,14 +88,16 @@ describe("describeReading: the sentence the shopkeeper shows", () => {
 
   it("asks before adding, in both languages, for every reading", () => {
     for (const r of all) {
-      expect(describeReading(r, "en")).toMatch(/Add it as a try that did not work\?$/);
+      expect(describeReading(r, "en")).toMatch(/Add it to your list of tries\?$/);
       expect(describeReading(r, "ja")).toMatch(/足しますか？$/);
     }
   });
 
   it("says plainly when it could not tell", () => {
-    expect(describeReading({ newApproach: null, newFact: true }, "en")).toMatch(/could not tell whether the approach differed/);
-    expect(describeReading({ newApproach: true, newFact: null }, "ja")).toMatch(/新しい事実が出たかは、読み取れませんでした/);
+    expect(describeReading({ newApproach: null, newFact: true }, "en")).toMatch(/could not tell whether the approach changed/);
+    expect(describeReading({ newApproach: true, newFact: null }, "ja")).toMatch(/新しいことが出たかは、読み取れませんでした/);
+    expect(describeReading({ newApproach: true, newFact: false }, "en")).toBe("So that try used a different approach. Nothing new turned up. Add it to your list of tries?");
+    expect(describeReading({ newApproach: false, newFact: true }, "ja")).toBe("つまり、その試みは、前と同じやり方だった。新しい事実も出た。試みのリストに足しますか？");
   });
 
   it("never claims to understand the person (voice rule 3)", () => {

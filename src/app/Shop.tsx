@@ -42,7 +42,12 @@ import { t, ui } from "./strings";
 
 type Tab = "pit" | "check" | "home" | "shop" | "cart" | "about";
 /** "shopText" is a line the shopkeeper says that is not one of the scripted utterances (the sentence reader's answers). */
-type LogItem = { from: "you"; text: string } | { from: "shop"; u: Utterance } | { from: "shopText"; text: string };
+type LogItem =
+  | { from: "you"; text: string }
+  | { from: "shop"; u: Utterance }
+  | { from: "shopText"; text: string }
+  /** The shopkeeper's opening line on the pit screen. It is kept as a key so that it follows the language switch. */
+  | { from: "shopKey"; key: "pitHello" };
 interface Note {
   text: string;
   likelihood: number[];
@@ -124,7 +129,9 @@ export default function Shop() {
   const [recCopied, setRecCopied] = useState(false);
   const [clock, setClock] = useState("");
   const [log, setLog] = useState<LogItem[]>(() => [
-    { from: "shop", u: decide({ event: "load", history: [] }) },
+    packs[DEFAULT_PACK].sheets
+      ? { from: "shopKey", key: "pitHello" }
+      : { from: "shop", u: decide({ event: "load", history: [] }) },
   ]);
 
   const pack = packs[packId];
@@ -404,7 +411,8 @@ export default function Shop() {
     setRecCopied(true);
   }
 
-  function reset() {
+  /** Starts over. `forPack` is the shelf to start on; the current one when it is not given. */
+  function reset(forPack?: Pack) {
     clearGuess();
     setTab("home");
     setStated(null);
@@ -421,12 +429,16 @@ export default function Shop() {
     setPendingCart(null);
     setBrowseNeed(null);
     setOpenId(null);
-    setLog([{ from: "shop", u: decide({ event: "load", history: [] }) }]);
+    setLog([
+      (forPack ?? pack).sheets
+        ? { from: "shopKey", key: "pitHello" }
+        : { from: "shop", u: decide({ event: "load", history: [] }) },
+    ]);
   }
 
   function switchPack(id: PackId) {
     setPackId(id);
-    reset();
+    reset(packs[id]);
     setTab(packs[id].sheets ? "pit" : "home");
   }
 
@@ -450,7 +462,9 @@ export default function Shop() {
       ? { from: "you", text: i.text }
       : i.from === "shopText"
         ? { from: "shop", text: i.text }
-        : { from: "shop", text: render(i.u, lang, lookup) },
+        : i.from === "shopKey"
+          ? { from: "shop", text: t(ui.pit.shopHello, lang) }
+          : { from: "shop", text: render(i.u, lang, lookup) },
   );
   const lastKind = [...log].reverse().find((i) => i.from === "shop");
   const showChips =
@@ -1394,7 +1408,7 @@ export default function Shop() {
                       </p>
                     </fieldset>
                     <p>
-                      <button onClick={reset}>{t(ui.startOver, lang)}</button>
+                      <button onClick={() => reset()}>{t(ui.startOver, lang)}</button>
                     </p>
                   </>
                 )}
@@ -1472,7 +1486,7 @@ export default function Shop() {
           placeholder={t(ui.agent.placeholder, lang)}
           send={t(ui.agent.send, lang)}
           chipsLabel={t(ui.agent.chipsLabel, lang)}
-          chips={showChips ? pack.samples.slice(0, 4).map((s) => s[lang]) : []}
+          chips={showChips ? (focus ? [...ui.pit.examples[lang]] : pack.samples.slice(0, 4).map((s) => s[lang])) : []}
           onSubmit={submitText}
           voiceLabel={t(ui.agent.voice, lang)}
           confirm={
@@ -1494,7 +1508,7 @@ export default function Shop() {
       </div>
 
       <div className="taskbar">
-        <button className="start" onClick={reset}>
+        <button className="start" onClick={() => reset()}>
           {t(ui.start, lang)}
         </button>
         <div className="tray">

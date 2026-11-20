@@ -388,8 +388,8 @@ export const ui = {
       en: "Nothing could be read from that sentence. You can add a try with the marks on the screen.",
     },
     added: {
-      ja: "試みとして足しました。読み取れなかった印は、外れています。必要なら画面で付けてください。",
-      en: "Added as a try. Any mark it could not tell is left off. Set it on the screen if it applies.",
+      ja: "リストに足しました。読み取れなかった印は、外してあります。必要なら、画面で付けられます。",
+      en: "Added to your list. A mark I could not tell is left unchecked, and you can set it on the screen.",
     },
     declined: { ja: "足しませんでした。", en: "Not added." },
     failed: {
@@ -412,6 +412,24 @@ export const ui = {
     },
   },
   pit: {
+    shopHello: {
+      ja: "いらっしゃいませ。AI に試したことと、その結果を、一文で教えてもらえますか。たとえば「AI に同じ修正をもう一度頼んだが、同じエラーで失敗した」のように。",
+      en: "Welcome. Tell me, in one sentence, something you tried with the AI and what came of it. For example: \"I asked the AI for the same fix again and it failed with the same error.\"",
+    },
+    examples: {
+      ja: [
+        "同じ修正をもう一度試したが、同じエラーが出た",
+        "修正をやめて、最小の再現例を書いた",
+        "AI に聞かずに公式ドキュメントを見たら、オプション名が変わっていた",
+        "AI と新しい会話を始めて、目的を最初から説明し直した",
+      ],
+      en: [
+        "I ran the same fix again and got the same error",
+        "I stopped patching and wrote a minimal reproduction",
+        "I checked the official docs instead of asking the AI, and found the option was renamed",
+        "I started a fresh conversation with the AI and described the goal from scratch",
+      ],
+    },
     tab: { ja: "アリジゴク", en: "THE PIT" },
     head: { ja: "同じやり方が続いていないか、一緒に見ます", en: "Let's look at whether one approach keeps repeating" },
     intro: {

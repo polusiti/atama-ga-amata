@@ -43,31 +43,19 @@ export function parseReading(raw: unknown): Reading | null {
 
 /** The sentence the shopkeeper shows before anything is added. It reflects the reading and asks; it does not claim to understand. */
 export function describeReading(r: Reading, lang: Lang): string {
+  if (lang === "ja") {
+    const approach =
+      r.newApproach === null ? "やり方が前と違うかは、読み取れませんでした" : r.newApproach ? "その試みは、前とは違うやり方だった" : "その試みは、前と同じやり方だった";
+    const fact =
+      r.newFact === null ? "新しいことが出たかは、読み取れませんでした" : r.newFact ? "新しい事実も出た" : "新しいことは分からなかった";
+    const lead = r.newApproach === null ? "" : "つまり、";
+    return `${lead}${approach}。${fact}。試みのリストに足しますか？`;
+  }
   const approach =
-    r.newApproach === null
-      ? lang === "ja"
-        ? "やり方が前と違うかは、読み取れませんでした"
-        : "I could not tell whether the approach differed"
-      : r.newApproach
-        ? lang === "ja"
-          ? "前とは違うやり方"
-          : "a different approach"
-        : lang === "ja"
-          ? "前と同じやり方"
-          : "the same approach";
+    r.newApproach === null ? "I could not tell whether the approach changed" : r.newApproach ? "that try used a different approach" : "that try used the same approach as before";
   const fact =
-    r.newFact === null
-      ? lang === "ja"
-        ? "新しい事実が出たかは、読み取れませんでした"
-        : "I could not tell whether a new fact turned up"
-      : r.newFact
-        ? lang === "ja"
-          ? "新しい事実あり"
-          : "a new fact"
-        : lang === "ja"
-          ? "新しい事実なし"
-          : "no new fact";
-  return lang === "ja"
-    ? `こう読みました: ${approach}、${fact}。この内容で、うまくいかなかった試みとして足しますか？`
-    : `I read this as: ${approach}; ${fact}. Add it as a try that did not work?`;
+    r.newFact === null ? "I could not tell whether anything new turned up" : r.newFact ? "a new fact turned up" : "nothing new turned up";
+  const first = r.newApproach === null ? approach : `so ${approach}`;
+  const sentences = [first, fact].map((s) => s.charAt(0).toUpperCase() + s.slice(1));
+  return `${sentences.join(". ")}. Add it to your list of tries?`;
 }
