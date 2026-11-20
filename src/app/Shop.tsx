@@ -31,13 +31,16 @@ import { countAuthored } from "@/core/limits";
 import { entropy, fisherRao, geodesicPoint } from "@/core/math";
 import { ANSWERS, DEFAULT_PARAMS, type Answer, type KnowledgeBase, type Lang, type Solution } from "@/core/types";
 import { DEFAULT_PACK, packs, type Pack, type PackId } from "@/data/packs";
+import { describeReading, type Reading } from "@/core/reader";
 import { Agent, type Line } from "./agent";
+import { READER_URL, readSentence } from "./reader";
 import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
 import { t, ui } from "./strings";
 
 type Tab = "pit" | "home" | "shop" | "cart" | "about";
-type LogItem = { from: "you"; text: string } | { from: "shop"; u: Utterance };
+/** "shopText" is a line the shopkeeper says that is not one of the scripted utterances (the sentence reader's answers). */
+type LogItem = { from: "you"; text: string } | { from: "shop"; u: Utterance } | { from: "shopText"; text: string };
 interface Note {
   text: string;
   likelihood: number[];
@@ -96,6 +99,8 @@ export default function Shop() {
   const [packId, setPackId] = useState<PackId>(DEFAULT_PACK);
   const [tab, setTab] = useState<Tab>(packs[DEFAULT_PACK].sheets ? "pit" : "home");
   const [attempts, setAttempts] = useState<{ newApproach: boolean; newFact: boolean }[]>([]);
+  /** A reading proposed by the sentence reader, waiting for the person's Yes or No. */
+  const [pendingReading, setPendingReading] = useState<Reading | null>(null);
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -260,6 +265,10 @@ export default function Shop() {
       setTab("shop");
       return;
     }
+    if (focus) {
+      void submitToReader(text);
+      return;
+    }
     const reading = readText(kb, text, pack.lexicon);
     let nextLog: LogItem[] = [...log, { from: "you", text }];
     if (reading.top || reading.named) {
@@ -269,6 +278,40 @@ export default function Shop() {
     nextLog = say(nextLog, decide({ event: "text", history: shopHistory(nextLog), reading }));
     setLog(nextLog);
     setTab("shop");
+  }
+
+  /**
+   * Pit screen: the typed sentence goes to the sentence reader, which proposes two marks. Nothing is added until the person
+   * says Yes. If the reader cannot be used, the shopkeeper says so, and the marks on the screen still work.
+   */
+  async function submitToReader(text: string) {
+    setPendingReading(null);
+    setLog((l) => [...l, { from: "you", text }, { from: "shopText", text: t(ui.reader.reading, lang) }]);
+    const result = await readSentence(READER_URL, text, lang);
+    if (!result.ok) {
+      setLog((l) => [...l, { from: "shopText", text: t(ui.reader.failed[result.kind], lang) }]);
+      return;
+    }
+    const r = result.reading;
+    if (r.newApproach === null && r.newFact === null) {
+      setLog((l) => [...l, { from: "shopText", text: t(ui.reader.nothing, lang) }]);
+      return;
+    }
+    setPendingReading(r);
+    setLog((l) => [...l, { from: "shopText", text: describeReading(r, lang) }]);
+  }
+
+  function confirmReading() {
+    if (!pendingReading) return;
+    // A mark the reader could not tell is left off. The person can set it on the screen.
+    setAttempts((xs) => [...xs, { newApproach: pendingReading.newApproach === true, newFact: pendingReading.newFact === true }]);
+    setLog((l) => [...l, { from: "shopText", text: t(ui.reader.added, lang) }]);
+    setPendingReading(null);
+  }
+
+  function declineReading() {
+    setLog((l) => [...l, { from: "shopText", text: t(ui.reader.declined, lang) }]);
+    setPendingReading(null);
   }
 
   function answer(a: Answer) {
@@ -349,6 +392,7 @@ export default function Shop() {
     setCartId(null);
     setPlan([]);
     setAttempts([]);
+    setPendingReading(null);
     setPendingCart(null);
     setBrowseNeed(null);
     setOpenId(null);
@@ -377,7 +421,11 @@ export default function Shop() {
   const subnavTargets: Tab[] = ["about", "shop", "shop", "cart"];
 
   const lines: Line[] = log.map((i) =>
-    i.from === "you" ? { from: "you", text: i.text } : { from: "shop", text: render(i.u, lang, lookup) },
+    i.from === "you"
+      ? { from: "you", text: i.text }
+      : i.from === "shopText"
+        ? { from: "shop", text: i.text }
+        : { from: "shop", text: render(i.u, lang, lookup) },
   );
   const lastKind = [...log].reverse().find((i) => i.from === "shop");
   const showChips =
@@ -454,6 +502,7 @@ export default function Shop() {
               <section data-testid="pit">
                 <h2>{t(ui.pit.head, lang)}</h2>
                 <p>{t(ui.pit.intro, lang)}</p>
+                <p className="small">{t(ui.reader.notice, lang)}</p>
                 <fieldset>
                   <ol className="attempts">
                     {attempts.map((a, i) => (
@@ -1254,7 +1303,9 @@ export default function Shop() {
           onSubmit={submitText}
           voiceLabel={t(ui.agent.voice, lang)}
           confirm={
-            pendingCart && pendingSolution
+            pendingReading
+              ? { yes: t(ui.agent.yes, lang), no: t(ui.agent.no, lang), onYes: confirmReading, onNo: declineReading }
+              : pendingCart && pendingSolution
               ? {
                   yes: t(ui.agent.yes, lang),
                   no: t(ui.agent.no, lang),

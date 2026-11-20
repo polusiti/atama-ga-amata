@@ -18,6 +18,8 @@ An antlion pit is a sand trap where each struggle makes the slope slide. Working
 3. When a fresh approach has the better chance, it offers up to three exit moves that name a source (Zeller, *Why Programs Fail*; Laban et al. 2025; Sharma et al. 2023). Moves that carry only a rule-of-thumb label are listed apart, labelled. Each move has a spec sheet: the theory, what data exists (none, problem studied, or method published), the cost, and when it may not fit. A source says where a method comes from. It does not show the method works for you.
 4. You pick moves into a plan. The plan shows the order by prerequisites, the number of steps, and how many of the moves have any recorded data. You try a move and come back with the result as a new attempt.
 
+You can also type a sentence about a try to the shopkeeper. A small model (Cloudflare Workers AI, behind a Worker in this repository) proposes the two marks, a validator rejects anything outside that shape, and the shopkeeper asks "Add it as a try that did not work?" Nothing is added until you press Yes. If the reader is down or over its limit, the page says so and the marks on the screen still work.
+
 The wording judges the approach, never the person.
 
 The same check is an MCP tool, `pit_check`, so an AI agent can check itself. A steering file tells the agent to call it after two failed tries of the same approach.
@@ -33,7 +35,7 @@ The same check is an MCP tool, `pit_check`, so an AI agent can check itself. A s
 ## What is stitched together (Frankenstein)
 - A small probability model from restart theory (a two-type task with heavy-tailed run times, where a fresh start beats waiting) with a hand-set, plainly labelled parameter set.
 - The honesty of a good teacher or doctor: say plainly that a plan does not fit, never blame the person, and leave the decision to them.
-- A deterministic engine with no language model at runtime, so the numbers cannot drift or flatter the user.
+- A deterministic engine that produces every number and ranking, with a small language model used in one place only: it proposes two marks from a typed sentence, a validator throws away anything outside that shape, and nothing counts until the person says Yes. The numbers cannot drift or flatter the user, because the model never produces them.
 - A storefront from around 2000 inside a Windows 98 browser window, with an original pixel ghost as the shopkeeper.
 - Kiro hooks, steering and specs driven by a log of the builder's own mistakes, and an MCP tool the builder's own agent is told to call.
 
@@ -50,7 +52,8 @@ Putting the builder's own failures into the product made the product more specif
 - The two pit numbers are set by hand, not measured.
 - Of 17 developer moves, 8 name a source and 9 are rules of thumb. Even a sourced move carries at most "method published" or "problem studied", never "works here".
 - The "new fact" mark is shown and counted, but it does not enter the calculation.
-- No language model runs on the site. A language model helped write and review the data, and Kiro built the code.
+- The sentence reader is weak where it matters. On 20 hand-written sentences per language, it found a repeated approach 10 times out of 10 in both languages, but a new approach only 4 out of 10 in English and 3 out of 10 in Japanese. For the "new fact" mark, it often invented a yes or no when the sentence did not say (6 of 8 in English, 5 of 8 in Japanese). That is why its proposal is a question, and the marks on the screen stay in charge. The set is small and written by the author.
+- A language model also helped write and review the data, and Kiro built the code.
 
 ## What is next
 Ask a few developers who are stuck to use it on a real case, and record whether the verdict and the exit moves matched what they did next. Set the numbers from that, not by hand.

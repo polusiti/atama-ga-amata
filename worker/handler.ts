@@ -5,13 +5,16 @@ import { parseReading } from "../src/core/reader";
  * Outside parts (the model and the rate limiter) are passed in, so the checks can be tested without Cloudflare.
  * See .kiro/specs/reader-worker. The typed text is never logged and never returned.
  */
-export const MODEL = "@cf/meta/llama-3.1-8b-instruct";
+/** The model can be changed with the MODEL variable. The first choice was removed by Cloudflare (deprecated 2026-05-30), so it must be easy to change. */
+export const MODEL = "@cf/meta/llama-3.2-3b-instruct";
 export const MAX_TEXT = 500;
 const DEFAULT_ORIGINS = ["https://polusiti.github.io"];
 
 export interface ReaderEnv {
   /** Comma-separated origins allowed to call the worker. */
   ALLOWED_ORIGINS?: string;
+  /** Overrides the default model. */
+  MODEL?: string;
 }
 
 export interface ReaderDeps {
@@ -99,7 +102,7 @@ export async function handleRead(req: Request, env: ReaderEnv, deps: ReaderDeps)
 
   let raw: unknown;
   try {
-    const out = (await deps.ai.run(MODEL, {
+    const out = (await deps.ai.run(env.MODEL && env.MODEL.trim() ? env.MODEL.trim() : MODEL, {
       messages: [
         { role: "system", content: SYSTEM_PROMPT },
         // The sentence travels as a quoted JSON value, so it reads as data and not as part of the prompt.
@@ -110,7 +113,10 @@ export async function handleRead(req: Request, env: ReaderEnv, deps: ReaderDeps)
       temperature: 0,
     })) as { response?: unknown } | null;
     raw = out?.response;
-  } catch {
+  } catch (e) {
+    // Operations need the cause. The typed text is cut out of the message first, so it is never logged.
+    const message = String(e instanceof Error ? e.message : e).split(text).join("[text]").slice(0, 200);
+    console.error("reader: model call failed:", message);
     return fail("model", 502, origin);
   }
 

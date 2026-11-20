@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { MAX_TEXT, handleRead, type ReaderDeps } from "./handler";
+import { MAX_TEXT, MODEL, handleRead, type ReaderDeps } from "./handler";
 
 const SITE = "https://polusiti.github.io";
 
@@ -130,6 +130,32 @@ describe("reader worker: what comes back", () => {
       expect(s).not.toHaveBeenCalled();
       s.mockRestore();
     }
+  });
+
+  it("logs the cause of a model failure, but never the typed text, even when the error message contains it", async () => {
+    const text = "my-private-sentence-98765";
+    const logged: unknown[][] = [];
+    const spy = vi.spyOn(console, "error").mockImplementation((...a: unknown[]) => void logged.push(a));
+    const run = vi.fn(async () => {
+      throw new Error(`5028: model was deprecated while reading ${text}`);
+    });
+    const d: ReaderDeps = { ai: { run }, limit: async () => true };
+    const res = await handleRead(req({ text }), {}, d);
+    expect(res.status).toBe(502);
+    expect(JSON.stringify(logged)).toMatch(/5028: model was deprecated/);
+    expect(JSON.stringify(logged)).not.toContain(text);
+    spy.mockRestore();
+  });
+
+  it("uses the MODEL variable when it is set, and the default when it is not", async () => {
+    const { d, run } = deps({ newApproach: false, newFact: false });
+    await handleRead(req({ text: "hi" }), {}, d);
+    await handleRead(req({ text: "hi" }), { MODEL: "@cf/example/other" }, d);
+    await handleRead(req({ text: "hi" }), { MODEL: "   " }, d);
+    const names = run.mock.calls.map((c) => (c as unknown as [string])[0]);
+    expect(names[0]).toBe(MODEL);
+    expect(names[1]).toBe("@cf/example/other");
+    expect(names[2]).toBe(MODEL);
   });
 
   it("passes the sentence to the model as a quoted JSON value, apart from the instructions", async () => {

@@ -177,8 +177,8 @@ export const ui = {
       "atamagazon は、リポジトリ名の atama-ga-amata（頭が数多）をもじった名前です。人も AI も、同じ目標に別々の絵を描いています。この店は、その絵のずれを小さくするためにあります。",
       "人は、解決策を頼みますが、本当に持っているのは困りごとです。200年前のおばあさんは、洗濯機がほしいとは言わず、冬の水仕事で手が痛いと言いました。",
       "この店は、あなたが挙げた解決策を、必要を示す証拠の一つとして扱います。答えから必要を推定し、挙げなかった選択肢も見せます。",
-      "実行時にLLMは使いません。質問は、期待情報利得をコストで割った値で選びます。ずれは、フィッシャー・ラオ距離で測ります。",
-      "店主は、決まった規則で動くプログラムです。キーワードを拾って、定型の文に当てはめているだけで、内容を分かっているわけではありません。人は、単純な規則の返事にも、理解を読み取ってしまうことがあります（ELIZA効果）。",
+      "言語モデルを使うのは1か所だけです。アリジゴク画面で店主に打った文から、2つの印の案を出します。案は、あなたが「はい」と言うまで何にも使いません。判定の数字、出口の手の順番、質問の選び方は、すべて決まった式で計算します。質問は、期待情報利得をコストで割った値で選びます。",
+      "店主の返事は、決まった規則と定型の文でできています。アリジゴク画面で打った文だけは、言語モデルが印の案を出し、その案を定型の文で読み返します。どちらも、内容を分かっているわけではありません。人は、こうした返事にも、理解を読み取ってしまうことがあります（ELIZA効果）。",
       "「なぜ聞くの？」と「なぜそう思う？」は、1970年代の診断システム MYCIN（Stanford）の、WHY と HOW の説明機能にならったものです。MYCIN は確実さ係数を使いましたが、ここでは確率のかけ算なので、倍率の積が結果と一致します。コードは写していません。",
       "店主の作りは、1966年の ELIZA（Weizenbaum）のキーワードと定型文の仕組みと、確認してから実行するアシスタントの流れを参考にしました。コードは写していません。聞き返しの言い回しは、動機づけ面接の聞き方（Miller と Rollnick）を借りたもので、効果があると主張するものではありません。",
       "数値は、作者が設定した判断です。実測ではありません。詳しくは docs/assumptions.md を見てください。",
@@ -188,8 +188,8 @@ export const ui = {
       "atamagazon is a pun on the repository name atama-ga-amata (\"many heads\"). People and AIs paint different pictures of the same goal. This store exists to shrink that gap.",
       "People ask for solutions but what they have is a trouble. A woman two centuries ago would not ask for a washing machine; she would say her hands ache in winter water.",
       "This store treats the solution you name as one piece of evidence about the need. It infers the need from your answers and shows options you did not name.",
-      "No LLM runs at runtime. Questions are chosen by expected information gain per unit cost. The gap is measured with the Fisher-Rao distance.",
-      "The shopkeeper is a rule-based program. It spots keywords and fills fixed sentences; it does not understand what you say. People tend to read understanding into even simple rule-based replies (the ELIZA effect).",
+      "A language model is used in one place only. On the pit screen it proposes two marks from a sentence you type to the shopkeeper, and the proposal is used for nothing until you say Yes. The pit numbers, the order of the exit moves and the choice of questions are all computed by fixed formulas. Questions are chosen by expected information gain per unit cost.",
+      "The shopkeeper's replies are made of fixed rules and fixed sentences. Only for a sentence typed on the pit screen, a language model proposes the marks, and the proposal is read back in a fixed sentence. Neither understands what you say. People tend to read understanding into replies like these (the ELIZA effect).",
       "\"Why ask?\" and \"Why do you think so?\" follow the WHY and HOW explanation features of MYCIN, a 1970s diagnosis system from Stanford. MYCIN used certainty factors; here the numbers are probabilities, so the multipliers multiply exactly to the result. No code was copied.",
       "Its design borrows the keyword-and-template idea of ELIZA (Weizenbaum, 1966) and the confirm-before-acting flow of assistant frameworks. No code was copied. The phrasing of reflections borrows from motivational interviewing (Miller and Rollnick) and makes no claim of effect.",
       "The numbers are the author's judgment, not measurements. See docs/assumptions.md.",
@@ -300,6 +300,40 @@ export const ui = {
     no: { ja: "やめておく", en: "Never mind" },
     voice: { ja: "声で読み上げる（この端末内の音声のみ）", en: "Read aloud (on-device voice only)" },
     notesHead: { ja: "あなたの言葉", en: "YOUR WORDS" },
+  },
+  reader: {
+    notice: {
+      ja: "右の店主に打った文は、言語モデルが、どの印が当てはまるかの案を出します。試みの印を取り違えることがあるので、あなたが確かめるまで、何も足しません。",
+      en: "A language model reads the sentence you type to the shopkeeper and proposes which marks apply. It may mix up the marks of a try, so nothing is added until you confirm.",
+    },
+    reading: { ja: "読み取っています…", en: "Reading…" },
+    nothing: {
+      ja: "この文からは、読み取れることがありませんでした。画面の印で、試みを足せます。",
+      en: "Nothing could be read from that sentence. You can add a try with the marks on the screen.",
+    },
+    added: {
+      ja: "試みとして足しました。読み取れなかった印は、外れています。必要なら画面で付けてください。",
+      en: "Added as a try. Any mark it could not tell is left off. Set it on the screen if it applies.",
+    },
+    declined: { ja: "足しませんでした。", en: "Not added." },
+    failed: {
+      unreachable: {
+        ja: "いまは読み取りを使えませんでした。画面の印で、試みを足せます。",
+        en: "The reader is not available right now. You can add a try with the marks on the screen.",
+      },
+      timeout: {
+        ja: "読み取りに時間がかかりすぎました。画面の印で、試みを足せます。",
+        en: "The reader took too long. You can add a try with the marks on the screen.",
+      },
+      limit: {
+        ja: "読み取りの利用が上限に達しました。画面の印で、試みを足せます。",
+        en: "The reader has reached its limit for now. You can add a try with the marks on the screen.",
+      },
+      invalid: {
+        ja: "うまく読み取れませんでした。画面の印で、試みを足せます。",
+        en: "The reading did not come out right. You can add a try with the marks on the screen.",
+      },
+    },
   },
   pit: {
     tab: { ja: "アリジゴク", en: "THE PIT" },

@@ -32,7 +32,7 @@ A second shelf ("everyday troubles") shows the same engine on a different domain
 
 ## How it works
 
-No LLM runs at runtime. The engine is a small, deterministic, tested core:
+A language model is used in one place only (see "The sentence reader" below). Everything that produces a number or a ranking is a small, deterministic, tested core:
 
 - Belief over underlying needs, updated by Bayes with an explicit answer model (5 graded answers, a fixed "don't know" share, Gaussian noise).
 - Next question chosen by exact expected information gain (mutual information) per unit of user effort. Stops when another question is worth less than it costs.
@@ -41,6 +41,22 @@ No LLM runs at runtime. The engine is a small, deterministic, tested core:
 - Persuasion audit: shows what you named first, what the shop suggested and what you chose.
 
 See `.kiro/steering/charter.md` for the principles and `docs/assumptions.md` for what is authored judgment rather than measured data.
+
+## The sentence reader (the one place a language model is used)
+On the pit screen, you can type a sentence to the shopkeeper, such as "I added logging and found the input is empty". A small language model (Cloudflare Workers AI, `llama-3.2-3b-instruct`, behind a Worker in `worker/`) proposes two marks: whether the try used a different approach, and whether a new fact turned up. Each mark is true, false or "cannot tell". Anything else it says is thrown away by a validator (`src/core/reader.ts`, with property tests), and the page checks the answer again. The proposal is shown as a question, and nothing is added until you press Yes. The numbers, the verdict and the exit moves never come from the model. If the reader is down, slow or over its limit, the page says so and the marks on the screen still work. The Worker accepts requests only from the site's own origin, limits request length and rate, runs on the Free plan (use above the daily allowance fails instead of being billed) and does not log the typed text.
+
+**Measured, 2026-11-20, 20 hand-written sentences per language, labels fixed before the run** (`worker` called live, temperature 0):
+
+| | English | Japanese |
+|---|---|---|
+| "Different approach" mark: right / wrong / could not tell | 14 / 5 / 1 | 13 / 3 / 4 |
+| of the 10 sentences describing the same approach | 10 of 10 right | 10 of 10 right |
+| of the 10 sentences describing a different approach | 4 of 10 right | 3 of 10 right |
+| "New fact" mark, on the 12 sentences that say something about it: right / wrong / could not tell | 8 / 4 / 0 | 6 / 2 / 4 |
+| "New fact" mark, on the 8 sentences that say nothing about it: said "cannot tell" | 2 of 8 | 3 of 8 |
+| Failed or invalid answers | 0 of 20 | 0 of 20 |
+
+Reading of the numbers: the reader is reliable at spotting a repeated approach and weak at spotting a new one, and it often invents a yes or no for the new-fact mark when the sentence does not say. That is why the proposal is a question and the marks on the screen stay in charge. The set is small and hand-written by the author, so these are rough figures, not an accuracy claim.
 
 ## Run
 
@@ -81,7 +97,7 @@ MIT
 - The "new fact" mark is shown and counted but does not enter the calculation.
 - Exit moves are ranked by the answers given in the shop. Without answers, the ranking follows the prior.
 - Fit judgement (whether a plan suits a person) is parked: it needs sourced requirement levels and a calibrated item bank, and neither exists.
-- No LLM runs on the site. An LLM was used to write and review the data, and Kiro built the code.
+- A language model reads one typed sentence on the pit screen and nowhere else (see "The sentence reader"). It was also used to write and review the data, and Kiro built the code.
 
 ## Mathematics, with a confession
 
