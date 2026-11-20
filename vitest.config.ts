@@ -7,7 +7,7 @@ export default defineConfig({
   },
   test: {
     environment: "node",
-    include: ["src/**/*.test.ts", "mcp/**/*.test.ts"],
+    include: ["src/**/*.test.ts", "mcp/**/*.test.ts", "worker/**/*.test.ts"],
   },
 });
 

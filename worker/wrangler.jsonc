@@ -1,0 +1,16 @@
+{
+  "name": "atamagazon-reader",
+  "main": "index.ts",
+  "compatibility_date": "2026-11-01",
+  "workers_dev": true,
+  "ai": { "binding": "AI" },
+  "ratelimits": [
+    {
+      "name": "READER_LIMITER",
+      "namespace_id": "4801",
+      "simple": { "limit": 10, "period": 60 }
+    }
+  ],
+  "vars": { "ALLOWED_ORIGINS": "https://polusiti.github.io" },
+  "observability": { "enabled": false }
+}
