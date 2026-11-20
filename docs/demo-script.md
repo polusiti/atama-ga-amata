@@ -2,7 +2,7 @@
 
 Status: written, not yet rehearsed or timed. The times below are a plan. The numbers on screen are the ones the app computed on 2026-11-18 (checked in the browser run and in `scripts/pit-case.ts`).
 
-Set up before recording: open the site in English (the EN button), on the first tab ("THE PIT"), with no tries added. Have the Kiro IDE open on this repo, with the MCP server started.
+Set up before recording: open the site (it starts in English; the button in the taskbar reads "JA" and switches to Japanese), on the first tab ("THE PIT"), with no tries added. Have the Kiro IDE open on this repo, with the MCP server started.
 
 ## 0:00 - 0:25 The problem, in one real case
 Say: "On the day I built this, my own coding agent sent the same kind of long command again and again. Each one was interrupted. It read each failure as bad luck and tried the same thing again. That is an antlion pit: every struggle makes the slope slide. This is the first user of the product."
@@ -26,7 +26,7 @@ Open one spec sheet from the SHOP tab (theory, data level, when it may not fit).
 Say: "Where the shop has no data, it says so: 'no theory or data is recorded'."
 
 ## 1:55 - 2:20 Plan, and coming back
-Press "Add to plan" on two moves. Open the CART tab.
+Press "Add to plan" on two moves. Open the PLAN tab.
 Say: "It orders the moves by prerequisites, counts the steps, and says how many of the chosen moves have any recorded data. When none does, it says so first."
 Go back to THE PIT, press "I tried it and it did not work".
 Say: "Trying a move comes back as a new attempt, and the chances are recomputed."
