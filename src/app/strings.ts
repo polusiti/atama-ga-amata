@@ -348,6 +348,35 @@ export const ui = {
       en: "From the check, these may be worth reading first:",
     },
   },
+  entry: {
+    headline: {
+      ja: "AI とのやり取りが、同じところで止まっていませんか？",
+      en: "Stuck in the same spot with an AI?",
+    },
+    what: {
+      ja: "試したことを1つずつ足すと、「同じやり方をもう一度試す」のと「やり方を変える」のと、どちらの見込みが高いかを、数字で見せます。",
+      en: "Add what you tried, one at a time. The site shows which has the better chance: one more try of the same approach, or a change of approach.",
+    },
+    stepsHead: { ja: "使い方は3つです", en: "Three steps" },
+    step1: { ja: "うまくいかなかった試みを、1つずつ足します。", en: "You add each try that did not work, one at a time." },
+    step2: {
+      ja: "「同じやり方」と「別のやり方」の見込みが、並んで出ます。",
+      en: "Two chances appear side by side: the same approach, and a fresh one.",
+    },
+    step3: {
+      ja: "別のやり方のほうが高ければ、出所のある手を最大3つ出します。選ぶのはあなたです。",
+      en: "If a fresh approach looks better, up to three exit moves with sources are offered. You choose.",
+    },
+    exampleHead: { ja: "たとえば", en: "For example" },
+    example: {
+      ja: "AI に同じ修正を3回頼んで、3回とも失敗した。→ 下のボタンを3回押すと、3回分の試みが並びます。",
+      en: "You asked an AI for the same fix three times, and it failed three times. → Pressing the button below three times lists three tries.",
+    },
+    shopkeeper: {
+      ja: "右の店主に、試したことを文で打つこともできます。言語モデルが印の案を出し、あなたが「はい」と言うまで、何も足しません。",
+      en: "You can also type what you tried to the shopkeeper on the right. A language model proposes the marks, and nothing is added until you say Yes.",
+    },
+  },
   reader: {
     notice: {
       ja: "右の店主に打った文は、言語モデルが、どの印が当てはまるかの案を出します。試みの印を取り違えることがあるので、あなたが確かめるまで、何も足しません。",

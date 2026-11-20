@@ -518,16 +518,33 @@ export default function Shop() {
               </button>
             ))}
           </nav>
-          <div className="hello">
+          <div className="hello" hidden={focus && tab === "pit"}>
             <b>{ui.hello[lang](entries.length)}</b>
           </div>
 
           <div className="content">
             {tab === "pit" && sheets && (
               <section data-testid="pit">
-                <h2>{t(ui.pit.head, lang)}</h2>
-                <p>{t(ui.pit.intro, lang)}</p>
-                <p className="small">{t(ui.reader.notice, lang)}</p>
+                {attempts.length === 0 ? (
+                  <div className="entry" data-testid="entry">
+                    <h2>{t(ui.entry.headline, lang)}</h2>
+                    <p>{t(ui.entry.what, lang)}</p>
+                    <h3>{t(ui.entry.stepsHead, lang)}</h3>
+                    <ol>
+                      <li>{t(ui.entry.step1, lang)}</li>
+                      <li>{t(ui.entry.step2, lang)}</li>
+                      <li>{t(ui.entry.step3, lang)}</li>
+                    </ol>
+                    <div className="example">
+                      <b>{t(ui.entry.exampleHead, lang)}:</b> {t(ui.entry.example, lang)}
+                    </div>
+                    <p className="small">{t(ui.entry.shopkeeper, lang)}</p>
+                  </div>
+                ) : (
+                  <h2>{t(ui.pit.head, lang)}</h2>
+                )}
+                {attempts.length > 0 && <p>{t(ui.pit.intro, lang)}</p>}
+                {attempts.length > 0 && <p className="small">{t(ui.reader.notice, lang)}</p>}
                 <fieldset>
                   <ol className="attempts">
                     {attempts.map((a, i) => (

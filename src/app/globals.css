@@ -813,3 +813,32 @@ details.how summary {
     grid-template-columns: minmax(0, 1fr);
   }
 }
+/* Entrance of the pit screen: what this is, what to do, what comes out, in a few seconds. */
+.hello[hidden] {
+  display: none;
+}
+.entry h2 {
+  font-size: 24px !important;
+  margin-bottom: 10px;
+}
+.entry > p {
+  font-size: 16px !important;
+}
+.entry h3 {
+  margin: 14px 0 4px;
+  font-size: 16px;
+}
+.entry ol {
+  margin: 0 0 12px;
+  padding-left: 24px;
+}
+.entry ol li {
+  margin: 4px 0;
+  font-size: 16px;
+}
+.entry .example {
+  background: #fffbe0;
+  border: 1px solid #e6d98a;
+  padding: 8px 12px;
+  margin: 10px 0;
+}
