@@ -32,13 +32,15 @@ import { entropy, fisherRao, geodesicPoint } from "@/core/math";
 import { ANSWERS, DEFAULT_PARAMS, type Answer, type KnowledgeBase, type Lang, type Solution } from "@/core/types";
 import { DEFAULT_PACK, packs, type Pack, type PackId } from "@/data/packs";
 import { describeReading, type Reading } from "@/core/reader";
+import { isCorrect, nextItem, report as knowledgeReport, type Answer as CheckAnswer, type Choice } from "@/core/knowledge";
+import { knowledgeItems } from "@/data/knowledge-items";
 import { Agent, type Line } from "./agent";
 import { READER_URL, readSentence } from "./reader";
 import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
 import { t, ui } from "./strings";
 
-type Tab = "pit" | "home" | "shop" | "cart" | "about";
+type Tab = "pit" | "check" | "home" | "shop" | "cart" | "about";
 /** "shopText" is a line the shopkeeper says that is not one of the scripted utterances (the sentence reader's answers). */
 type LogItem = { from: "you"; text: string } | { from: "shop"; u: Utterance } | { from: "shopText"; text: string };
 interface Note {
@@ -99,6 +101,11 @@ export default function Shop() {
   const [packId, setPackId] = useState<PackId>(DEFAULT_PACK);
   const [tab, setTab] = useState<Tab>(packs[DEFAULT_PACK].sheets ? "pit" : "home");
   const [attempts, setAttempts] = useState<{ newApproach: boolean; newFact: boolean }[]>([]);
+  /** The knowledge check: the answers so far, whether it has started, and whether the explanation of the last answer is showing. */
+  const [checkAnswers, setCheckAnswers] = useState<CheckAnswer[]>([]);
+  const [checkStarted, setCheckStarted] = useState(false);
+  const [checkShowing, setCheckShowing] = useState(false);
+  const [checkStopped, setCheckStopped] = useState(false);
   /** A reading proposed by the sentence reader, waiting for the person's Yes or No. */
   const [pendingReading, setPendingReading] = useState<Reading | null>(null);
   const [stated, setStated] = useState<string | null>(null);
@@ -159,6 +166,12 @@ export default function Shop() {
   /** Pit-focus mode: a pack with spec sheets shows only what serves the pit check. The other parts stay in the code. */
   const focus = Boolean(sheets);
   const pitReport = useMemo(() => pitCheck(attempts), [attempts]);
+  // While the explanation of the last answer is showing, the current question is that last one.
+  const checkItem = useMemo(() => {
+    if (checkShowing) return knowledgeItems.find((i) => i.id === checkAnswers[checkAnswers.length - 1]?.itemId) ?? null;
+    return nextItem(knowledgeItems, checkAnswers);
+  }, [checkAnswers, checkShowing]);
+  const checkReport = useMemo(() => knowledgeReport(knowledgeItems, checkAnswers), [checkAnswers]);
   const exits = useMemo(() => exitMoves(kb, belief, 3), [kb, belief]);
   const rough = useMemo(() => roughMoves(kb, belief, 3), [kb, belief]);
   const planReport = useMemo(
@@ -301,6 +314,14 @@ export default function Shop() {
     setLog((l) => [...l, { from: "shopText", text: describeReading(r, lang) }]);
   }
 
+  /** Records an answer of the knowledge check and shows the explanation. Nothing is stored or sent. */
+  function answerCheck(choice: Choice) {
+    const item = nextItem(knowledgeItems, checkAnswers);
+    if (!item) return;
+    setCheckAnswers([...checkAnswers, { itemId: item.id, choice }]);
+    setCheckShowing(true);
+  }
+
   function confirmReading() {
     if (!pendingReading) return;
     // A mark the reader could not tell is left off. The person can set it on the screen.
@@ -392,6 +413,10 @@ export default function Shop() {
     setCartId(null);
     setPlan([]);
     setAttempts([]);
+    setCheckAnswers([]);
+    setCheckStarted(false);
+    setCheckShowing(false);
+    setCheckStopped(false);
     setPendingReading(null);
     setPendingCart(null);
     setBrowseNeed(null);
@@ -410,7 +435,7 @@ export default function Shop() {
   }`;
 
   const tabDefs: { id: Tab; label: string }[] = [
-    ...(sheets ? [{ id: "pit" as Tab, label: t(ui.pit.tab, lang) }] : []),
+    ...(sheets ? [{ id: "pit" as Tab, label: t(ui.pit.tab, lang) }, { id: "check" as Tab, label: t(ui.check.tab, lang) }] : []),
     ...(focus ? [] : [{ id: "home" as Tab, label: t(ui.tabs.home, lang) }]),
     { id: "shop", label: t(ui.tabs.shop, lang) },
     focus
@@ -609,6 +634,25 @@ export default function Shop() {
                         </ul>
                       </>
                     )}
+                    {checkReport.some((r) => r.readFirst.length > 0) && (
+                      <div data-testid="read-first">
+                        <p className="small">{t(ui.check.readFirstPit, lang)}</p>
+                        <ul>
+                          {checkReport
+                            .filter((r) => r.readFirst.length > 0)
+                            .map((r) => (
+                              <li key={r.topic}>
+                                <strong>{t(ui.check.topics[r.topic], lang)}</strong>{" "}
+                                {r.readFirst.map((l) => (
+                                  <a key={l.itemId} className="small" href={l.url} target="_blank" rel="noopener noreferrer">
+                                    {l.url}
+                                  </a>
+                                ))}
+                              </li>
+                            ))}
+                        </ul>
+                      </div>
+                    )}
                     {plan.length > 0 && (
                       <p>
                         <button className="linkbtn" onClick={() => setTab("cart")}>
@@ -616,6 +660,118 @@ export default function Shop() {
                         </button>
                       </p>
                     )}
+                  </fieldset>
+                )}
+              </section>
+            )}
+
+            {tab === "check" && sheets && (
+              <section data-testid="check">
+                <h2>{t(ui.check.head, lang)}</h2>
+                {!checkStarted ? (
+                  <>
+                    <p>{t(ui.check.intro, lang)}</p>
+                    <button className="default" onClick={() => setCheckStarted(true)}>
+                      {t(ui.check.start, lang)}
+                    </button>
+                  </>
+                ) : checkItem && !checkStopped ? (
+                  <fieldset data-testid="check-question">
+                    <p className="small">{ui.check.progress[lang](checkAnswers.length + (checkShowing ? 0 : 1))}</p>
+                    <p>
+                      <strong>{checkItem.stem[lang]}</strong>
+                    </p>
+                    <ol className="statements" type="A">
+                      {checkItem.statements.map((s, i) => {
+                        const last = checkAnswers[checkAnswers.length - 1];
+                        const mark = checkShowing ? (i === checkItem.wrong ? " \u2190" : "") : "";
+                        return (
+                          <li key={i}>
+                            {checkShowing ? (
+                              <span>
+                                {s[lang]}
+                                <b>{mark}</b>
+                                {last && last.choice === i ? <em> ({t(ui.check.yourPick, lang)})</em> : null}
+                              </span>
+                            ) : (
+                              <button className="linkbtn" onClick={() => answerCheck(i as Choice)}>
+                                {s[lang]}
+                              </button>
+                            )}
+                          </li>
+                        );
+                      })}
+                    </ol>
+                    {!checkShowing && (
+                      <p>
+                        <button onClick={() => answerCheck("unknown")}>{t(ui.check.unknown, lang)}</button>{" "}
+                        <button className="linkbtn small" onClick={() => setCheckStopped(true)}>
+                          [{t(ui.check.stop, lang)}]
+                        </button>
+                      </p>
+                    )}
+                    {checkShowing && (
+                      <div data-testid="check-explain">
+                        <p>
+                          {checkAnswers[checkAnswers.length - 1]?.choice === "unknown"
+                            ? t(ui.check.pickedUnknown, lang)
+                            : isCorrect(checkItem, checkAnswers[checkAnswers.length - 1]?.choice as Choice)
+                              ? t(ui.check.pickedRight, lang)
+                              : t(ui.check.pickedOther, lang)}
+                        </p>
+                        <p>
+                          <b>{t(ui.check.why, lang)}:</b> {checkItem.why[lang]}
+                        </p>
+                        <p className="small">
+                          {t(ui.check.source, lang)}:{" "}
+                          {"url" in checkItem.source ? (
+                            <a href={checkItem.source.url} target="_blank" rel="noopener noreferrer">
+                              {checkItem.source.url}
+                            </a>
+                          ) : (
+                            t(ui.check.premise, lang)
+                          )}
+                        </p>
+                        <button className="default" onClick={() => setCheckShowing(false)}>
+                          {nextItem(knowledgeItems, checkAnswers) ? t(ui.check.next, lang) : t(ui.check.finish, lang)}
+                        </button>{" "}
+                        <button className="linkbtn small" onClick={() => { setCheckShowing(false); setCheckStopped(true); }}>
+                          [{t(ui.check.stop, lang)}]
+                        </button>
+                      </div>
+                    )}
+                  </fieldset>
+                ) : (
+                  <fieldset data-testid="check-result">
+                    <legend>{t(ui.check.resultHead, lang)}</legend>
+                    <p className="small">{t(ui.check.resultNote, lang)}</p>
+                    <ul className="topics">
+                      {checkReport.map((r) => (
+                        <li key={r.topic}>
+                          <strong>{t(ui.check.topics[r.topic], lang)}</strong>: {t(ui.check.status[r.status], lang)}
+                          {r.readFirst.length > 0 && (
+                            <ul>
+                              {r.readFirst.map((l) => (
+                                <li key={l.itemId} className="small">
+                                  <a href={l.url} target="_blank" rel="noopener noreferrer">
+                                    {l.url}
+                                  </a>
+                                </li>
+                              ))}
+                            </ul>
+                          )}
+                        </li>
+                      ))}
+                    </ul>
+                    <button
+                      onClick={() => {
+                        setCheckAnswers([]);
+                        setCheckShowing(false);
+                        setCheckStopped(false);
+                      }}
+                    >
+                      {t(ui.check.restart, lang)}
+                    </button>
                   </fieldset>
                 )}
               </section>

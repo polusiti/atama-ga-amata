@@ -58,6 +58,11 @@ On the pit screen, you can type a sentence to the shopkeeper, such as "I added l
 
 Reading of the numbers: the reader is reliable at spotting a repeated approach and weak at spotting a new one, and it often invents a yes or no for the new-fact mark when the sentence does not say. That is why the proposal is a question and the marks on the screen stay in charge. The set is small and hand-written by the author, so these are rough figures, not an accuracy claim.
 
+## The knowledge check
+The CHECK tab asks questions that have an answer, in the form "choose the wrong statement": five statements, one of them wrong, plus "I don't know". There are five areas (Docker, MCP, Git, HTTP, and spotting mistakes in an AI's reply), three questions each at levels 1 to 3, and a person sees at most two per area. The first question is at level 2. A right answer leads to level 3, and a wrong answer or "I don't know" leads to level 1. After every answer, the page shows which statement was wrong, why, and the source (the documentation page or paper it rests on, with the date it was read, 2026-11-20). The result is a guide per area ("looks in place", "partly in place", "worth reading first") with links to read, never a score. The pit screen then lists those links under the exit moves. The numbers and the ranking of the exit moves do not change because of the check. No language model is involved, nothing is stored or sent, and it can be stopped at any point.
+
+Limits: the 15 questions and their answer keys were written by the author's AI assistant from the documentation named in each item, and no human expert has reviewed them yet. The levels are set by hand and are not calibrated. There is no data on whether the check helps anyone.
+
 ## Run
 
 ```bash

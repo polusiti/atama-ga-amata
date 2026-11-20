@@ -20,6 +20,8 @@ An antlion pit is a sand trap where each struggle makes the slope slide. Working
 
 You can also type a sentence about a try to the shopkeeper. A small model (Cloudflare Workers AI, behind a Worker in this repository) proposes the two marks, a validator rejects anything outside that shape, and the shopkeeper asks "Add it as a try that did not work?" Nothing is added until you press Yes. If the reader is down or over its limit, the page says so and the marks on the screen still work.
 
+A second tab, CHECK, measures what the person knows with questions that have an answer ("choose the wrong statement"), in five areas: Docker, MCP, Git, HTTP, and spotting mistakes in an AI's reply. It goes one level up after a right answer and one level down after a wrong one, shows the reason and the source after each answer, and ends with a guide per area and links to read first. There is no score, and a miss never becomes a label on the person.
+
 The wording judges the approach, never the person.
 
 The same check is an MCP tool, `pit_check`, so an AI agent can check itself. A steering file tells the agent to call it after two failed tries of the same approach.
