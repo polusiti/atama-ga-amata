@@ -7,7 +7,7 @@ Checked against other fields: a pharmacist who asks about drug interactions befo
 
 ## Requirements (EARS)
 1. THE check SHALL ask one question at a time. Each question has five statements, exactly one of them wrong, and a sixth choice "I don't know".
-2. THE check SHALL cover five areas: Docker, MCP, Git, HTTP, and spotting mistakes in an AI's reply. Each area has three questions at levels 1, 2 and 3. The levels are set by hand and the screen SHALL say so.
+2. THE check SHALL cover seven areas: Docker, MCP, Git, HTTP, spotting mistakes in an AI's reply, reading JavaScript code, and reading tests (the last two added 2026-11-21, with each answer key checked by running the snippet). Each area has three questions at levels 1, 2 and 3. The levels are set by hand and the screen SHALL say so.
 3. THE check SHALL ask at most two questions per area. The first is at level 2. If it is answered right, the second is at level 3. If it is answered wrong or with "I don't know", the second is at level 1.
 4. AFTER each answer, THE check SHALL show which statement was wrong, why, and the source, whether the answer was right or not. THE wording SHALL NOT blame the person.
 5. EVERY question SHALL carry a source: a URL of the documentation or paper it rests on and the date it was checked, or the premise stated in the question itself. A question without one SHALL fail the data test.

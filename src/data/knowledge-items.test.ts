@@ -43,8 +43,8 @@ describe("knowledge items: the data", () => {
         expect(i.source.checked, i.id).toMatch(/^\d{4}-\d{2}-\d{2}$/);
       } else {
         expect(i.source.premise, i.id).toBe(true);
-        // A premise source needs the premise in the stem: a stem with a quoted reply.
-        expect(i.stem.en.length, i.id).toBeGreaterThan(120);
+        // A premise source needs the premise in the question itself: a stem with a quoted reply, or a snippet under the stem.
+        expect(Math.max(i.stem.en.length, i.code?.length ?? 0), i.id).toBeGreaterThan(120);
       }
     }
   });
@@ -54,7 +54,8 @@ describe("knowledge items: the data", () => {
     expect(positions.size).toBe(5);
     for (let p = 0; p < 5; p++) {
       const n = knowledgeItems.filter((i) => i.wrong === p).length;
-      expect(n, `position ${p}`).toBeLessThanOrEqual(4);
+      // With n questions an even spread puts n / 5 at each position. Allow one more than that rounded up. (It was a fixed 4 for 15 questions.)
+      expect(n, `position ${p}`).toBeLessThanOrEqual(Math.ceil(knowledgeItems.length / 5) + 1);
     }
   });
 

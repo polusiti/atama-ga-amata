@@ -5,7 +5,7 @@ import type { L10n } from "./types";
  * A miss is used only to point at what to read first, never as a score or a label on the person
  * (see .kiro/specs/knowledge-check). The levels are set by hand; they are not calibrated from answers.
  */
-export const TOPICS = ["docker", "mcp", "git", "http", "ai"] as const;
+export const TOPICS = ["docker", "mcp", "git", "http", "ai", "code", "test"] as const;
 export type Topic = (typeof TOPICS)[number];
 
 /** Where the facts of an item come from: a page that was read on a date, or a premise stated in the question itself. */
@@ -17,6 +17,8 @@ export interface KnowledgeItem {
   /** 1 to 3, by hand. */
   level: 1 | 2 | 3;
   stem: L10n;
+  /** A snippet shown under the stem, the same in both languages. Code and test questions are checked by running it. */
+  code?: string;
   /** Five statements. */
   statements: readonly [L10n, L10n, L10n, L10n, L10n];
   /** Index of the wrong statement. */

@@ -41,7 +41,7 @@ describe("nextItem: which question comes next", () => {
     }
   });
 
-  it("asks at most two questions per topic, never the same one twice, and at most ten in all (whatever the answers)", () => {
+  it("asks at most two questions per topic, never the same one twice, and two per topic in all (whatever the answers)", () => {
     fc.assert(
       fc.property(fc.array(choiceArb, { minLength: 12, maxLength: 12 }), (picks) => {
         const answers = play((_id, i) => picks[i % picks.length]);
@@ -67,7 +67,7 @@ describe("nextItem: which question comes next", () => {
 
   it("returns null when every topic has had its two questions", () => {
     const answers = play(() => "unknown");
-    expect(answers.length).toBe(10);
+    expect(answers.length).toBe(TOPICS.length * MAX_PER_TOPIC);
     expect(nextItem(items, answers)).toBeNull();
   });
 

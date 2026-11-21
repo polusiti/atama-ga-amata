@@ -13,6 +13,9 @@ const MCP = "https://modelcontextprotocol.io/docs/learn/architecture";
 const GIT = "https://git-scm.com/book/en/v2/Getting-Started-What-is-Git%3F";
 const HTTP_METHODS = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Methods";
 const HTTP_STATUS = "https://developer.mozilla.org/en-US/docs/Web/HTTP/Reference/Status";
+const JS_SORT = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/sort";
+const JS_VAR = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Statements/var";
+const JS_FOREACH = "https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Array/forEach";
 
 export const knowledgeItems: KnowledgeItem[] = [
   // ---------- Docker ----------
@@ -364,5 +367,200 @@ export const knowledgeItems: KnowledgeItem[] = [
       ja: "試した、主要な公開モデルと非公開モデルのすべてが、複数回のやり取りで、大きく性能を下げました。6つの生成タスクの平均で、39%の低下でした。",
     },
     source: { url: "https://arxiv.org/abs/2505.06120", checked: D },
+  },
+  // ---------- Reading code (JavaScript). Each answer was checked by running the snippet in Node v22 on 2026-11-21. ----------
+  {
+    id: "code-1",
+    topic: "code",
+    level: 1,
+    stem: { en: "Which statement about what this code does is WRONG?", ja: "このコードの動きについて、誤っている文はどれですか？" },
+    code: `const nums = [3, 1, 2];
+const sorted = nums.sort();
+console.log(nums === sorted);
+console.log(nums);`,
+    statements: [
+      { en: "nums and sorted refer to the same array.", ja: "nums と sorted は、同じ配列を指します。" },
+      { en: "After the call, nums is [1, 2, 3].", ja: "呼び出しのあと、nums は [1, 2, 3] になります。" },
+      { en: "sort() leaves nums unchanged and returns a new sorted array.", ja: "sort() は nums を変えず、並べ替えた新しい配列を返します。" },
+      { en: "The first console.log prints true.", ja: "最初の console.log は true を出力します。" },
+      {
+        en: "Without a compare function, sort() compares the items as strings, so [10, 9, 1].sort() gives [1, 10, 9].",
+        ja: "比較関数がないと、sort() は要素を文字列として比べるので、[10, 9, 1].sort() は [1, 10, 9] になります。",
+      },
+    ],
+    wrong: 2,
+    why: {
+      en: "sort() sorts the array in place and returns a reference to the same array. Run in Node v22 on 2026-11-21: nums === sorted is true and nums is [1, 2, 3].",
+      ja: "sort() は配列をその場で並べ替え、同じ配列への参照を返します。Node v22 で2026年11月21日に実行して確かめました。nums === sorted は true で、nums は [1, 2, 3] です。",
+    },
+    source: { url: JS_SORT, checked: D },
+  },
+  {
+    id: "code-2",
+    topic: "code",
+    level: 2,
+    stem: { en: "Which statement about what this code does is WRONG?", ja: "このコードの動きについて、誤っている文はどれですか？" },
+    code: `const fns = [];
+for (var i = 0; i < 3; i++) {
+  fns.push(() => i);
+}
+console.log(fns.map((f) => f()));`,
+    statements: [
+      {
+        en: "It prints [0, 1, 2], because each arrow function keeps its own copy of i.",
+        ja: "[0, 1, 2] を出力します。それぞれのアロー関数が、自分用の i のコピーを持つからです。",
+      },
+      { en: "It prints [3, 3, 3].", ja: "[3, 3, 3] を出力します。" },
+      {
+        en: "A var declared in the header of a for statement is not limited to the loop body: all three arrow functions share one i.",
+        ja: "for の見出しで宣言した var は、ループの本体に限られません。3つのアロー関数は、1つの i を共有します。",
+      },
+      {
+        en: "When the loop ends, i is 3, and the arrow functions read that value later.",
+        ja: "ループが終わると i は 3 で、アロー関数は、そのあとにその値を読みます。",
+      },
+      { en: "Changing var to let makes it print [0, 1, 2].", ja: "var を let に変えると、[0, 1, 2] を出力します。" },
+    ],
+    wrong: 0,
+    why: {
+      en: "A for header does not create a scope for var, so there is one i, and by the time the functions run it is 3. Run in Node v22 on 2026-11-21: var gives [3, 3, 3] and let gives [0, 1, 2].",
+      ja: "for の見出しは var の範囲を作らないので、i は1つで、関数が動くときには3になっています。Node v22 で2026年11月21日に実行して確かめました。var は [3, 3, 3]、let は [0, 1, 2] です。",
+    },
+    source: { url: JS_VAR, checked: D },
+  },
+  {
+    id: "code-3",
+    topic: "code",
+    level: 3,
+    stem: { en: "Which statement about what this code does is WRONG?", ja: "このコードの動きについて、誤っている文はどれですか？" },
+    code: `let count = 0;
+[1, 2, 3].forEach(async (n) => {
+  await null;
+  count += n;
+});
+console.log(count);`,
+    statements: [
+      { en: "It prints 0.", ja: "0 を出力します。" },
+      {
+        en: "forEach() calls the callback for each item but does not wait for the promises an async callback returns.",
+        ja: "forEach() は、各要素でコールバックを呼びますが、async のコールバックが返す Promise は待ちません。",
+      },
+      { en: "Once the awaits have settled, count is 6.", ja: "await がすべて終わったあとは、count は 6 になります。" },
+      {
+        en: "Using a for...of loop with await inside an async function makes count 6 before the next line after the loop runs.",
+        ja: "async 関数の中で、for...of と await を使うと、ループの次の行が動く前に、count は 6 になります。",
+      },
+      {
+        en: "It prints 6, because forEach() waits for each async callback to finish before it moves on.",
+        ja: "6 を出力します。forEach() は、async のコールバックが終わるのを待ってから、次に進むからです。",
+      },
+    ],
+    wrong: 4,
+    why: {
+      en: "forEach() expects a synchronous function and does not wait for promises, so the log runs before any of the additions. MDN gives the same warning. Run in Node v22 on 2026-11-21: 0 right after forEach, and 6 after the awaits settle.",
+      ja: "forEach() は同期の関数を想定していて、Promise を待たないので、足し算が1つも終わらないうちに、出力が動きます。MDN も同じ注意を書いています。Node v22 で2026年11月21日に実行して確かめました。forEach の直後は 0、await が終わったあとは 6 です。",
+    },
+    source: { url: JS_FOREACH, checked: D },
+  },
+  // ---------- Reading tests. The premise is in the code; each answer was checked by running it in Node v22 on 2026-11-21. ----------
+  {
+    id: "test-1",
+    topic: "test",
+    level: 1,
+    stem: { en: "This test file is run once. Which statement about it is WRONG?", ja: "このテストのファイルを、1回実行します。誤っている文はどれですか？" },
+    code: `import assert from "node:assert";
+function isEven(n) { return n % 2 === 0; }
+assert(isEven(2));
+assert(isEven(3) === false);
+assert(isEven(-4));
+assert(isEven(0) === false);`,
+    statements: [
+      { en: "The first assertion passes.", ja: "最初の assert は通ります。" },
+      { en: "All four assertions pass.", ja: "4つの assert は、すべて通ります。" },
+      { en: "The assertion about -4 passes, because -4 is an even number.", ja: "-4 についての assert は、-4 が偶数なので、通ります。" },
+      {
+        en: "The last assertion fails, because 0 is even, so isEven(0) === false is false.",
+        ja: "最後の assert は落ちます。0 は偶数なので、isEven(0) === false は false になるからです。",
+      },
+      {
+        en: "When an assertion fails, it throws an AssertionError and the file stops there.",
+        ja: "assert が落ちると、AssertionError が投げられ、ファイルは、そこで止まります。",
+      },
+    ],
+    wrong: 1,
+    why: {
+      en: "isEven(0) is true, because 0 % 2 is 0, so the assertion that 0 is not even is the one that fails. Here the test is wrong, not the function. Run in Node v22 on 2026-11-21: the first three pass and the fourth fails.",
+      ja: "0 % 2 は 0 なので isEven(0) は true で、「0 は偶数でない」と言う assert が落ちます。ここで間違っているのは、関数でなく、テストです。Node v22 で2026年11月21日に実行して確かめました。最初の3つは通り、4つ目は落ちます。",
+    },
+    source: { premise: true },
+  },
+  {
+    id: "test-2",
+    topic: "test",
+    level: 2,
+    stem: { en: "This test passes today. Which statement about it is WRONG?", ja: "このテストは、いまは通ります。誤っている文はどれですか？" },
+    code: `import assert from "node:assert";
+function discount(price) {
+  return price > 100 ? price * 0.8 : price;
+}
+assert.ok(discount(200) < 200);`,
+    statements: [
+      { en: "The test passes with the current code.", ja: "このテストは、いまのコードで通ります。" },
+      {
+        en: "The test would still pass if the rate were accidentally changed from 0.8 to 0.5.",
+        ja: "率が、うっかり 0.8 から 0.5 に変わっても、このテストは通ります。",
+      },
+      {
+        en: "The test says nothing about price = 100, where the code returns the price unchanged.",
+        ja: "このテストは、price = 100（コードが価格をそのまま返す境目）について、何も確かめていません。",
+      },
+      {
+        en: "The test would fail if the rate were accidentally changed from 0.8 to 0.99.",
+        ja: "率が、うっかり 0.8 から 0.99 に変わったら、このテストは落ちます。",
+      },
+      {
+        en: "assert.strictEqual(discount(200), 160) is a stronger check, because it fails for both 0.5 and 0.99.",
+        ja: "assert.strictEqual(discount(200), 160) のほうが強い確かめです。0.5 でも 0.99 でも落ちるからです。",
+      },
+    ],
+    wrong: 3,
+    why: {
+      en: "The assertion only says the result is below 200, so any rate under 1 passes. A test that cannot fail for a plausible mistake protects nothing. Run in Node v22 on 2026-11-21: with 0.5 and 0.99 the weak test passes and the exact check fails.",
+      ja: "この assert は「結果が200未満」としか言わないので、1未満の率なら何でも通ります。ありそうな間違いで落ちないテストは、何も守りません。Node v22 で2026年11月21日に実行して確かめました。0.5 でも 0.99 でも、弱いテストは通り、厳密な確かめは落ちます。",
+    },
+    source: { premise: true },
+  },
+  {
+    id: "test-3",
+    topic: "test",
+    level: 3,
+    stem: {
+      en: "These two tests share one cart and run in the order A, then B. Which statement about them is WRONG?",
+      ja: "この2つのテストは、1つのカートを共有し、A、B の順に動きます。誤っている文はどれですか？",
+    },
+    code: `const cart = [];
+const add = (x) => cart.push(x);
+
+test("A", () => { add(1); assert.deepStrictEqual(cart, [1]); });
+test("B", () => { add(2); assert.deepStrictEqual(cart, [2]); });`,
+    statements: [
+      { en: "Test A passes when it runs first.", ja: "テスト A は、最初に動くと、通ります。" },
+      {
+        en: "Test B fails when it runs after A, because cart is already [1] when B adds 2.",
+        ja: "テスト B は、A のあとに動くと落ちます。B が 2 を足すとき、cart はすでに [1] だからです。",
+      },
+      { en: "Test B passes whatever runs before it.", ja: "テスト B は、その前に何が動いても、通ります。" },
+      { en: "Test B passes when it runs alone.", ja: "テスト B は、単独で動くと、通ります。" },
+      {
+        en: "Creating a fresh cart inside each test, or resetting it before each test, removes the problem.",
+        ja: "各テストの中で新しいカートを作る、または、各テストの前にリセットすると、この問題はなくなります。",
+      },
+    ],
+    wrong: 2,
+    why: {
+      en: "The tests depend on state that an earlier test left behind, so each one passes or fails depending on what ran before it. That makes failures hard to reproduce. Run in Node v22 on 2026-11-21: A then B, B fails; B alone, B passes; B then A, A fails.",
+      ja: "2つのテストは、前のテストが残した状態に頼っているので、前に何が動いたかで、通ったり落ちたりします。失敗の再現が難しくなります。Node v22 で2026年11月21日に実行して確かめました。A のあとの B は落ち、B 単独は通り、B のあとの A は落ちます。",
+    },
+    source: { premise: true },
   },
 ];

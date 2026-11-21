@@ -341,6 +341,8 @@ export const ui = {
       git: { ja: "Git", en: "Git" },
       http: { ja: "HTTP", en: "HTTP" },
       ai: { ja: "AI の返事の誤りを見つける", en: "Spotting mistakes in an AI's reply" },
+      code: { ja: "コードを読む（JavaScript）", en: "Reading code (JavaScript)" },
+      test: { ja: "テストを読む", en: "Reading tests" },
     },
     readFirst: { ja: "先に読むとよいかもしれないもの", en: "Worth reading first" },
     readFirstPit: {
@@ -366,13 +368,13 @@ export const ui = {
     },
     replies: {
       ja: [
-        "「ほとんど読まずに貼っている」ということだね。その場合、AI の返事の誤りは見つけにくく、同じ修正のくり返しにつながりやすいかもしれない。先に短い確かめ（5分野、各2問まで）を見る？ それとも、試したことを一文で教えてくれる？",
+        "「ほとんど読まずに貼っている」ということだね。その場合、AI の返事の誤りは見つけにくく、同じ修正のくり返しにつながりやすいかもしれない。先に短い確かめ（分野ごとに2問まで、やめたいときにやめられる）を見る？ それとも、試したことを一文で教えてくれる？",
         "「読むが、動かないと AI にそのまま聞き直す」ということだね。同じ聞き直しが続いているなら、そこが、くり返しの入口かもしれない。先に短い確かめを見る？ それとも、試したことを一文で教えてくれる？",
         "「エラーやログを読んで、原因を自分でも考える」ということだね。じゃあ、試したことを一文で教えてくれる？ 下の例のように、結果も添えてもらえると助かる。",
         "「仕様やテストで確かめてから採用する」ということだね。じゃあ、試したことを一文で教えてくれる？ 下の例のように、結果も添えてもらえると助かる。",
       ],
       en: [
-        "So you paste it without reading much. If so, an AI's mistakes are hard to spot, and that may be part of why the same fix keeps coming back. Want a short check first (five areas, up to two questions each), or tell me one thing you tried?",
+        "So you paste it without reading much. If so, an AI's mistakes are hard to spot, and that may be part of why the same fix keeps coming back. Want a short check first (up to two questions per area, and you can stop whenever you like), or tell me one thing you tried?",
         "So you read it, but when it fails you ask the AI again as it is. If the same question keeps going back, that may be where the loop starts. Want a short check first, or tell me one thing you tried?",
         "So you read the errors and logs and think about the cause yourself. Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
         "So you check it against a spec or tests before you use it. Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
@@ -535,12 +537,12 @@ export const ui = {
       en: "Both numbers are set by hand, not measured. This does not give a rule of the form 'switch after N tries'.",
     },
     persist: {
-      ja: "いまのところ、同じやり方の見込みが別のやり方を上回っています。続ける道もあります。",
+      ja: "いまは、同じやり方のほうが見込みが高い。続けてよい。ただし、同じやり方は、失敗するたびに見込みが下がる。次に失敗したら、この数字をもう一度見る。",
       en: "For now the same approach still looks the better bet than a fresh one. Continuing is an option.",
     },
     switch: {
-      ja: "このやり方は、うまくいっていないようです。同じ試みをもう一度するより、別のやり方のほうが見込みが高くなっています。",
-      en: "This approach seems to be failing. A fresh approach now has the higher chance than one more try of the same.",
+      ja: "このやり方は、もうダメだ。同じことをもう一度やるより、別のやり方のほうが、見込みが高い。ここで切り替える。",
+      en: "This approach is dead. A fresh approach now has the higher chance than one more try of the same. Switch here.",
     },
     exitsHead: { ja: "抜け出しの手（出所のあるものだけ）", en: "Exit moves (only those that name a source)" },
     rankNote: {

@@ -837,6 +837,11 @@ export default function Shop() {
                     <p>
                       <strong>{checkItem.stem[lang]}</strong>
                     </p>
+                    {checkItem.code && (
+                      <pre className="codebox" data-testid="check-code">
+                        {checkItem.code}
+                      </pre>
+                    )}
                     <ol className="statements" type="A">
                       {checkItem.statements.map((s, i) => {
                         const last = checkAnswers[checkAnswers.length - 1];
