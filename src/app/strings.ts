@@ -177,7 +177,7 @@ export const ui = {
       "atamagazon は、リポジトリ名の atama-ga-amata（頭が数多）をもじった名前です。人も AI も、同じ目標に別々の絵を描いています。この店は、その絵のずれを小さくするためにあります。",
       "人は、解決策を頼みますが、本当に持っているのは困りごとです。200年前のおばあさんは、洗濯機がほしいとは言わず、冬の水仕事で手が痛いと言いました。",
       "この店は、あなたが挙げた解決策を、必要を示す証拠の一つとして扱います。答えから必要を推定し、挙げなかった選択肢も見せます。",
-      "言語モデルを使うのは1か所だけです。アリジゴク画面で店主に打った文から、2つの印の案を出します。案は、あなたが「はい」と言うまで何にも使いません。判定の数字、出口の手の順番、質問の選び方は、すべて決まった式で計算します。質問は、期待情報利得をコストで割った値で選びます。",
+      "言語モデルを使うのは2か所だけで、どちらもアリジゴク画面です。1つは、店主に打った文から、2つの印の案を出します。案は、あなたが「はい」と言うまで何にも使いません。もう1つは、詰まったときに、違う方向の案を5つ出します。案は、決まった規則で形を確かめますが、中身の正しさは確かめません。確かめ方は、各案に付けた、10分ほどで試せる方法です。判定の数字、出口の手の順番、質問の選び方は、どちらにも左右されず、決まった式で計算します。質問は、期待情報利得をコストで割った値で選びます。",
       "店主の返事は、決まった規則と定型の文でできています。アリジゴク画面で打った文だけは、言語モデルが印の案を出し、その案を定型の文で読み返します。どちらも、内容を分かっているわけではありません。人は、こうした返事にも、理解を読み取ってしまうことがあります（ELIZA効果）。",
       "「なぜ聞くの？」と「なぜそう思う？」は、1970年代の診断システム MYCIN（Stanford）の、WHY と HOW の説明機能にならったものです。MYCIN は確実さ係数を使いましたが、ここでは確率のかけ算なので、倍率の積が結果と一致します。コードは写していません。",
       "店主の作りは、1966年の ELIZA（Weizenbaum）のキーワードと定型文の仕組みと、確認してから実行するアシスタントの流れを参考にしました。コードは写していません。聞き返しの言い回しは、動機づけ面接の聞き方（Miller と Rollnick）を借りたもので、効果があると主張するものではありません。",
@@ -188,7 +188,7 @@ export const ui = {
       "atamagazon is a pun on the repository name atama-ga-amata (\"many heads\"). People and AIs paint different pictures of the same goal. This store exists to shrink that gap.",
       "People ask for solutions but what they have is a trouble. A woman two centuries ago would not ask for a washing machine; she would say her hands ache in winter water.",
       "This store treats the solution you name as one piece of evidence about the need. It infers the need from your answers and shows options you did not name.",
-      "A language model is used in one place only. On the pit screen it proposes two marks from a sentence you type to the shopkeeper, and the proposal is used for nothing until you say Yes. The pit numbers, the order of the exit moves and the choice of questions are all computed by fixed formulas. Questions are chosen by expected information gain per unit cost.",
+      "A language model is used in two places only, both on the pit screen. One proposes two marks from a sentence you type to the shopkeeper, and the proposal is used for nothing until you say Yes. The other proposes five ideas in different directions when you are stuck. Fixed rules check the shape of the ideas, but not whether they are right. What tells you that is the ten-minute test attached to each idea. The pit numbers, the order of the exit moves and the choice of questions are computed by fixed formulas, and neither use of the model can change them. Questions are chosen by expected information gain per unit cost.",
       "The shopkeeper's replies are made of fixed rules and fixed sentences. Only for a sentence typed on the pit screen, a language model proposes the marks, and the proposal is read back in a fixed sentence. Neither understands what you say. People tend to read understanding into replies like these (the ELIZA effect).",
       "\"Why ask?\" and \"Why do you think so?\" follow the WHY and HOW explanation features of MYCIN, a 1970s diagnosis system from Stanford. MYCIN used certainty factors; here the numbers are probabilities, so the multipliers multiply exactly to the result. No code was copied.",
       "Its design borrows the keyword-and-template idea of ELIZA (Weizenbaum, 1966) and the confirm-before-acting flow of assistant frameworks. No code was copied. The phrasing of reflections borrows from motivational interviewing (Miller and Rollnick) and makes no claim of effect.",
@@ -383,6 +383,49 @@ export const ui = {
     afterNo: {
       ja: "じゃあ、試したことを一文で教えてくれる？ 下の例のように、結果も添えてもらえると助かる。",
       en: "Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
+    },
+  },
+  ideas: {
+    button: { ja: "案を出してもらう", en: "Get ideas" },
+    head: { ja: "違う方向の案を5つ", en: "Five ideas in different directions" },
+    prompt: {
+      ja: "いま何で詰まっているか、1〜2文で教えてもらえますか（400字まで）。",
+      en: "In one or two sentences, what is stuck? (up to 400 characters)",
+    },
+    placeholder: {
+      ja: "例: ビルドが、モジュールが見つからないエラーで失敗する。AI に入れ直しを3回頼んだが、同じ結果だった。",
+      en: "Example: The build fails with a missing module error. I asked the AI to reinstall it three times and got the same result.",
+    },
+    go: { ja: "5つ出す", en: "Get five" },
+    working: { ja: "考えています。10秒ほどかかります…", en: "Thinking. This takes about ten seconds…" },
+    notice: {
+      ja: "言語モデルが、あなたの書いた文から案を出します。この文は、案を作るために Cloudflare の AI に送られ、保存されません。案は、試していない考えで、事実ではありません。各案の「確かめ方」が、当たりかどうかを見分ける方法です。",
+      en: "A language model writes these ideas from what you typed. The sentence is sent to Cloudflare's AI to make the ideas, and nothing is stored. They are untested ideas, not facts. The quick test under each one is how you find out.",
+    },
+    quickTest: { ja: "10分ほどで確かめる方法", en: "A quick way to find out" },
+    kind: {
+      sourced: { ja: "出所のある手", en: "A move with a source" },
+      "rule-of-thumb": { ja: "経験則の手（出所なし）", en: "A rule of thumb (no source)" },
+      other: { ja: "モデルの案（出所なし）", en: "The model's own idea (no source)" },
+    },
+    tried: { ja: "試したが、うまくいかなかった", en: "I tried this and it did not work" },
+    failed: {
+      unreachable: {
+        ja: "いまは案を出せませんでした。下の出所のある手は、そのまま使えます。",
+        en: "Ideas are not available right now. The moves with sources below still work.",
+      },
+      timeout: {
+        ja: "案に時間がかかりすぎました。下の出所のある手は、そのまま使えます。",
+        en: "The ideas took too long. The moves with sources below still work.",
+      },
+      limit: {
+        ja: "案の利用が上限に達しました。少し待つと、また使えます。下の出所のある手は、そのまま使えます。",
+        en: "The ideas have reached their limit for now, and they work again after a minute. The moves with sources below still work.",
+      },
+      invalid: {
+        ja: "案が、決まりに合う形で返りませんでした。もう一度試せます。下の出所のある手は、そのまま使えます。",
+        en: "The ideas did not come back in an acceptable form. You can try again. The moves with sources below still work.",
+      },
     },
   },
   entry: {

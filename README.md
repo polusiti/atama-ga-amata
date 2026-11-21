@@ -32,7 +32,7 @@ A second shelf ("everyday troubles") shows the same engine on a different domain
 
 ## How it works
 
-A language model is used in one place only (see "The sentence reader" below). Everything that produces a number or a ranking is a small, deterministic, tested core:
+A language model is used in two places only, both on the pit screen and neither able to change a number (see "The sentence reader" and "Ideas when stuck" below). Everything that produces a number or a ranking is a small, deterministic, tested core:
 
 - Belief over underlying needs, updated by Bayes with an explicit answer model (5 graded answers, a fixed "don't know" share, Gaussian noise).
 - Next question chosen by exact expected information gain (mutual information) per unit of user effort. Stops when another question is worth less than it costs.
@@ -42,7 +42,7 @@ A language model is used in one place only (see "The sentence reader" below). Ev
 
 See `.kiro/steering/charter.md` for the principles and `docs/assumptions.md` for what is authored judgment rather than measured data.
 
-## The sentence reader (the one place a language model is used)
+## The sentence reader (the first place a language model is used)
 On the pit screen, you can type a sentence to the shopkeeper, such as "I added logging and found the input is empty". A small language model (Cloudflare Workers AI, `llama-3.2-3b-instruct`, behind a Worker in `worker/`) proposes two marks: whether the try used a different approach, and whether a new fact turned up. Each mark is true, false or "cannot tell". Anything else it says is thrown away by a validator (`src/core/reader.ts`, with property tests), and the page checks the answer again. The proposal is shown as a question, and nothing is added until you press Yes. The numbers, the verdict and the exit moves never come from the model. If the reader is down, slow or over its limit, the page says so and the marks on the screen still work. The Worker accepts requests only from the site's own origin, limits request length and rate, runs on the Free plan (use above the daily allowance fails instead of being billed) and does not log the typed text.
 
 **Measured, 2026-11-20, 20 hand-written sentences per language, labels fixed before the run** (`worker` called live, temperature 0):
@@ -57,6 +57,25 @@ On the pit screen, you can type a sentence to the shopkeeper, such as "I added l
 | Failed or invalid answers | 0 of 20 | 0 of 20 |
 
 Reading of the numbers: the reader is reliable at spotting a repeated approach and weak at spotting a new one, and it often invents a yes or no for the new-fact mark when the sentence does not say. That is why the proposal is a question and the marks on the screen stay in charge. The set is small and hand-written by the author, so these are rough figures, not an accuracy claim.
+
+## Ideas when stuck (the second place a language model is used)
+When the verdict says a fresh approach has the better chance, "Get ideas" asks for five ideas. The person writes in a sentence or two what is stuck, and a larger model (Cloudflare Workers AI, `llama-3.3-70b-instruct-fp8-fast`, behind the same Worker) returns five ideas, each with a title, what to do, and a quick test: something to do in about ten minutes, and what result would speak for or against the idea. The point is a spread, not a correct answer, because the pit is the repetition of one approach. Correctness is found by the person, by the quick test.
+
+What is checked, by fixed rules in `src/core/ideas.ts`, before anything is shown: exactly five ideas; every field present and within its length; each idea's kind is the id of one of the site's own exit moves, or "other" for at most one idea; no two ideas of the same kind and at least three of the five are exit moves; no repeated title; no claim of having run or tested code, no code block, no URL, no AI disclaimer; and the language asked for (a Japanese answer must contain Japanese). The worker may cut a text that is too long to its limit at the end of a sentence, because a long idea is not a bad idea. An answer that breaks any other rule is not shown, and the page says so in one line while the exit moves with sources stay on the screen. The fixed rules do not check that an idea is good.
+
+Each idea carries a label: a move with a source (with the source), a rule of thumb, or "the model's own idea, no source". The sentence the person types is sent to Cloudflare, not stored, and not logged.
+
+**Measured, 2026-11-21, 8 situations per language, written before the run, called live:**
+
+| | English | Japanese |
+|---|---|---|
+| Answers that pass the fixed rules | 8 of 8 | 6 of 8 |
+| Median and longest time | 10 s and 15 s | 15 s and 24 s |
+| Distinct kinds in a passing answer | 5 of 5 | 5 of 5 |
+
+The two Japanese answers that did not pass were stopped by the rules (the model answered in the wrong language, as far as I know; the reason was not recorded in this run). An earlier run of the Japanese half, before the language rule existed, showed 8 of 8, and that number is withdrawn: it let English answers through. In the same series, the smaller model I tried first (`llama-3.2-3b-instruct`) passed the rules every time but gave shallow ideas, and the larger one wrote too long and was cut to fit.
+
+**What I think of the ideas, as the author:** they are uneven. In the examples I read, an idea for a login cookie problem named the cookie, the domains and the places to look; an idea for a test that passes locally and fails in CI used generic nouns and did not mention the difference between the two. No score of quality is claimed.
 
 ## The knowledge check
 The CHECK tab asks questions that have an answer, in the form "choose the wrong statement": five statements, one of them wrong, plus "I don't know". There are five areas (Docker, MCP, Git, HTTP, and spotting mistakes in an AI's reply), three questions each at levels 1 to 3, and a person sees at most two per area. The first question is at level 2. A right answer leads to level 3, and a wrong answer or "I don't know" leads to level 1. After every answer, the page shows which statement was wrong, why, and the source (the documentation page or paper it rests on, with the date it was read, 2026-11-20). The result is a guide per area ("looks in place", "partly in place", "worth reading first") with links to read, never a score. The pit screen then lists those links under the exit moves. The numbers and the ranking of the exit moves do not change because of the check. No language model is involved, nothing is stored or sent, and it can be stopped at any point.

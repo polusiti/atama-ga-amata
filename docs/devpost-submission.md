@@ -37,7 +37,7 @@ The same check is an MCP tool, `pit_check`, so an AI agent can check itself. A s
 ## What is stitched together (Frankenstein)
 - A small probability model from restart theory (a two-type task with heavy-tailed run times, where a fresh start beats waiting) with a hand-set, plainly labelled parameter set.
 - The honesty of a good teacher or doctor: say plainly that a plan does not fit, never blame the person, and leave the decision to them.
-- A deterministic engine that produces every number and ranking, with a small language model used in one place only: it proposes two marks from a typed sentence, a validator throws away anything outside that shape, and nothing counts until the person says Yes. The numbers cannot drift or flatter the user, because the model never produces them.
+- A deterministic engine that produces every number and ranking, with a language model used in two places only: a small one proposes two marks from a typed sentence (a validator throws away anything outside that shape, and nothing counts until the person says Yes), and a larger one proposes five ideas of different kinds when the person is stuck (fixed rules check the shape, the spread of kinds and the claims it cannot make, and each idea comes with a ten-minute test, not a promise). The numbers cannot drift or flatter the user, because the model never produces them.
 - A storefront from around 2000 inside a Windows 98 browser window, with an original pixel ghost as the shopkeeper.
 - Kiro hooks, steering and specs driven by a log of the builder's own mistakes, and an MCP tool the builder's own agent is told to call.
 

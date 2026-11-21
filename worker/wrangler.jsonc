@@ -9,8 +9,17 @@
       "name": "READER_LIMITER",
       "namespace_id": "4801",
       "simple": { "limit": 10, "period": 60 }
+    },
+    {
+      "name": "IDEAS_LIMITER",
+      "namespace_id": "4802",
+      "simple": { "limit": 4, "period": 60 }
     }
   ],
-  "vars": { "ALLOWED_ORIGINS": "https://polusiti.github.io", "MODEL": "@cf/meta/llama-3.2-3b-instruct" },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://polusiti.github.io",
+    "MODEL": "@cf/meta/llama-3.2-3b-instruct",
+    "IDEAS_MODEL": "@cf/meta/llama-3.3-70b-instruct-fp8-fast"
+  },
   "observability": { "enabled": false }
 }

@@ -15,7 +15,7 @@ import {
 import { readText } from "@/core/evidence";
 import { contributions, explainWhy, pathLength, traceBelief } from "@/core/explain";
 import { checkCart } from "@/core/cart";
-import { exitMoves, roughMoves } from "@/core/escape";
+import { exitMoves, isSourced, roughMoves } from "@/core/escape";
 import { pitCheck } from "@/core/pit";
 import { establishedSteps, stepStates } from "@/core/fringe";
 import {
@@ -36,6 +36,8 @@ import { isCorrect, nextItem, report as knowledgeReport, type Answer as CheckAns
 import { knowledgeItems } from "@/data/knowledge-items";
 import { Agent, type Line } from "./agent";
 import { READER_URL, readSentence } from "./reader";
+import { IDEAS_URL, MAX_SITUATION, getIdeas, type IdeasFailureKind } from "./ideas";
+import { labelOf, type Idea } from "@/core/ideas";
 import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
 import { t, ui } from "./strings";
@@ -116,6 +118,12 @@ export default function Shop() {
   /** The answer to the opening question (0 to 3), and whether the knowledge check is being offered. */
   const [level, setLevel] = useState<number | null>(null);
   const [offerCheck, setOfferCheck] = useState(false);
+  /** The idea burst: the box is open, what was typed, the ideas that passed the rules, a failure, and whether a request is running. */
+  const [ideasOpen, setIdeasOpen] = useState(false);
+  const [ideasText, setIdeasText] = useState("");
+  const [ideas, setIdeas] = useState<Idea[]>([]);
+  const [ideasFailure, setIdeasFailure] = useState<IdeasFailureKind | null>(null);
+  const [ideasBusy, setIdeasBusy] = useState(false);
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -339,6 +347,19 @@ export default function Shop() {
     setCheckShowing(true);
   }
 
+  /** Asks for five ideas of different kinds. Only ideas that pass the fixed rules are kept; otherwise a one-line failure is shown. */
+  async function requestIdeas() {
+    const text = ideasText.trim();
+    if (text.length === 0 || ideasBusy) return;
+    setIdeasBusy(true);
+    setIdeasFailure(null);
+    setIdeas([]);
+    const result = await getIdeas(IDEAS_URL, text, lang, pitReport.failuresInRun, kb.solutions.map((s) => s.id));
+    setIdeasBusy(false);
+    if (result.ok) setIdeas(result.ideas);
+    else setIdeasFailure(result.kind);
+  }
+
   /** The opening question: the person picked how much of the AI's code they read and fix. The choice only decides what is said next. */
   function answerLevel(index: number, text: string) {
     setLevel(index);
@@ -459,6 +480,11 @@ export default function Shop() {
     setBrowseNeed(null);
     setLevel(null);
     setOfferCheck(false);
+    setIdeasOpen(false);
+    setIdeasText("");
+    setIdeas([]);
+    setIdeasFailure(null);
+    setIdeasBusy(false);
     setOpenId(null);
     setLog([
       (forPack ?? pack).sheets
@@ -723,6 +749,74 @@ export default function Shop() {
                       </p>
                     )}
                   </fieldset>
+                )}
+                {attempts.length > 0 && (pitReport.verdict === "switch" || ideasOpen || ideas.length > 0) && (
+                      <div data-testid="ideas">
+                        {!ideasOpen ? (
+                          <p>
+                            <button className="default" onClick={() => setIdeasOpen(true)}>
+                              {t(ui.ideas.button, lang)}
+                            </button>
+                          </p>
+                        ) : (
+                          <fieldset>
+                            <legend>{t(ui.ideas.head, lang)}</legend>
+                            <p className="small">{t(ui.ideas.notice, lang)}</p>
+                            <p>{t(ui.ideas.prompt, lang)}</p>
+                            <textarea
+                              aria-label={t(ui.ideas.prompt, lang)}
+                              rows={3}
+                              maxLength={MAX_SITUATION}
+                              value={ideasText}
+                              placeholder={t(ui.ideas.placeholder, lang)}
+                              onChange={(e) => setIdeasText(e.target.value)}
+                              style={{ width: "100%" }}
+                            />
+                            <p>
+                              <button className="default" onClick={requestIdeas} disabled={ideasBusy || ideasText.trim().length === 0}>
+                                {t(ui.ideas.go, lang)}
+                              </button>{" "}
+                              {ideasBusy && <span className="small">{t(ui.ideas.working, lang)}</span>}
+                            </p>
+                            {ideasFailure && <p data-testid="ideas-failure">{t(ui.ideas.failed[ideasFailure], lang)}</p>}
+                            {ideas.length > 0 && (
+                              <ol className="ideas">
+                                {ideas.map((idea) => {
+                                  const label = labelOf(idea, kb.solutions, isSourced);
+                                  const move = kb.solutions.find((s) => s.id === idea.kind);
+                                  return (
+                                    <li key={idea.kind}>
+                                      <strong>{idea.title}</strong>
+                                      <p className="small">
+                                        {t(ui.ideas.kind[label.kind], lang)}
+                                        {label.moveTitle ? `: ${label.moveTitle[lang]}` : ""}
+                                        {label.source ? ` (${t(ui.pack.sourceLabel, lang)}: ${label.source[lang]})` : ""}
+                                      </p>
+                                      <p>{idea.how}</p>
+                                      <p className="small">
+                                        <b>{t(ui.ideas.quickTest, lang)}:</b> {idea.quickTest}
+                                      </p>
+                                      {move && (
+                                        <>
+                                          <button
+                                            onClick={() => setPlan((p) => (p.includes(move.id) ? p : [...p, move.id]))}
+                                            disabled={plan.includes(move.id)}
+                                          >
+                                            {plan.includes(move.id) ? t(ui.plan.inPlan, lang) : t(ui.plan.add, lang)}
+                                          </button>{" "}
+                                        </>
+                                      )}
+                                      <button onClick={() => setAttempts((xs) => [...xs, { newApproach: true, newFact: false }])}>
+                                        {t(ui.ideas.tried, lang)}
+                                      </button>
+                                    </li>
+                                  );
+                                })}
+                              </ol>
+                            )}
+                          </fieldset>
+                        )}
+                      </div>
                 )}
               </section>
             )}
