@@ -42,7 +42,16 @@ export function parseReading(raw: unknown): Reading | null {
 }
 
 /** The sentence the shopkeeper shows before anything is added. It reflects the reading and asks; it does not claim to understand. */
-export function describeReading(r: Reading, lang: Lang): string {
+export function describeReading(r: Reading, lang: Lang, isFirstTry = false): string {
+  if (isFirstTry) {
+    // With no earlier try there is nothing to differ from, so only the new-fact mark is reported.
+    if (lang === "ja") {
+      const fact = r.newFact === null ? "新しい事実が出たかは分からない" : r.newFact ? "新しい事実あり" : "新しい事実なし";
+      return `最初の試みとして読みました: ${fact}。違っていたら、あとで画面で直せます。リストに足しますか？`;
+    }
+    const fact = r.newFact === null ? "I could not tell whether anything new turned up" : r.newFact ? "a new fact turned up" : "nothing new turned up";
+    return `Read as your first try: ${fact}. You can fix it on the screen later. Add it to your list of tries?`;
+  }
   if (lang === "ja") {
     const approach = r.newApproach === null ? "前と違うやり方かは分からない" : r.newApproach ? "前と違うやり方" : "前と同じやり方";
     const fact = r.newFact === null ? "新しい事実が出たかは分からない" : r.newFact ? "新しい事実あり" : "新しい事実なし";

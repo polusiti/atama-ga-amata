@@ -343,7 +343,7 @@ export default function Shop() {
       return;
     }
     setPendingReading(r);
-    setLog((l) => [...l, { from: "shopText", text: describeReading(r, lang) }]);
+    setLog((l) => [...l, { from: "shopText", text: describeReading(r, lang, attempts.length === 0) }]);
   }
 
   /** Records an answer of the knowledge check and shows the explanation. Nothing is stored or sent. */
@@ -397,7 +397,7 @@ export default function Shop() {
   function confirmReading() {
     if (!pendingReading) return;
     // A mark the reader could not tell is left off. The person can set it on the screen.
-    setAttempts((xs) => [...xs, { newApproach: pendingReading.newApproach === true, newFact: pendingReading.newFact === true, text: pendingText }]);
+    setAttempts((xs) => [...xs, { newApproach: attempts.length > 0 && pendingReading.newApproach === true, newFact: pendingReading.newFact === true, text: pendingText }]);
     setLog((l) => [...l, { from: "shopText", text: t(ui.reader.added, lang) }]);
     setPendingReading(null);
   }

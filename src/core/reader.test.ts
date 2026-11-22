@@ -100,6 +100,15 @@ describe("describeReading: the sentence the shopkeeper shows", () => {
     expect(describeReading({ newApproach: false, newFact: true }, "ja")).toBe("こう読みました: 前と同じやり方、新しい事実あり。違っていたら、あとで画面で直せます。リストに足しますか？");
   });
 
+  it("for a first try, does not talk about the approach changing (nothing came before)", () => {
+    const en = describeReading({ newApproach: true, newFact: true }, "en", true);
+    const ja = describeReading({ newApproach: true, newFact: true }, "ja", true);
+    expect(en).toBe("Read as your first try: a new fact turned up. You can fix it on the screen later. Add it to your list of tries?");
+    expect(ja).toBe("最初の試みとして読みました: 新しい事実あり。違っていたら、あとで画面で直せます。リストに足しますか？");
+    expect(en).not.toMatch(/approach/);
+    expect(ja).not.toMatch(/やり方/);
+  });
+
   it("never claims to understand the person (voice rule 3)", () => {
     for (const r of all) {
       expect(describeReading(r, "en")).not.toMatch(/understand|I see/i);
