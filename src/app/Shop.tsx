@@ -37,6 +37,7 @@ import { knowledgeItems } from "@/data/knowledge-items";
 import { Agent, type Line } from "./agent";
 import { READER_URL, readSentence } from "./reader";
 import { IDEAS_URL, MAX_SITUATION, getIdeas, type IdeasFailureKind } from "./ideas";
+import { getShake, type ShakeResult } from "./shake";
 import { labelOf, type Idea } from "@/core/ideas";
 import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
@@ -125,6 +126,8 @@ export default function Shop() {
   const [ideas, setIdeas] = useState<Idea[]>([]);
   const [ideasFailure, setIdeasFailure] = useState<IdeasFailureKind | null>(null);
   const [ideasBusy, setIdeasBusy] = useState(false);
+  const [shake, setShake] = useState<ShakeResult | null>(null);
+  const [shakeBusy, setShakeBusy] = useState(false);
   const [stated, setStated] = useState<string | null>(null);
   const [entries, setEntries] = useState<AnswerEntry[]>([]);
   const [notes, setNotes] = useState<Note[]>([]);
@@ -350,6 +353,14 @@ export default function Shop() {
   }
 
   /** Asks for five ideas of different kinds. Only ideas that pass the fixed rules are kept; otherwise a one-line failure is shown. */
+  /** Draws three provocations. Nothing the person typed is sent. Japanese and any failure use the author's deck, and the page says which. */
+  async function requestShake() {
+    if (shakeBusy) return;
+    setShakeBusy(true);
+    setShake(await getShake(lang, pitReport.failuresInRun));
+    setShakeBusy(false);
+  }
+
   async function requestIdeas() {
     const text = ideasText.trim();
     if (text.length === 0 || ideasBusy) return;
@@ -483,6 +494,7 @@ export default function Shop() {
     setLevel(null);
     setOfferCheck(false);
     setIdeasOpen(false);
+    setShake(null);
     setIdeasText("");
     setIdeas([]);
     setIdeasFailure(null);
@@ -755,6 +767,29 @@ export default function Shop() {
                 )}
                 {attempts.length > 0 && (pitReport.verdict === "switch" || ideasOpen || ideas.length > 0) && (
                       <div data-testid="ideas">
+                        <fieldset data-testid="shake">
+                          <legend>{t(ui.shake.head, lang)}</legend>
+                          <p className="small">{t(ui.shake.notice, lang)}</p>
+                          <p>
+                            <button className="default" onClick={requestShake} disabled={shakeBusy}>
+                              {shake ? t(ui.shake.again, lang) : t(ui.shake.button, lang)}
+                            </button>{" "}
+                            {shakeBusy && <span className="small">{t(ui.shake.working, lang)}</span>}
+                          </p>
+                          {shake && (
+                            <>
+                              <p className="small">{t(shake.source === "ai" ? ui.shake.fromAi : ui.shake.fromDeck, lang)}</p>
+                              <ol>
+                                {shake.shakes.map((s) => (
+                                  <li key={s.title}>
+                                    <strong>{s.title}</strong> ({ui.shake.minutes[lang](s.minutes)})
+                                    <p>{s.how}</p>
+                                  </li>
+                                ))}
+                              </ol>
+                            </>
+                          )}
+                        </fieldset>
                         {!ideasOpen ? (
                           <p>
                             <button className="default" onClick={() => setIdeasOpen(true)}>

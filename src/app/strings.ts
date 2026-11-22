@@ -387,6 +387,22 @@ export const ui = {
       en: "Then tell me one thing you tried, in one sentence. The examples below show the shape, with the result added.",
     },
   },
+  shake: {
+    button: { ja: "揺さぶる(3つ引く)", en: "Shake it (draw three)" },
+    head: { ja: "揺さぶり 3つ", en: "Three shakes" },
+    notice: {
+      ja: "あなたの問題は読みません。どんな詰まりにも使える挑発を3つ出します。当たる保証はありません。1つ10分以内で、やめるのも自由です。",
+      en: "This does not read your problem. It gives three provocations that fit any stuck problem. Nothing says one will work. Each takes ten minutes at most, and you can stop at any time.",
+    },
+    fromAi: { ja: "AI が、ランダムな2語から作りました。", en: "Written by an AI from two random words." },
+    fromDeck: {
+      ja: "作者が書いた山札から引きました。AI は使っていません。",
+      en: "Drawn from the author's deck. No AI was used.",
+    },
+    minutes: { ja: (n: number) => `${n}分`, en: (n: number) => `${n} min` },
+    again: { ja: "引き直す", en: "Draw again" },
+    working: { ja: "引いています…", en: "Drawing…" },
+  },
   ideas: {
     button: { ja: "案を出してもらう", en: "Get ideas" },
     head: { ja: "違う方向の案を5つ", en: "Five ideas in different directions" },
