@@ -41,6 +41,15 @@ export function parseReading(raw: unknown): Reading | null {
   return { newApproach: obj.newApproach, newFact: obj.newFact };
 }
 
+/** The marks of a reading as a short label (data, not a sentence), for the Yes button. */
+export function readingMarks(r: Reading, lang: Lang, isFirstTry: boolean): string {
+  const ja = lang === "ja";
+  const parts: string[] = [];
+  if (!isFirstTry) parts.push(r.newApproach === null ? (ja ? "やり方は不明" : "approach unknown") : r.newApproach ? (ja ? "別のやり方" : "different approach") : ja ? "同じやり方" : "same approach");
+  parts.push(r.newFact === null ? (ja ? "新事実は不明" : "fact unknown") : r.newFact ? (ja ? "新事実あり" : "new fact") : ja ? "新事実なし" : "no new fact");
+  return parts.join(ja ? "、" : ", ");
+}
+
 /** The sentence the shopkeeper shows before anything is added. It reflects the reading and asks; it does not claim to understand. */
 export function describeReading(r: Reading, lang: Lang, isFirstTry = false): string {
   if (isFirstTry) {

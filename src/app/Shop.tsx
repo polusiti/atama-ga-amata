@@ -31,13 +31,15 @@ import { countAuthored } from "@/core/limits";
 import { entropy, fisherRao, geodesicPoint } from "@/core/math";
 import { ANSWERS, DEFAULT_PARAMS, type Answer, type KnowledgeBase, type Lang, type Solution } from "@/core/types";
 import { DEFAULT_PACK, packs, type Pack, type PackId } from "@/data/packs";
-import { describeReading, type Reading } from "@/core/reader";
+import { type Reading } from "@/core/reader";
 import { isCorrect, nextItem, report as knowledgeReport, type Answer as CheckAnswer, type Choice } from "@/core/knowledge";
 import { knowledgeItems } from "@/data/knowledge-items";
 import { Agent, type Line } from "./agent";
 import { READER_URL, readSentence } from "./reader";
 import { IDEAS_URL, MAX_SITUATION, getIdeas, type IdeasFailureKind } from "./ideas";
 import { getShake, type ShakeResult } from "./shake";
+import { getGhostLine } from "./ghost";
+import { readingMarks } from "@/core/reader";
 /** Decision 2026-11-22: the opening level question is off. The check is reached from the entrance button. The code stays. */
 const ASK_LEVEL = false;
 import { labelOf, type Idea } from "@/core/ideas";
@@ -331,7 +333,7 @@ export default function Shop() {
   async function submitToReader(text: string) {
     setPendingReading(null);
     setPendingText(text);
-    setLog((l) => [...l, { from: "you", text }, { from: "shopText", text: t(ui.reader.reading, lang) }]);
+    setLog((l) => [...l, { from: "you", text }]);
     const result = await readSentence(READER_URL, text, lang);
     if (!result.ok) {
       setLog((l) => [...l, { from: "shopText", text: t(ui.reader.failed[result.kind], lang) }]);
@@ -339,11 +341,11 @@ export default function Shop() {
     }
     const r = result.reading;
     if (r.newApproach === null && r.newFact === null) {
-      setLog((l) => [...l, { from: "shopText", text: t(ui.reader.nothing, lang) }]);
+      void sayGhost();
       return;
     }
     setPendingReading(r);
-    setLog((l) => [...l, { from: "shopText", text: describeReading(r, lang, attempts.length === 0) }]);
+    void sayGhost();
   }
 
   /** Records an answer of the knowledge check and shows the explanation. Nothing is stored or sent. */
@@ -355,6 +357,12 @@ export default function Shop() {
   }
 
   /** Asks for five ideas of different kinds. Only ideas that pass the fixed rules are kept; otherwise a one-line failure is shown. */
+  /** The ghost's line: one odd sentence from a language model, with nothing of the person's sent. No line if it fails (no canned one). */
+  async function sayGhost() {
+    const line = await getGhostLine(lang);
+    if (line) setLog((l) => [...l, { from: "shopText", text: line }]);
+  }
+
   /** Draws three provocations. Nothing the person typed is sent. Japanese and any failure use the author's deck, and the page says which. */
   async function requestShake() {
     if (shakeBusy) return;
@@ -398,12 +406,12 @@ export default function Shop() {
     if (!pendingReading) return;
     // A mark the reader could not tell is left off. The person can set it on the screen.
     setAttempts((xs) => [...xs, { newApproach: attempts.length > 0 && pendingReading.newApproach === true, newFact: pendingReading.newFact === true, text: pendingText }]);
-    setLog((l) => [...l, { from: "shopText", text: t(ui.reader.added, lang) }]);
+    void sayGhost();
     setPendingReading(null);
   }
 
   function declineReading() {
-    setLog((l) => [...l, { from: "shopText", text: t(ui.reader.declined, lang) }]);
+
     setPendingReading(null);
   }
 
@@ -1677,7 +1685,7 @@ export default function Shop() {
           voiceLabel={t(ui.agent.voice, lang)}
           confirm={
             pendingReading
-              ? { yes: t(ui.agent.yes, lang), no: t(ui.agent.no, lang), onYes: confirmReading, onNo: declineReading }
+              ? { yes: `${t(ui.agent.yes, lang)}: ${readingMarks(pendingReading, lang, attempts.length === 0)}`, no: t(ui.agent.no, lang), onYes: confirmReading, onNo: declineReading }
               : offerCheck
               ? { yes: t(ui.level.yes, lang), no: t(ui.level.no, lang), onYes: acceptCheckOffer, onNo: declineCheckOffer }
               : pendingCart && pendingSolution
