@@ -455,6 +455,11 @@ export const ui = {
       ja: "試したことを1つずつ足すと、「同じやり方をもう一度試す」のと「やり方を変える」のと、どちらの見込みが高いかを、数字で見せます。",
       en: "Add what you tried, one at a time. The site shows which has the better chance: one more try of the same approach, or a change of approach.",
     },
+    checkButton: { ja: "力量を測る(質問に答える)", en: "Test my skill (answer questions)" },
+    checkNote: {
+      ja: "AI のミスを見抜く問題や、コードとテストを読む問題です。点数は出ません。答えのあとに理由と出典が出ます。",
+      en: "Questions on spotting an AI's mistake and on reading code and tests. There is no score. Each answer comes with the reason and a source.",
+    },
     stepsHead: { ja: "使い方は3つです", en: "Three steps" },
     step1: { ja: "うまくいかなかった試みを、1つずつ足します。", en: "You add each try that did not work, one at a time." },
     step2: {
@@ -511,8 +516,8 @@ export const ui = {
   },
   pit: {
     shopHello: {
-      ja: "やあ。まず聞くよ。AI が出したコードを、どのくらい自分で読んで直してる？下から、いちばん近いものを選んでね。",
-      en: "Hey. First question. How much of the code an AI gives you do you actually read and fix yourself? Pick the closest one below.",
+      ja: "やあ。AI と同じところで止まってるなら、試したことを1文で書くか、下の例を選んで。先に自分の力量を測るなら、画面の「力量を測る」を押して。",
+      en: "Hey. If you are stuck in the same spot with an AI, write one thing you tried in one sentence, or pick an example below. To test your own skill first, press \"Test my skill\" on the page.",
     },
     examples: {
       ja: [

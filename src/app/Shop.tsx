@@ -38,6 +38,8 @@ import { Agent, type Line } from "./agent";
 import { READER_URL, readSentence } from "./reader";
 import { IDEAS_URL, MAX_SITUATION, getIdeas, type IdeasFailureKind } from "./ideas";
 import { getShake, type ShakeResult } from "./shake";
+/** Decision 2026-11-22: the opening level question is off. The check is reached from the entrance button. The code stays. */
+const ASK_LEVEL = false;
 import { labelOf, type Idea } from "@/core/ideas";
 import { GeodesicPlot } from "./geometry";
 import { BrowserFrame, Pumpkin } from "./parts";
@@ -624,6 +626,12 @@ export default function Shop() {
                       <b>{t(ui.entry.exampleHead, lang)}:</b> {t(ui.entry.example, lang)}
                     </div>
                     <p className="small">{t(ui.entry.shopkeeper, lang)}</p>
+                    <p>
+                      <button className="default" data-testid="entry-check" onClick={() => setTab("check")}>
+                        {t(ui.entry.checkButton, lang)}
+                      </button>
+                    </p>
+                    <p className="small">{t(ui.entry.checkNote, lang)}</p>
                   </div>
                 ) : (
                   <h2>{t(ui.pit.head, lang)}</h2>
@@ -1653,12 +1661,12 @@ export default function Shop() {
           lines={lines}
           placeholder={t(ui.agent.placeholder, lang)}
           send={t(ui.agent.send, lang)}
-          chipsLabel={focus && level === null ? t(ui.level.pick, lang) : t(ui.agent.chipsLabel, lang)}
+          chipsLabel={focus && ASK_LEVEL && level === null ? t(ui.level.pick, lang) : t(ui.agent.chipsLabel, lang)}
           chips={
             focus
               ? offerCheck
                 ? []
-                : level === null
+                : ASK_LEVEL && level === null
                   ? [...ui.level.choices[lang]]
                   : [...ui.pit.examples[lang]]
               : showChips
