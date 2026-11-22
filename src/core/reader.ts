@@ -44,12 +44,9 @@ export function parseReading(raw: unknown): Reading | null {
 /** The sentence the shopkeeper shows before anything is added. It reflects the reading and asks; it does not claim to understand. */
 export function describeReading(r: Reading, lang: Lang): string {
   if (lang === "ja") {
-    const approach =
-      r.newApproach === null ? "やり方が前と違うかは、読み取れませんでした" : r.newApproach ? "その試みは、前とは違うやり方だった" : "その試みは、前と同じやり方だった";
-    const fact =
-      r.newFact === null ? "新しいことが出たかは、読み取れませんでした" : r.newFact ? "新しい事実も出た" : "新しいことは分からなかった";
-    const lead = r.newApproach === null ? "" : "つまり、";
-    return `${lead}${approach}。${fact}。試みのリストに足しますか？`;
+    const approach = r.newApproach === null ? "前と違うやり方かは分からない" : r.newApproach ? "前と違うやり方" : "前と同じやり方";
+    const fact = r.newFact === null ? "新しい事実が出たかは分からない" : r.newFact ? "新しい事実あり" : "新しい事実なし";
+    return `こう読みました: ${approach}、${fact}。違っていたら、あとで画面で直せます。リストに足しますか？`;
   }
   const approach =
     r.newApproach === null ? "I could not tell whether the approach changed" : r.newApproach ? "that try used a different approach" : "that try used the same approach as before";

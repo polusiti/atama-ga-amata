@@ -107,7 +107,8 @@ export default function Shop() {
   }, [lang]);
   const [packId, setPackId] = useState<PackId>(DEFAULT_PACK);
   const [tab, setTab] = useState<Tab>(packs[DEFAULT_PACK].sheets ? "pit" : "home");
-  const [attempts, setAttempts] = useState<{ newApproach: boolean; newFact: boolean }[]>([]);
+  const [attempts, setAttempts] = useState<{ newApproach: boolean; newFact: boolean; text?: string }[]>([]);
+  const [pendingText, setPendingText] = useState("");
   /** The knowledge check: the answers so far, whether it has started, and whether the explanation of the last answer is showing. */
   const [checkAnswers, setCheckAnswers] = useState<CheckAnswer[]>([]);
   const [checkStarted, setCheckStarted] = useState(false);
@@ -324,6 +325,7 @@ export default function Shop() {
    */
   async function submitToReader(text: string) {
     setPendingReading(null);
+    setPendingText(text);
     setLog((l) => [...l, { from: "you", text }, { from: "shopText", text: t(ui.reader.reading, lang) }]);
     const result = await readSentence(READER_URL, text, lang);
     if (!result.ok) {
@@ -382,7 +384,7 @@ export default function Shop() {
   function confirmReading() {
     if (!pendingReading) return;
     // A mark the reader could not tell is left off. The person can set it on the screen.
-    setAttempts((xs) => [...xs, { newApproach: pendingReading.newApproach === true, newFact: pendingReading.newFact === true }]);
+    setAttempts((xs) => [...xs, { newApproach: pendingReading.newApproach === true, newFact: pendingReading.newFact === true, text: pendingText }]);
     setLog((l) => [...l, { from: "shopText", text: t(ui.reader.added, lang) }]);
     setPendingReading(null);
   }
@@ -621,6 +623,7 @@ export default function Shop() {
                     {attempts.map((a, i) => (
                       <li key={i}>
                         <b>{ui.pit.tryN[lang](i + 1)}</b>{" "}
+                        {a.text ? <q>{a.text}</q> : null}{" "}
                         <span className="field-row">
                           <input
                             id={`na-${i}`}

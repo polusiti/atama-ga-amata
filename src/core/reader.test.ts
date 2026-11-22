@@ -95,9 +95,9 @@ describe("describeReading: the sentence the shopkeeper shows", () => {
 
   it("says plainly when it could not tell", () => {
     expect(describeReading({ newApproach: null, newFact: true }, "en")).toMatch(/could not tell whether the approach changed/);
-    expect(describeReading({ newApproach: true, newFact: null }, "ja")).toMatch(/新しいことが出たかは、読み取れませんでした/);
+    expect(describeReading({ newApproach: true, newFact: null }, "ja")).toMatch(/新しい事実が出たかは分からない/);
     expect(describeReading({ newApproach: true, newFact: false }, "en")).toBe("So that try used a different approach. Nothing new turned up. Add it to your list of tries?");
-    expect(describeReading({ newApproach: false, newFact: true }, "ja")).toBe("つまり、その試みは、前と同じやり方だった。新しい事実も出た。試みのリストに足しますか？");
+    expect(describeReading({ newApproach: false, newFact: true }, "ja")).toBe("こう読みました: 前と同じやり方、新しい事実あり。違っていたら、あとで画面で直せます。リストに足しますか？");
   });
 
   it("never claims to understand the person (voice rule 3)", () => {
