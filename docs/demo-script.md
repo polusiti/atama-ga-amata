@@ -1,46 +1,29 @@
-# Demo script (target: under 3 minutes)
+# Demo script (about 2 minutes 20 seconds)
 
-Status: written, not yet rehearsed or timed. The times below are a plan. The numbers on screen are the ones the app computed on 2026-11-18 (checked in the browser run and in `scripts/pit-case.ts`).
+Status: draft written 2026-11-24 for the current site. The author reads the narration aloud (decision 2026-11-24). Record the screen first, then record the voice while watching the video, and lay the voice over it. Counts in the narration (17 specs, 5 hooks, 7 steering files, 2 agents) were counted from the repository on 2026-11-21; recount before recording.
 
-Set up before recording: open the site (it starts in English; the button in the taskbar reads "JA" and switches to Japanese), on the first tab ("THE PIT"), with no tries added. Have the Kiro IDE open on this repo, with the MCP server started.
+## Before recording
+- Open a private window (Ctrl+Shift+N), one tab, only the site. No other tab, no extension icon on screen.
+- Make the window wide, so that the page and the shopkeeper window are both visible.
+- Language: English (the EN/JA button at the bottom right).
+- Have one sentence ready to paste into "Get ideas": `The build fails with a missing module error. I asked the AI to reinstall it three times and got the same result.`
+- Rate limits are loose (reader 30, ideas 10, ghost 60 per minute), so no need to wait between steps.
 
-## 0:00 - 0:25 The problem, in one real case
-Say: "On the day I built this, my own coding agent sent the same kind of long command again and again. Each one was interrupted. It read each failure as bad luck and tried the same thing again. That is an antlion pit: every struggle makes the slope slide. This is the first user of the product."
-Show: `docs/incidents.md`, INC-17, for two seconds. Do not read it out.
+## Scenes
 
-## 0:25 - 1:15 The pit screen
-Show the first tab. Press "Add a try that did not work" once.
-Say: "After one failure: 24% for another try of the same approach, 20% for a fresh one. Keep going."
-Press it a second time.
-Say: "After two: 17% against 20%. The wording now says this approach seems to be failing. It says the approach, not the person."
-Point at the small line under the numbers.
-Say: "Both numbers are set by hand. The site says so, and it does not give a rule like 'switch after three tries'. With other hand-set values the turning point moves between zero and seven failures."
-Tick "A different approach from the one before" on the second try.
-Say: "A different approach resets the count. Time already spent does not enter the calculation."
-Untick it again.
+| Time | You do | Narration (you read this) |
+|---|---|---|
+| 0:00 | Show the entrance. Do not click. | On the day I built this, my own coding agent sent the same long command four times. Each one was interrupted, and each time it called it bad luck. That is an antlion pit: every struggle makes the slope slide. |
+| 0:15 | Press "Test my skill". Press Start. Answer two questions. After each, pause on the reason and the source. Press "Stop here". | First it tests you. Each question has an answer, and each answer comes with the reason and a source. There is no score, and a miss never becomes a label on you. |
+| 0:40 | Go back to THE PIT. Press "Add a try" three times. Pause on the verdict and the two numbers. | Then you add what you tried. Three tries of the same approach, three failures. The verdict says No to the approach, never to you. Two numbers sit side by side: one more try of the same approach, and a fresh start. Both are set by hand, and the page says so. |
+| 1:10 | Press "Shake it". Then pick one example under the shopkeeper. | A shake gives three provocations that have nothing to do with your problem. The ghost shopkeeper adds one odd line, written by a language model from random seed words. It is a jolt, not advice. |
+| 1:30 | Press "Get ideas". Paste the prepared sentence. Press "Get five". (Cut the waiting in the edit.) | For real ideas, a larger model writes five of different kinds, each with a ten-minute test. Fixed rules reject anything that claims it ran something. The numbers never come from the model. |
+| 1:50 | Switch to the repository on screen: the `.kiro` folder, then `docs/incidents.md`. | Kiro built this: seventeen specs, five hooks, seven steering files, two custom agents, and an MCP tool called pit_check that my own agent must call after two failed tries. Every rule in its conduct file names the incident that caused it. |
+| 2:15 | Back to the site, ABOUT tab or the entrance. | No real user has tried it yet. The two numbers are set by hand. The sentence reader finds a new approach in only three or four of ten sentences. I would rather say so than hide it. |
 
-## 1:15 - 1:55 Exit moves, with sources and costs
-Scroll to the exit moves.
-Say: "At most three moves, and only moves that name a source. Each has a cost. The line under each one says a source tells you where the method comes from, not that it works for you."
-Open one spec sheet from the SHOP tab (theory, data level, when it may not fit).
-Say: "Where the shop has no data, it says so: 'no theory or data is recorded'."
-
-## 1:55 - 2:20 Plan, and coming back
-Press "Add to plan" on two moves. Open the PLAN tab.
-Say: "It orders the moves by prerequisites, counts the steps, and says how many of the chosen moves have any recorded data. When none does, it says so first."
-Go back to THE PIT, press "I tried it and it did not work".
-Say: "Trying a move comes back as a new attempt, and the chances are recomputed."
-
-## 2:20 - 2:50 How Kiro is used
-Show, one second each: `.kiro/specs/pit-escape/`, `.kiro/steering/pit-guard.md`, the hooks folder.
-In the IDE chat, ask the agent to run `pit_check` with two failed same-approach tries.
-Say: "The same check is an MCP tool. A steering file tells the agent to call it after two failed tries of the same approach, so the agent that built this checks itself. The specs came before the code, and the incident file produced the rules the agent follows."
-Only show the tool call if it has been run in the IDE since the MCP restart. If not, cut this and say the tool exists and is tested.
-
-## 2:50 - 3:00 Honest limits
-Say: "No real user has tried it yet. The numbers are hand-set, and no move is claimed to work for you. It shows its sources and says what it does not know."
-
-## Cut order if the video runs long
-1. The spec-sheet close-up.
-2. The plan screen.
-3. The Kiro files montage (keep the `pit_check` call).
+## Notes
+- Word count of the narration is about 270. At a normal reading speed this is about 2 minutes. Check the length after the voice is made; the judges see only the first 3 minutes.
+- The CHECK questions come in a fixed order (Docker first), and the person cannot pick an area. Two questions then "Stop here" shows the result for Docker only.
+- The ghost's line changes every time. Do not write the narration around a particular line.
+- Voice: the author reads. Record the voice with Windows Sound Recorder (installed on this PC) or with OBS, in a quiet room, one scene at a time, so that a slip costs one scene and not the whole take. Say "pit check" for pit_check, and "ant-lion" for antlion. If reading English is hard, speak Japanese and put the English lines in as captions in Clipchamp (the judges read English).
+- Not verified: how the numbers on the verdict look after three tries. Read them off the screen while recording; do not say them in the narration.
