@@ -486,7 +486,8 @@ export default function Shop() {
   /** Starts over. `forPack` is the shelf to start on; the current one when it is not given. */
   function reset(forPack?: Pack) {
     clearGuess();
-    setTab("home");
+    // The Start button went to the shelf chooser (the parked screens) even in the pit pack. Stay in the pit when the pack has sheets.
+    setTab((forPack ?? pack).sheets ? "pit" : "home");
     setStated(null);
     setEntries([]);
     setNotes([]);
