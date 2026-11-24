@@ -345,6 +345,7 @@ export default function Shop() {
       return;
     }
     setPendingReading(r);
+    void sayGhost();
   }
 
   /** Records an answer of the knowledge check and shows the explanation. Nothing is stored or sent. */
@@ -405,7 +406,6 @@ export default function Shop() {
     if (!pendingReading) return;
     // A mark the reader could not tell is left off. The person can set it on the screen.
     setAttempts((xs) => [...xs, { newApproach: attempts.length > 0 && pendingReading.newApproach === true, newFact: pendingReading.newFact === true, text: pendingText }]);
-    void sayGhost();
     setPendingReading(null);
   }
 

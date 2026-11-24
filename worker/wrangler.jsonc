@@ -18,7 +18,7 @@
     {
       "name": "GHOST_LIMITER",
       "namespace_id": "4803",
-      "simple": { "limit": 10, "period": 60 }
+      "simple": { "limit": 3, "period": 60 }
     }
   ],
   "vars": {
