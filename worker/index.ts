@@ -10,6 +10,7 @@ interface Env extends ReaderEnv, IdeasEnv, ShakeEnv, GhostEnv {
   AI: { run(model: string, input: unknown): Promise<unknown> };
   READER_LIMITER: { limit(opts: { key: string }): Promise<{ success: boolean }> };
   IDEAS_LIMITER: { limit(opts: { key: string }): Promise<{ success: boolean }> };
+  GHOST_LIMITER: { limit(opts: { key: string }): Promise<{ success: boolean }> };
 }
 
 /** Two distinct seed words, picked with the platform's random source. */
@@ -24,7 +25,7 @@ function twoWords(): string[] {
 
 /** One seed of each kind (place, spot, food, thing), picked with the platform's random source. */
 function fourSeeds(lang: "en" | "ja"): string[] {
-  const kinds = [ghostSeeds.place, ghostSeeds.spot, ghostSeeds.food, ghostSeeds.thing];
+  const kinds = [ghostSeeds.place, ghostSeeds.spot, ghostSeeds.food, ghostSeeds.thing, ghostSeeds.form];
   const buf = new Uint32Array(kinds.length);
   crypto.getRandomValues(buf);
   return kinds.map((list, i) => list[buf[i] % list.length][lang]);
@@ -36,7 +37,7 @@ export default {
     if (path === "/ghost") {
       return handleGhost(request, env, {
         ai: env.AI,
-        limit: async (key) => (await env.IDEAS_LIMITER.limit({ key: "ghost:" + key })).success,
+        limit: async (key) => (await env.GHOST_LIMITER.limit({ key })).success,
         seeds: fourSeeds,
       });
     }

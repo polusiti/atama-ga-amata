@@ -14,6 +14,11 @@
       "name": "IDEAS_LIMITER",
       "namespace_id": "4802",
       "simple": { "limit": 4, "period": 60 }
+    },
+    {
+      "name": "GHOST_LIMITER",
+      "namespace_id": "4803",
+      "simple": { "limit": 10, "period": 60 }
     }
   ],
   "vars": {

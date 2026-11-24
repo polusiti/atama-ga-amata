@@ -6,7 +6,15 @@ export interface Seed {
   en: string;
   ja: string;
 }
-export const ghostSeeds: { place: Seed[]; spot: Seed[]; food: Seed[]; thing: Seed[] } = {
+export const ghostSeeds: { place: Seed[]; spot: Seed[]; food: Seed[]; thing: Seed[]; form: Seed[] } = {
+  /** The form the line takes, so that it is not always a question. */
+  form: [
+    { en: "a question", ja: "疑問文" },
+    { en: "an order", ja: "命令" },
+    { en: "a rumor, starting with 'They say'", ja: "うわさ話(「〜らしいぜ」で終わる)" },
+    { en: "a confession, in the first person", ja: "一人称の告白" },
+    { en: "a flat statement of fact, said with a straight face", ja: "真顔で言い切る断定" },
+  ],
   place: [
     { en: "Brazil", ja: "ブラジル" }, { en: "Iceland", ja: "アイスランド" }, { en: "Kyoto", ja: "京都" }, { en: "Peru", ja: "ペルー" },
     { en: "Morocco", ja: "モロッコ" }, { en: "Alaska", ja: "アラスカ" }, { en: "Osaka", ja: "大阪" }, { en: "Egypt", ja: "エジプト" },

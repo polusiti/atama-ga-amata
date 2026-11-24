@@ -345,7 +345,6 @@ export default function Shop() {
       return;
     }
     setPendingReading(r);
-    void sayGhost();
   }
 
   /** Records an answer of the knowledge check and shows the explanation. Nothing is stored or sent. */
