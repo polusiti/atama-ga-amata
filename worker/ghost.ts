@@ -34,7 +34,7 @@ const SCHEMA = {
   required: ["line"],
   additionalProperties: false,
 };
-export type GhostRejection = "not-json" | "wrong-container" | "bad-text" | "has-number" | "wrong-language";
+export type GhostRejection = "not-json" | "wrong-container" | "bad-text" | "has-number" | "has-symbol" | "wrong-language";
 /** Checks the model's answer. With `trimToFit` (the worker only) a line that is too long is cut at the end of a sentence first. */
 export function checkGhost(raw: unknown, lang: "en" | "ja", trimToFit = false): { line: string | null; reason: GhostRejection | null } {
   const no = (reason: GhostRejection) => ({ line: null, reason });
@@ -54,6 +54,10 @@ export function checkGhost(raw: unknown, lang: "en" | "ja", trimToFit = false): 
   if (textProblem(line, GHOST_MAX) !== null) return no("bad-text");
   const text = (line as string).trim();
   if (/[0-9０-９%％]/.test(text)) return no("has-number");
+  // Symbols that code and broken model output carry, and the word "assistant", which shows up when a model's own template leaks into the line.
+  if (/[{}\[\]<>\\|`]/.test(text) || /assistant/i.test(text)) return no("has-symbol");
+  // A Japanese line has no run of Latin letters (the seeds are Japanese there). A run means the model drifted into another language.
+  if (lang === "ja" && /[A-Za-z]{3,}/.test(text)) return no("wrong-language");
   if (lang === "ja" && !looksJapanese(text)) return no("wrong-language");
   if (lang === "en" && looksJapanese(text)) return no("wrong-language");
   return { line: text, reason: null };

@@ -24,6 +24,13 @@ describe("checkGhost", () => {
     expect(checkGhost({ line: "ブラジルの木の上" }, "en").reason).toBe("wrong-language");
     expect(checkGhost({ line: "a", extra: 1 }, "en").reason).toBe("wrong-container");
   });
+  it("rejects a line where the model's output broke down (measured live on 2026-11-24)", () => {
+    const broken = "むかしむかし、キューバの自転車の上にマヨネーズと掃除機が')}assistantassistantiangleKickSite fishingHere site knowledge";
+    expect(checkGhost({ line: broken }, "ja").line).toBeNull();
+    expect(checkGhost({ line: "むかしむかし assistant fishing site 古い橋" }, "ja").line).toBeNull();
+    expect(checkGhost({ line: "A line with {braces} in it" }, "en").reason).toBe("has-symbol");
+  });
+
   it("rejects a claim of having run something", () => {
     expect(checkGhost({ line: "I ran the tests and they pass." }, "en").line).toBeNull();
   });

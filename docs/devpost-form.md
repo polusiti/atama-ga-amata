@@ -48,7 +48,7 @@ Kiro drove the build:
 The numbers come from a deterministic core. A language model is used in bounded places only, and it never produces a number. A Cloudflare Worker with Workers AI reads a typed sentence (a validator throws away anything outside the shape, and nothing counts until you press Yes) and writes the five ideas.
 
 ### What is stitched together (Frankenstein)
-A restart-theory probability model, a ghost shopkeeper in a midnight shop (the look is still a Windows 98 browser skin until the redesign lands), a language model held inside fixed rules, a knowledge check with answer keys verified by running code, and Kiro hooks and steering built from the log of the builder's own mistakes.
+A restart-theory probability model, a ghost shopkeeper in a midnight shop shown inside a Windows 98 browser window (98.css), a language model held inside fixed rules, a knowledge check with answer keys verified by running code, and Kiro hooks and steering built from the log of the builder's own mistakes.
 
 ### Challenges
 - Scope. The first version tried to diagnose twelve kinds of stall. That needs sourced requirement levels and a calibrated item bank, and neither exists. It is parked in the code, and the site does one thing.
